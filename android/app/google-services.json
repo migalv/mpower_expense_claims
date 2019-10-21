@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "172921463223",
+    "firebase_url": "https://expense-claims-app.firebaseio.com",
+    "project_id": "expense-claims-app",
+    "storage_bucket": "expense-claims-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:172921463223:android:14a65954014fe4d2cd4832",
+        "android_client_info": {
+          "package_name": "com.mpower.expense_claims_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "172921463223-l1nk34a7dqjt4connn67vbmkp1hk5fla.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi7xj_hNU_rmbpzfRlCh69LVe2_qqld0U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "172921463223-l1nk34a7dqjt4connn67vbmkp1hk5fla.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
