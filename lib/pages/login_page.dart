@@ -1,5 +1,10 @@
-import 'package:expense_claims_app/pages/home_page.dart';
-import 'package:expense_claims_app/pages/signup_page.dart';
+// TODO: REVIEW IF REGISTER PAGE NEEDED
+// import 'package:expense_claims_app/blocs/signup_bloc.dart';
+// import 'package:expense_claims_app/pages/signup_page.dart';
+import 'package:expense_claims_app/bloc_provider.dart';
+import 'package:expense_claims_app/blocs/login_bloc.dart';
+import 'package:expense_claims_app/colors.dart';
+import 'package:expense_claims_app/respository.dart';
 import 'package:expense_claims_app/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -14,11 +19,27 @@ class _LoginPageState extends State<LoginPage> {
   // Text Controllers
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _recoverPasswordEmailController =
+      TextEditingController();
   final FocusNode _passwordFocusNode = FocusNode();
 
   // Keys
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  LoginBloc _loginBloc;
+
+  @override
+  void didChangeDependencies() {
+    _loginBloc = Provider.of<LoginBloc>(context);
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _loginBloc.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -67,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                 controller: _passwordController,
                 focusNode: _passwordFocusNode,
                 textInputAction: TextInputAction.done,
-                onFieldSubmitted: (_) {}, // TODO: SIGN IN FIELD
+                onFieldSubmitted: (_) => _signIn(),
                 decoration: InputDecoration(
                   labelText: 'Password',
                   icon: Icon(Icons.more_horiz),
@@ -98,21 +119,92 @@ class _LoginPageState extends State<LoginPage> {
               'Forgot password?',
               style: TextStyle(color: Colors.black38, fontSize: 10.0),
             ),
-            onPressed: () {}, // TODO: FORGOT PASSWORD
+            onPressed: () => _showForgotPasswordDialog(),
           ),
-          FlatButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute( // TODO: REGISTER BUTTON
-                builder: (_) => SignUpPage(),
-              ),
-            ),
-            child: Text('Register'),
-          ),
-          FlatButton(
-            onPressed: () => utils.pushReplacement(context, HomePage()), // TODO: SIGN IN BUTTON
-            child: Text('Submit'),
-          ),
+          // FlatButton(
+          //   onPressed: () => Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //           builder: (_) => BlocProvider<SignUpBloc>(
+          //                 initBloc: (_, bloc) => bloc ?? SignUpBloc(),
+          //                 onDispose: (_, bloc) => bloc.dispose(),
+          //                 child: SignUpPage(),
+          //               ))),
+          //   child: Text('Register'),
+          // ),
+          StreamBuilder<Object>(
+              stream: _loginBloc.authState,
+              initialData: AuthState.IDLE,
+              builder: (context, snapshot) {
+                return snapshot.data == AuthState.LOADING
+                    ? CircularProgressIndicator()
+                    : FlatButton(
+                        onPressed: () => _signIn(),
+                        child: Text('Log in'),
+                      );
+              }),
         ],
       );
+
+  Future _signIn() async {
+    if (_formKey.currentState.validate()) {
+      String result = await _loginBloc.signIn(
+          email: _emailController.text, password: _passwordController.text);
+
+      switch (result) {
+        case AuthState.SUCCESS:
+        // TODO: NAVIGATE TO THE HOME PAGE
+        case AuthState.ERROR:
+          utils.showSnackbar(
+            scaffoldKey: _scaffoldKey,
+            color: primaryError,
+            message: "Incorrect email or password. Try again.",
+            duration: 2,
+          );
+          break;
+      }
+    }
+  }
+
+  void _showForgotPasswordDialog() {
+    _recoverPasswordEmailController.text = _emailController?.text ?? "";
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Recover password"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text("Enter the email that you want to recover the password for."),
+            TextFormField(
+              controller: _recoverPasswordEmailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: 'Enter email',
+              ),
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+          FlatButton(
+            onPressed: () => _recoverPassword(),
+            child: Text('Recover'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future _recoverPassword() async {
+    await repository.recoverPassword(
+        email: _recoverPasswordEmailController.text);
+    utils.showSnackbar(
+      scaffoldKey: _scaffoldKey,
+      message: "Recovery email was sent if the email is registered.",
+    );
+  }
 }
