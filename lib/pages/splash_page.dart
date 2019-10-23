@@ -1,6 +1,8 @@
 import 'package:expense_claims_app/bloc_provider.dart';
+import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/blocs/splash_bloc.dart';
+import 'package:expense_claims_app/pages/home_page.dart';
 import 'package:expense_claims_app/pages/login_page.dart';
 import 'package:expense_claims_app/utils.dart';
 import 'package:flutter/material.dart';
@@ -20,11 +22,11 @@ class SplashPage extends StatelessWidget {
               if (snapshot != null && snapshot.hasData) {
                 if (snapshot.data) {
                   utils.pushReplacement(
-                      context, // TODO: CHANGE TO HOME PAGE
-                      BlocProvider<LoginBloc>(
-                        initBloc: (_, bloc) => bloc ?? LoginBloc(),
+                      context,
+                      BlocProvider<HomeBloc>(
+                        initBloc: (_, bloc) => bloc ?? HomeBloc(),
                         onDispose: (_, bloc) => bloc.dispose(),
-                        child: LoginPage(),
+                        child: HomePage(),
                       ),
                       delay: 3);
                 } else if (!snapshot.data) {

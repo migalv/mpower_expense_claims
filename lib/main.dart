@@ -4,9 +4,7 @@ import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/splash_bloc.dart';
 import 'package:expense_claims_app/pages/splash_page.dart';
 import 'package:flutter/material.dart';
-import 'package:expense_claims_app/pages/login_page.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/material.dart';
 
 void main() {
   final bool debugMode = false;

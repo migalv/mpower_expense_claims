@@ -1,9 +1,8 @@
-// TODO: REVIEW IF REGISTER PAGE NEEDED
-// import 'package:expense_claims_app/blocs/signup_bloc.dart';
-// import 'package:expense_claims_app/pages/signup_page.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
+import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
+import 'package:expense_claims_app/pages/home_page.dart';
 import 'package:expense_claims_app/respository.dart';
 import 'package:expense_claims_app/utils.dart';
 import 'package:flutter/material.dart';
@@ -121,17 +120,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
             onPressed: () => _showForgotPasswordDialog(),
           ),
-          // FlatButton(
-          //   onPressed: () => Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //           builder: (_) => BlocProvider<SignUpBloc>(
-          //                 initBloc: (_, bloc) => bloc ?? SignUpBloc(),
-          //                 onDispose: (_, bloc) => bloc.dispose(),
-          //                 child: SignUpPage(),
-          //               ))),
-          //   child: Text('Register'),
-          // ),
           StreamBuilder<Object>(
               stream: _loginBloc.authState,
               initialData: AuthState.IDLE,
@@ -153,7 +141,15 @@ class _LoginPageState extends State<LoginPage> {
 
       switch (result) {
         case AuthState.SUCCESS:
-        // TODO: NAVIGATE TO THE HOME PAGE
+          utils.pushReplacement(
+            context,
+            BlocProvider<HomeBloc>(
+              child: HomePage(),
+              initBloc: (_, bloc) => bloc ?? HomeBloc(),
+              onDispose: (_, bloc) => bloc?.dispose(),
+            ),
+          );
+          break;
         case AuthState.ERROR:
           utils.showSnackbar(
             scaffoldKey: _scaffoldKey,
