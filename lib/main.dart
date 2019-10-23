@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:expense_claims_app/pages/login_page.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   final bool debugMode = false;
@@ -11,19 +12,15 @@ void main() {
       FlutterError.dumpErrorToConsole(details);
     } else {
       Zone.current.handleUncaughtError(details.exception, details.stack);
+      Crashlytics.instance.recordFlutterError(details);
     }
   };
-
-  // await FlutterCrashlytics().initialize();
 
   runZoned<Future<Null>>(() async {
     runApp(MyApp(debugMode: debugMode));
   }, onError: (error, stackTrace) async {
     print(error.toString());
     print(stackTrace.toString());
-
-    // await FlutterCrashlytics()
-    //     .reportCrash(error, stackTrace, forceCrash: !debugMode);
   });
 }
 
@@ -32,12 +29,8 @@ class MyApp extends StatelessWidget {
 
   const MyApp({Key key, @required this.debugMode}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      home: LoginPage(),
-    );
+    return MaterialApp(title: 'Flutter Demo', home: LoginPage());
   }
 }
