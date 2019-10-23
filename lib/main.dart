@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:expense_claims_app/bloc_provider.dart';
+import 'package:expense_claims_app/blocs/splash_bloc.dart';
+import 'package:expense_claims_app/pages/splash_page.dart';
+import 'package:flutter/material.dart';
 import 'package:expense_claims_app/pages/login_page.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +35,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Flutter Demo', home: LoginPage());
+    return MaterialApp(
+      title: 'Expense Claims App',
+      home: BlocProvider<SplashBloc>(
+        initBloc: (_, bloc) => bloc ?? SplashBloc(),
+        onDispose: (_, bloc) => bloc.dispose(),
+        child: SplashPage(),
+      ),
+    );
   }
 }
