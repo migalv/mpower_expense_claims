@@ -17,6 +17,9 @@ dependencies:
   flutter_svg: 0.14.1
   rxdart: 0.22.2
   material_design_icons_flutter: 3.2.4595
+  datetime_picker_formfield: 0.4.3
+  image_picker: 0.6.1+8
+  permission_handler: 3.3.0
 
 dev_dependencies:
   flutter_test:
