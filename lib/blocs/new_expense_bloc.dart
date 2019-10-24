@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rxdart/rxdart.dart';
 
-class NewExpenseClaimBloc {
+class NewExpenseBloc {
   // Streams
   ValueObservable<String> get selectedCountry =>
       _selectedCountryController.stream;
@@ -33,7 +34,7 @@ class NewExpenseClaimBloc {
   bool _multipleAttachments;
   bool get multipleAttachments => _multipleAttachments;
 
-  NewExpenseClaimBloc({@required this.expenseType}) {
+  NewExpenseBloc({@required this.expenseType}) {
     switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
         _attachments["Expense Claim"] = null;
@@ -85,9 +86,4 @@ class NewExpenseClaimBloc {
     _attachmentsController.close();
     _invoiceDateController.close();
   }
-}
-
-enum ExpenseType {
-  EXPENSE_CLAIM,
-  INVOICE,
 }

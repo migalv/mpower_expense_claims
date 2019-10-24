@@ -5,14 +5,14 @@ class NavigationBarWithFAB extends StatefulWidget {
     Key key,
     @required AnimationController animationController,
     @required int index,
-    @required Function onPressed,
+    @required Function onItemPressed,
     @required String label1,
     @required String label2,
     @required IconData icon1,
     @required IconData icon2,
   })  : _animationController = animationController,
         _index = index,
-        _onPressed = onPressed,
+        _onItemPressed = onItemPressed,
         _label1 = label1,
         _label2 = label2,
         _icon1 = icon1,
@@ -21,7 +21,7 @@ class NavigationBarWithFAB extends StatefulWidget {
 
   final AnimationController _animationController;
   final int _index;
-  final Function _onPressed;
+  final Function _onItemPressed;
   final String _label1, _label2;
   final IconData _icon1, _icon2;
 
@@ -99,7 +99,7 @@ class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
                 ),
                 onPressed: () {
                   if (widget._index == 1) {
-                    widget._onPressed(0);
+                    widget._onItemPressed(0);
 
                     if (widget._animationController.status ==
                         AnimationStatus.completed) {
@@ -145,7 +145,7 @@ class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
                 ),
                 onPressed: () {
                   if (widget._index == 0) {
-                    widget._onPressed(1);
+                    widget._onItemPressed(1);
 
                     if (widget._animationController.status ==
                         AnimationStatus.completed) {

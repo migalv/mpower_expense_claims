@@ -10,14 +10,14 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 
 // TODO: MAKE JUMPING FROM FIELD TO FIELD
 
-class NewExpenseClaimPage extends StatefulWidget {
-  NewExpenseClaimPage();
+class NewExpensePage extends StatefulWidget {
+  NewExpensePage();
 
   @override
-  _NewExpenseClaimPageState createState() => _NewExpenseClaimPageState();
+  _NewExpensePageState createState() => _NewExpensePageState();
 }
 
-class _NewExpenseClaimPageState extends State<NewExpenseClaimPage> {
+class _NewExpensePageState extends State<NewExpensePage> {
   // Bloc
   NewExpenseBloc _expenseClaimBloc;
 

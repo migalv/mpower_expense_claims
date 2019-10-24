@@ -1,5 +1,9 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/home_bloc.dart';
+import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
+import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/pages/new_expense_page.dart';
+import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/navigation_bar_with_fab.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -56,7 +60,7 @@ class _HomePageState extends State<HomePage>
           icon1: MdiIcons.receipt,
           label2: 'Invoices',
           icon2: FontAwesomeIcons.fileInvoiceDollar,
-          onPressed: (int index) {
+          onItemPressed: (int index) {
             _homeBloc.setPageIndex(index);
             _pageController.animateToPage(
               index,
@@ -84,13 +88,32 @@ class _HomePageState extends State<HomePage>
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
-      ),
+      floatingActionButton: StreamBuilder<int>(
+          stream: _homeBloc.pageIndex,
+          initialData: 0,
+          builder: (context, snapshot) {
+            return FloatingActionButton(
+              onPressed: () {
+                utils.push(
+                  context,
+                  BlocProvider<NewExpenseBloc>(
+                    child: NewExpensePage(),
+                    initBloc: (_, bloc) =>
+                        bloc ??
+                        NewExpenseBloc(
+                            expenseType: snapshot.data == 0
+                                ? ExpenseType.EXPENSE_CLAIM
+                                : ExpenseType.INVOICE),
+                    onDispose: (_, bloc) => bloc?.dispose(),
+                  ),
+                );
+              },
+              child: Icon(
+                Icons.add,
+                color: Colors.white,
+              ),
+            );
+          }),
     );
   }
 
