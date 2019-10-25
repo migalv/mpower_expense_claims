@@ -3,7 +3,6 @@ import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/new_expense_page.dart';
-import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/navigation_bar_with_fab.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -22,6 +21,7 @@ class _HomePageState extends State<HomePage>
   );
   AnimationController _animationController;
   HomeBloc _homeBloc;
+  bool _fabVisible = true;
 
   @override
   void initState() {
@@ -49,7 +49,6 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: StreamBuilder<int>(
         initialData: 0,
         stream: _homeBloc.pageIndex,
@@ -88,32 +87,46 @@ class _HomePageState extends State<HomePage>
           )
         ],
       ),
-      floatingActionButton: StreamBuilder<int>(
-          stream: _homeBloc.pageIndex,
-          initialData: 0,
-          builder: (context, snapshot) {
-            return FloatingActionButton(
-              onPressed: () {
-                utils.push(
-                  context,
-                  BlocProvider<NewExpenseBloc>(
-                    child: NewExpensePage(),
-                    initBloc: (_, bloc) =>
-                        bloc ??
-                        NewExpenseBloc(
-                            expenseType: snapshot.data == 0
-                                ? ExpenseType.EXPENSE_CLAIM
-                                : ExpenseType.INVOICE),
-                    onDispose: (_, bloc) => bloc?.dispose(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: _fabVisible
+          ? StreamBuilder<int>(
+              stream: _homeBloc.pageIndex,
+              initialData: 0,
+              builder: (context, pageIndexSnapshot) {
+                return FloatingActionButton(
+                  onPressed: () async {
+                    setState(() {
+                      _fabVisible = false;
+                    });
+
+                    await showBottomSheet(
+                      builder: (_) {
+                        return BlocProvider<NewExpenseBloc>(
+                          child: NewExpensePage(),
+                          initBloc: (_, bloc) =>
+                              bloc ??
+                              NewExpenseBloc(
+                                  expenseType: pageIndexSnapshot.data == 0
+                                      ? ExpenseType.EXPENSE_CLAIM
+                                      : ExpenseType.INVOICE),
+                          onDispose: (_, bloc) => bloc?.dispose(),
+                        );
+                      },
+                      context: context,
+                    ).closed;
+
+                    setState(() {
+                      _fabVisible = true;
+                    });
+                  },
+                  child: Icon(
+                    Icons.add,
+                    color: Colors.white,
                   ),
                 );
               },
-              child: Icon(
-                Icons.add,
-                color: Colors.white,
-              ),
-            );
-          }),
+            )
+          : null,
     );
   }
 

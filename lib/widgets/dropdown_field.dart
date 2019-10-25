@@ -20,24 +20,14 @@ class DropdownField<T> extends StatefulWidget {
 class _DropdownFieldState<T> extends State<DropdownField> {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15.0),
-          border: Border.all(
-              // TODO: CHANGE COLOR
-              color: Colors.red,
-              style: BorderStyle.solid,
-              width: 0.80),
-        ),
-        child: DropdownButton<T>(
-          value: widget.value,
-          items: widget.items,
-          onChanged: widget.onChanged,
-          isExpanded: false,
-          icon: Icon(widget.icon),
-        ),
+    return Padding(
+      padding: EdgeInsets.only(left: 16.0, right: 16.0),
+      child: DropdownButton<T>(
+        value: widget.value,
+        items: widget.items,
+        onChanged: widget.onChanged,
+        isExpanded: false,
+        icon: Icon(widget.icon),
       ),
     );
   }
