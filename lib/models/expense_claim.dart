@@ -37,7 +37,6 @@ class ExpenseClaim {
         this.approvedBy = json[COUNTRY_KEY];
 
   Map<String, dynamic> toJson() => {
-        'id': this.id,
         COUNTRY_KEY: this.country,
         CATEGORY_KEY: this.category,
         EXPENSE_DATE_KEY: this.expenseDate.millisecondsSinceEpoch,
