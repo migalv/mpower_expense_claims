@@ -1,3 +1,4 @@
+import 'package:expense_claims_app/respository.dart';
 import 'package:rxdart/subjects.dart';
 
 class HomeBloc {
@@ -7,6 +8,10 @@ class HomeBloc {
 
   // Subjects
   final _pageIndexController = PublishSubject<int>();
+
+  HomeBloc() {
+    repository.loadSettings();
+  }
 
   //
   // INPUT
