@@ -7,12 +7,12 @@ import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/models/user_model.dart';
 import 'package:expense_claims_app/respository.dart';
 import 'package:expense_claims_app/widgets/dropdown_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -100,13 +100,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
                   : Container(),
               _buildDescription(),
               _buildCost(),
-              _buildDropdown(
-                _expenseClaimBloc.approvedByValidator,
-                _expenseClaimBloc.selectApprover,
-                _expenseClaimBloc.selectedApprovedBy,
-                repository.approvers,
-                hint: "Select the approver",
-              ),
+              _buildApproverTile(),
               _buildAttachmentsTile(),
               _buildDoneButton(),
             ],
@@ -458,12 +452,16 @@ class _NewExpensePageState extends State<NewExpensePage> {
                                     hint: Text("Currency"),
                                     value: selectedCurrencySnapshot?.data,
                                     items: currenciesSnapshot.data
-                                        .where((currency) =>
-                                            currency.hidden == false)
-                                        .map((currency) => DropdownMenuItem(
-                                              child: Text(currency.iso),
-                                              value: currency.id,
-                                            ))
+                                        .where(
+                                          (currency) =>
+                                              currency.hidden == false,
+                                        )
+                                        .map(
+                                          (currency) => DropdownMenuItem(
+                                            child: Text(currency.iso),
+                                            value: currency.id,
+                                          ),
+                                        )
                                         .toList(),
                                     onChanged: _expenseClaimBloc.selectCurrency,
                                     isExpanded: true,
@@ -479,33 +477,33 @@ class _NewExpensePageState extends State<NewExpensePage> {
         ),
       );
 
-  Widget _buildDropdown(
-          String Function(String) validator,
-          Function(String) selectFunction,
-          Stream selectedValueStream,
-          Stream itemsStream,
-          {String hint}) =>
-      StreamBuilder<String>(
-          stream: selectedValueStream,
-          builder: (context, selectedValueSnapshot) {
-            return StreamBuilder(
-                stream: itemsStream,
-                initialData: <DropdownMenuItem>[],
-                builder: (context, itemsSnapshot) {
-                  return DropdownFormField(
-                    validator: validator,
-                    onChanged: selectFunction,
-                    value: selectedValueSnapshot.data,
-                    items: itemsSnapshot?.data
-                            ?.map((item) => DropdownMenuItem(
-                                  child: Text(item.name),
-                                  value: item.id,
-                                ))
-                            ?.toList() ??
-                        <DropdownMenuItem>[],
-                  );
-                });
-          });
+  Widget _buildApproverTile() => StreamBuilder(
+        stream: repository.approvers,
+        builder: (BuildContext context, AsyncSnapshot<List<User>> snapshot) =>
+            (snapshot?.data?.isEmpty ?? false)
+                ? Text("You don't have any approvers")
+                : DropdownButtonHideUnderline(
+                    child: StreamBuilder<User>(
+                      stream: _expenseClaimBloc.selectedApprover,
+                      builder: (context, snapshot) {
+                        return DropdownButton<User>(
+                          hint: Text("Select who will approve your Expense"),
+                          value: snapshot?.data,
+                          items: repository.approvers.value
+                              .map(
+                                (User user) => DropdownMenuItem(
+                                  child: Text(user.name),
+                                  value: user,
+                                ),
+                              )
+                              .toList(),
+                          onChanged: _expenseClaimBloc.selectApprover,
+                          isExpanded: true,
+                        );
+                      },
+                    ),
+                  ),
+      );
 
   Widget _buildFieldLabel(String label) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),

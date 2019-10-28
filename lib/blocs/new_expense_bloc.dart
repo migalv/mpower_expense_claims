@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/models/user_model.dart';
 import 'package:expense_claims_app/respository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rxdart/rxdart.dart';
@@ -19,8 +20,8 @@ class NewExpenseBloc {
   ValueObservable<Map<String, File>> get attachments =>
       _attachmentsController.stream;
   ValueObservable<DateTime> get invoiceDate => _invoiceDateController.stream;
-  ValueObservable<String> get selectedApprovedBy =>
-      _selectedApprovedByController.stream;
+  ValueObservable<User> get selectedApprover =>
+      _selectedApproverController.stream;
 
   // Controllers
   final _selectedCountryController = BehaviorSubject<String>();
@@ -29,7 +30,7 @@ class NewExpenseBloc {
   final _expenseDateController = BehaviorSubject<DateTime>();
   final _attachmentsController = BehaviorSubject<Map<String, File>>();
   final _invoiceDateController = BehaviorSubject<DateTime>();
-  final _selectedApprovedByController = BehaviorSubject<String>();
+  final _selectedApproverController = BehaviorSubject<User>();
 
   Map<String, File> _attachments = Map();
 
@@ -75,8 +76,9 @@ class NewExpenseBloc {
     _selectedCurrencyController.add(currencyId);
   }
 
-  void selectApprover(String approvedById) =>
-      _selectedApprovedByController.add(approvedById);
+  void selectApprover(User approver) =>
+      _selectedApproverController.add(approver);
+
   void selectInvoiceDate(DateTime invoiceDate) =>
       _invoiceDateController.add(invoiceDate);
 
@@ -112,7 +114,9 @@ class NewExpenseBloc {
     String stringGross, {
     String stringNet,
   }) {
-    if (description == null || stringGross == null) return;
+    if (description == null ||
+        stringGross == null ||
+        selectedApprover.value == null) return;
     double gross = double.tryParse(stringGross);
     double net = stringNet != null ? double.tryParse(stringNet) : null;
     ExpenseClaim newExpenseClaim = ExpenseClaim(
@@ -123,7 +127,7 @@ class NewExpenseBloc {
       currency: selectedCurrency.value,
       gross: gross,
       net: net,
-      approvedBy: selectedApprovedBy.value,
+      approvedBy: selectedApprover.value.id,
     );
 
     repository.uploadNewExpenseClaim(newExpenseClaim, _attachments);
@@ -154,7 +158,7 @@ class NewExpenseBloc {
       dateStream.value == null ? "Select a date" : null;
 
   String approvedByValidator(String value) =>
-      selectedApprovedBy.value == null ? "Select an approver" : null;
+      selectedApprover.value == null ? "Select an approver" : null;
 
   void dispose() {
     _selectedCountryController.close();
@@ -163,7 +167,7 @@ class NewExpenseBloc {
     _selectedCurrencyController.close();
     _attachmentsController.close();
     _invoiceDateController.close();
-    _selectedApprovedByController.close();
+    _selectedApproverController.close();
   }
 }
 

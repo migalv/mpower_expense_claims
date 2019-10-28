@@ -150,9 +150,9 @@ class Repository {
           .document(userId)
           .snapshots()
           .listen((snapshot) {
-        Map approversMapList = snapshot.data[APPROVERS];
+        Map approversMap = snapshot.data[APPROVERS];
         List<User> approvers = [];
-        approversMapList.forEach((approverId, map) {
+        approversMap?.forEach((approverId, map) {
           approvers.add(User.fromJson(map, id: approverId));
         });
         _approversController.add(approvers);
@@ -164,11 +164,11 @@ class Repository {
           .snapshots()
           .listen((docSnapshot) {
         _lastSelectedCountryController.add(
-            docSnapshot.data.containsKey(LAST_SELECTED_COUNTRY)
+            (docSnapshot.data?.containsKey(LAST_SELECTED_COUNTRY) ?? false)
                 ? docSnapshot.data[LAST_SELECTED_COUNTRY]
                 : null);
         _lastSelectedCurrencyController.add(
-            docSnapshot.data.containsKey(LAST_SELECTED_CURRENCY)
+            (docSnapshot.data?.containsKey(LAST_SELECTED_CURRENCY) ?? false)
                 ? docSnapshot.data[LAST_SELECTED_CURRENCY]
                 : null);
       }));
