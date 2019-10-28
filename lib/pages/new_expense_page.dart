@@ -32,16 +32,16 @@ class _NewExpensePageState extends State<NewExpensePage> {
   NewExpenseBloc _expenseClaimBloc;
 
   // Text Controllers
-  TextEditingController _descriptionController = TextEditingController();
-  TextEditingController _grossController =
+  final _descriptionController = TextEditingController();
+  final _grossController =
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
-  TextEditingController _netController =
+  final _netController =
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
 
   // Focus Nodes
-  FocusNode _descriptionFocusNode = FocusNode();
-  FocusNode _grossFocusNode = FocusNode();
-  FocusNode _netFocusNode = FocusNode();
+  final _descriptionFocusNode = FocusNode();
+  final _grossFocusNode = FocusNode();
+  final _netFocusNode = FocusNode();
 
   // Keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -306,50 +306,33 @@ class _NewExpensePageState extends State<NewExpensePage> {
         ),
       );
 
-  Widget _buildDescription() => FormField(validator: (String description) {
-        if (description == null || ((description?.length ?? 0) < 5))
-          return "Description must be at least 5 characters long";
-        return null;
-      }, builder: (FormFieldState state) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                decoration: BoxDecoration(
-                  color: Color(0xfff1f1f1),
-                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: 120.0),
-                  child: Scrollbar(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      reverse: true,
-                      child: TextFormField(
-                        controller: _descriptionController,
-                        maxLines: null,
-                        autocorrect: true,
-                        focusNode: _descriptionFocusNode,
-                        textInputAction: TextInputAction.next,
-                        keyboardType: TextInputType.text,
-                        decoration: InputDecoration(
-                          hintText: 'Enter a description of the expense...',
-                          border: InputBorder.none,
-                        ),
-                        onChanged: (descr) => state.didChange(descr),
-                      ),
-                    ),
-                  ),
-                ),
+  Widget _buildDescription() => Container(
+        margin: EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 24.0),
+        constraints: BoxConstraints(maxHeight: 120.0),
+        child: Scrollbar(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            reverse: true,
+            child: TextFormField(
+              controller: _descriptionController,
+              maxLines: null,
+              autocorrect: true,
+              focusNode: _descriptionFocusNode,
+              textInputAction: TextInputAction.next,
+              keyboardType: TextInputType.text,
+              decoration: InputDecoration(
+                filled: true,
+                hintText: 'Enter a description of the expense...',
               ),
-              _buildErrorFormLabel(state),
-            ],
+              validator: (String description) {
+                if (description == null || ((description?.length ?? 0) < 5))
+                  return "Description must be at least 5 characters long";
+                return null;
+              },
+            ),
           ),
-        );
-      });
+        ),
+      );
 
   Widget _buildCost() => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -365,24 +348,17 @@ class _NewExpensePageState extends State<NewExpensePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        decoration: BoxDecoration(
-                          color: Color(0xfff1f1f1),
-                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                        ),
-                        child: TextFormField(
-                          controller: _netController,
-                          focusNode: _netFocusNode,
-                          textInputAction: TextInputAction.next,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            WhitelistingTextInputFormatter.digitsOnly,
-                          ],
-                          decoration: InputDecoration(
-                            hintText: 'Net',
-                            border: InputBorder.none,
-                          ),
+                      child: TextFormField(
+                        controller: _netController,
+                        focusNode: _netFocusNode,
+                        textInputAction: TextInputAction.next,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          WhitelistingTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: InputDecoration(
+                          filled: true,
+                          hintText: 'Net',
                         ),
                       ),
                     ),
@@ -390,44 +366,21 @@ class _NewExpensePageState extends State<NewExpensePage> {
                       width: 16.0,
                     ),
                     Expanded(
-                      child: FormField(
+                      child: TextFormField(
+                        controller: _grossController,
+                        focusNode: _grossFocusNode,
+                        textInputAction: TextInputAction.next,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          WhitelistingTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: InputDecoration(
+                          filled: true,
+                          hintText: 'Gross',
+                        ),
                         validator: (value) => value == null || value == ""
                             ? "Enter an amount"
                             : null,
-                        builder: (FormFieldState state) => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              decoration: BoxDecoration(
-                                color: Color(0xfff1f1f1),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8.0)),
-                              ),
-                              child: Row(
-                                children: <Widget>[
-                                  TextFormField(
-                                    controller: _grossController,
-                                    focusNode: _grossFocusNode,
-                                    textInputAction: TextInputAction.next,
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: <TextInputFormatter>[
-                                      WhitelistingTextInputFormatter.digitsOnly,
-                                    ],
-                                    decoration: InputDecoration(
-                                      hintText: 'Gross',
-                                      border: InputBorder.none,
-                                    ),
-                                    onChanged: (value) =>
-                                        state.didChange(value),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            _buildErrorFormLabel(state),
-                          ],
-                        ),
                       ),
                     ),
                     Container(
@@ -676,63 +629,3 @@ class _NewExpensePageState extends State<NewExpensePage> {
     }
   }
 }
-
-// [
-// Container(
-//   width: 16.0,
-// ),
-// Chip(
-//   label: Text(
-//     'Transport',
-//     style: Theme.of(context)
-//         .textTheme
-//         .body2
-//         .copyWith(color: Colors.white),
-//   ),
-//   avatar: Icon(
-//     Icons.directions_car,
-//     size: 16.0,
-//     color: Colors.white,
-//   ),
-//   backgroundColor: Colors.blue,
-// ),
-//                   Container(
-//                     width: 16.0,
-//                   ),
-//                   Chip(
-//                     backgroundColor: Color(0xfff1f1f1),
-//                     label: Text(
-//                       'Food',
-//                       style: Theme.of(context).textTheme.body2.copyWith(
-//                             color: Colors.black38,
-//                             fontWeight: FontWeight.normal,
-//                           ),
-//                     ),
-//                     avatar: Icon(
-//                       Icons.fastfood,
-//                       size: 16.0,
-//                       color: Colors.black26,
-//                     ),
-//                   ),
-//                   Container(
-//                     width: 16.0,
-//                   ),
-//                   Chip(
-//                     backgroundColor: Color(0xfff1f1f1),
-//                     label: Text(
-//                       'Other',
-//                       style: Theme.of(context).textTheme.body2.copyWith(
-//                             color: Colors.black38,
-//                             fontWeight: FontWeight.normal,
-//                           ),
-//                     ),
-//                     avatar: Icon(
-//                       Icons.attach_money,
-//                       size: 16.0,
-//                       color: Colors.black26,
-//                     ),
-//                   ),
-//                   Container(
-//                     width: 16.0,
-//                   ),
-//                 ],

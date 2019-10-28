@@ -62,6 +62,7 @@ class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
+      elevation: 10.0,
       shape: CircularNotchedRectangle(),
       child: Container(
         height: 64,
