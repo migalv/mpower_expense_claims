@@ -53,17 +53,28 @@ class NewExpenseBloc {
         _multipleAttachments = true;
         break;
     }
+    if (repository?.lastSelectedCountry?.value != null)
+      selectCountry(repository.lastSelectedCountry.value);
+    if (repository?.lastSelectedCurrency?.value != null)
+      selectCurrency(repository.lastSelectedCurrency.value);
     selectExpenseDate(DateTime.now());
   }
 
   // SELECTS
-  void selectCountry(String country) => _selectedCountryController.add(country);
-  void selectCategory(String category) =>
-      _selectedCategoryController.add(category);
+  void selectCountry(String countryId) {
+    repository.updateLastSelectedCountry(countryId);
+    _selectedCountryController.add(countryId);
+  }
+
+  void selectCategory(String categoryId) =>
+      _selectedCategoryController.add(categoryId);
   void selectExpenseDate(DateTime expenseDate) =>
       _expenseDateController.add(expenseDate);
-  void selectCurrency(String currency) =>
-      _selectedCurrencyController.add(currency);
+  void selectCurrency(String currencyId) {
+    repository.updateLastSelectedCurrency(currencyId);
+    _selectedCurrencyController.add(currencyId);
+  }
+
   void selectApprovedBy(String approvedBy) =>
       _selectedApprovedByController.add(approvedBy);
   void selectInvoiceDate(DateTime invoiceDate) =>

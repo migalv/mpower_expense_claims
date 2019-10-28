@@ -36,7 +36,6 @@ abstract class Expense {
         this.approvedBy = json[APPROVED_BY_KEY];
 
   Map<String, dynamic> toJson() => {
-        'id': this.id,
         APPROVED_BY_KEY: this.approvedBy,
         COUNTRY_KEY: this.country,
         CATEGORY_KEY: this.category,

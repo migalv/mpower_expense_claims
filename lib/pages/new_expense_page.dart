@@ -3,7 +3,11 @@ import 'dart:io';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
+import 'package:expense_claims_app/models/category_model.dart';
+import 'package:expense_claims_app/models/country_model.dart';
+import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/respository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -28,7 +32,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
   NewExpenseBloc _expenseClaimBloc;
 
   // Text Controllers
-  TextEditingController _descriptionController;
+  TextEditingController _descriptionController = TextEditingController();
   TextEditingController _grossController =
       MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
   TextEditingController _netController =
@@ -139,7 +143,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
               _buildFieldLabel('Country'),
               StreamBuilder<String>(
                 stream: _expenseClaimBloc.selectedCountry,
-                builder: (context, snapshot) {
+                builder: (context, selectedCountrySnapshot) {
                   return Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -149,23 +153,30 @@ class _NewExpensePageState extends State<NewExpensePage> {
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8.0),
                       child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: snapshot.data,
-                          items: countries,
-                          onChanged: _expenseClaimBloc.selectCountry,
-                          isExpanded: true,
-                          hint: Text('Select the country of issue'),
-                        ),
+                        child: StreamBuilder<List<Country>>(
+                            stream: repository.countries,
+                            initialData: <Country>[],
+                            builder: (context, countriesSnapshot) {
+                              return DropdownButton<String>(
+                                value: selectedCountrySnapshot.data,
+                                items: countriesSnapshot.data
+                                    .where((country) => country.hidden == false)
+                                    .map((country) => DropdownMenuItem(
+                                          child: Text(country.name),
+                                          value: country.id,
+                                        ))
+                                    .toList(),
+                                onChanged: _expenseClaimBloc.selectCountry,
+                                isExpanded: true,
+                                hint: Text('Select the country of issue'),
+                              );
+                            }),
                       ),
                     ),
                   );
                 },
               ),
-              SizedBox(height: 5.0),
-              Text(
-                state.hasError ? state.errorText : '',
-                style: TextStyle(color: primaryErrorColor, fontSize: 12.0),
-              ),
+              _buildErrorFormLabel(state),
             ],
           ),
         ),
@@ -173,7 +184,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   Widget _buildCategory() => StreamBuilder(
       stream: _expenseClaimBloc.selectedCategory,
-      builder: (context, snapshot) {
+      builder: (context, selectedCategorySnapshot) {
         return FormField<String>(
           validator: _expenseClaimBloc.categoryValidator,
           builder: (FormFieldState<String> state) => Padding(
@@ -182,51 +193,59 @@ class _NewExpensePageState extends State<NewExpensePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 _buildFieldLabel('Category'),
-                Container(
-                  height: 48.0,
-                  child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: _buildChipListItems(snapshot?.data)),
-                ),
-                SizedBox(height: 5.0),
-                Text(
-                  state.hasError ? state.errorText : '',
-                  style: TextStyle(color: primaryErrorColor, fontSize: 12.0),
-                ),
+                StreamBuilder(
+                    stream: repository.categories,
+                    initialData: <Category>[],
+                    builder: (context, categoriesSnapshot) {
+                      return Container(
+                        height: 48.0,
+                        child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: _buildChipListItems(
+                                selectedCategorySnapshot?.data,
+                                categoriesSnapshot?.data ?? [])),
+                      );
+                    }),
+                _buildErrorFormLabel(state),
               ],
             ),
           ),
         );
       });
 
-  List<Widget> _buildChipListItems(String selectedCategory) {
+  List<Widget> _buildChipListItems(
+      String selectedCategory, List<Category> categories) {
     List<Widget> list = [
       Container(
         width: 16.0,
       ),
     ];
 
-    list.addAll(categories.map((category) {
+    list.addAll(categories
+        .where((category) => category.hidden == false)
+        .map((category) {
       String selected = selectedCategory ?? '';
 
       return Padding(
         padding: const EdgeInsets.only(right: 8.0),
         child: ActionChip(
           label: Text(
-            category.label,
+            category.name,
             style: Theme.of(context).textTheme.body2.copyWith(
-                color:
-                    category.label == selected ? Colors.white : Colors.black38),
+                color: category.id == selected ? Colors.white : Colors.black38),
           ),
-          avatar: Icon(
-            category.icon,
-            size: 16.0,
-            color: category.label == selected ? Colors.white : Colors.black26,
-          ),
+          avatar: category.icon != null
+              ? Icon(
+                  category.icon,
+                  size: 16.0,
+                  color:
+                      category.id == selected ? Colors.white : Colors.black26,
+                )
+              : null,
           backgroundColor:
-              category.label == selected ? Colors.blue : Color(0xfff1f1f1),
+              category.id == selected ? Colors.blue : Color(0xfff1f1f1),
           onPressed: () {
-            _expenseClaimBloc.selectCategory(category.label);
+            _expenseClaimBloc.selectCategory(category.id);
           },
         ),
       );
@@ -293,25 +312,19 @@ class _NewExpensePageState extends State<NewExpensePage> {
                       );
                     }),
               ),
-              SizedBox(height: 5.0),
-              Text(
-                state.hasError ? state.errorText : '',
-                style: TextStyle(color: primaryErrorColor, fontSize: 12.0),
-              ),
+              _buildErrorFormLabel(state),
             ],
           ),
         ),
       );
 
   Widget _buildDescription() => FormField(validator: (String description) {
-        if (description == null)
-          return "Description must be at least 5 characters long";
-        if (description.length < 5)
+        if (description == null || ((description?.length ?? 0) < 5))
           return "Description must be at least 5 characters long";
         return null;
       }, builder: (FormFieldState state) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -344,11 +357,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
                   ),
                 ),
               ),
-              SizedBox(height: 5.0),
-              Text(
-                state.hasError ? state.errorText : '',
-                style: TextStyle(color: primaryErrorColor, fontSize: 12.0),
-              ),
+              _buildErrorFormLabel(state),
             ],
           ),
         );
@@ -362,8 +371,8 @@ class _NewExpensePageState extends State<NewExpensePage> {
             _buildFieldLabel('Cost'),
             StreamBuilder<String>(
                 stream: _expenseClaimBloc.selectedCurrency,
-                builder: (context, snapshot) {
-                  String selected = snapshot.data ?? 'Euro';
+                builder: (context, selectedCurrencySnapshot) {
+                  String selected = selectedCurrencySnapshot?.data;
 
                   return Container(
                     height: 72.0,
@@ -390,15 +399,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
                               decoration: InputDecoration(
                                 hintText: 'Net',
                                 border: InputBorder.none,
-                                suffixIcon: Icon(
-                                  selected == 'Euro'
-                                      ? FontAwesomeIcons.euroSign
-                                      : selected == 'Dolar'
-                                          ? FontAwesomeIcons.dollarSign
-                                          : FontAwesomeIcons.dollarSign,
-                                  size: 16.0,
-                                  color: Colors.black38,
-                                ),
                               ),
                             ),
                           ),
@@ -433,24 +433,12 @@ class _NewExpensePageState extends State<NewExpensePage> {
                                     decoration: InputDecoration(
                                       hintText: 'Gross',
                                       border: InputBorder.none,
-                                      suffixIcon: Icon(
-                                        selected == 'Euro'
-                                            ? FontAwesomeIcons.euroSign
-                                            : selected == 'Dolar'
-                                                ? FontAwesomeIcons.dollarSign
-                                                : FontAwesomeIcons.dollarSign,
-                                        size: 16.0,
-                                        color: Colors.black38,
-                                      ),
                                     ),
+                                    onChanged: (value) =>
+                                        state.didChange(value),
                                   ),
                                 ),
-                                SizedBox(height: 5.0),
-                                Text(
-                                  state.hasError ? state.errorText : '',
-                                  style: TextStyle(
-                                      color: primaryErrorColor, fontSize: 12.0),
-                                ),
+                                _buildErrorFormLabel(state),
                               ],
                             ),
                           ),
@@ -460,12 +448,25 @@ class _NewExpensePageState extends State<NewExpensePage> {
                         ),
                         Expanded(
                           child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: snapshot?.data ?? 'Euro',
-                              items: currencies,
-                              onChanged: _expenseClaimBloc.selectCurrency,
-                              isExpanded: true,
-                            ),
+                            child: StreamBuilder<List<Currency>>(
+                                stream: repository.currencies,
+                                initialData: <Currency>[],
+                                builder: (context, currenciesSnapshot) {
+                                  return DropdownButton<String>(
+                                    hint: Text("Currency"),
+                                    value: selectedCurrencySnapshot?.data,
+                                    items: currenciesSnapshot.data
+                                        .where((currency) =>
+                                            currency.hidden == false)
+                                        .map((currency) => DropdownMenuItem(
+                                              child: Text(currency.iso),
+                                              value: currency.id,
+                                            ))
+                                        .toList(),
+                                    onChanged: _expenseClaimBloc.selectCurrency,
+                                    isExpanded: true,
+                                  );
+                                }),
                           ),
                         ),
                       ],
@@ -477,7 +478,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
       );
 
   Widget _buildFieldLabel(String label) => Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Text(
           label,
           style: Theme.of(context).textTheme.subtitle,
@@ -495,15 +496,12 @@ class _NewExpensePageState extends State<NewExpensePage> {
             builder: (FormFieldState state) => Column(
               children: <Widget>[
                 _buildAttachmentList(attachmentsSnapshot.data),
-                SizedBox(height: 5.0),
-                Text(
-                  state.hasError ? state.errorText : '',
-                  style: TextStyle(color: primaryErrorColor, fontSize: 12.0),
-                ),
+                _buildErrorFormLabel(state),
                 _expenseClaimBloc.multipleAttachments
                     ? _buildButton(
                         'ADD ATTACHMENTS', () => _selectAttachments())
                     : Container(),
+                SizedBox(height: 8.0),
               ],
             ),
           ),
@@ -577,6 +575,18 @@ class _NewExpensePageState extends State<NewExpensePage> {
           onPressed: () => _validateAndUpload(),
         ),
       );
+
+  Widget _buildErrorFormLabel(FormFieldState state) => state.hasError
+      ? Column(
+          children: <Widget>[
+            SizedBox(height: 5.0),
+            Text(
+              state.errorText,
+              style: TextStyle(color: primaryErrorColor, fontSize: 12.0),
+            ),
+          ],
+        )
+      : Container();
 
   void _selectAttachments({String name}) async {
     showModalBottomSheet<void>(
@@ -656,10 +666,10 @@ List<DropdownMenuItem<String>> countries =
               value: countryName,
             ))
         .toList();
-List<ExpenseCategory> categories = [
-  ExpenseCategory(icon: Icons.directions_car, label: 'Transport'),
-  ExpenseCategory(icon: Icons.fastfood, label: 'Food'),
-  ExpenseCategory(icon: Icons.attach_money, label: 'Other'),
+List<Category> categories = [
+  Category(icon: Icons.directions_car, name: 'Transport', eg: ""),
+  Category(icon: Icons.fastfood, name: 'Food', eg: ""),
+  Category(icon: Icons.attach_money, name: 'Other', eg: ""),
 ];
 List<DropdownMenuItem<String>> currencies = ['Euro', 'Dollars']
     .map((currency) => DropdownMenuItem(
@@ -667,13 +677,6 @@ List<DropdownMenuItem<String>> currencies = ['Euro', 'Dollars']
           value: currency,
         ))
     .toList();
-
-class ExpenseCategory {
-  final IconData icon;
-  final String label;
-
-  ExpenseCategory({@required this.icon, @required this.label});
-}
 
 // [
 // Container(

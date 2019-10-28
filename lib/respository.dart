@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_claims_app/blocs/login_bloc.dart';
-import 'package:expense_claims_app/models/category.dart';
-import 'package:expense_claims_app/models/country.dart';
-import 'package:expense_claims_app/models/currency.dart';
+import 'package:expense_claims_app/models/category_model.dart';
+import 'package:expense_claims_app/models/country_model.dart';
+import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,14 +29,21 @@ class Repository {
       _currenciesController.stream;
   ValueObservable<List<Category>> get categories =>
       _categoriesController.stream;
+  ValueObservable<String> get lastSelectedCountry =>
+      _lastSelectedCountryController.stream;
+  ValueObservable<String> get lastSelectedCurrency =>
+      _lastSelectedCurrencyController.stream;
+
   List<StreamSubscription> _streamSubscriptions = [];
 
   // CONTROLLERS
   final _countriesController = BehaviorSubject<List<Country>>();
   final _currenciesController = BehaviorSubject<List<Currency>>();
   final _categoriesController = BehaviorSubject<List<Category>>();
+  final _lastSelectedCountryController = BehaviorSubject<String>();
+  final _lastSelectedCurrencyController = BehaviorSubject<String>();
 
-  void initUserId(String userId) => _userId;
+  void initUserId(String userId) => _userId = userId;
 
   void init() {
     _countriesController.add([]);
@@ -88,36 +95,66 @@ class Repository {
     return null;
   }
 
+  void updateLastSelectedCountry(String countryId) => _firestore
+          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .document(LAST_SELECTED_DOC)
+          .setData({
+        LAST_SELECTED_COUNTRY: countryId,
+      }, merge: true);
+
+  void updateLastSelectedCurrency(String currencyId) => _firestore
+          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .document(LAST_SELECTED_DOC)
+          .setData({
+        LAST_SELECTED_CURRENCY: currencyId,
+      }, merge: true);
+
   // LOAD
   void loadSettings() {
     _listenToCountriesChanges();
     _listenToCurrenciesChanges();
     _listenToCategoriesChanges();
+    _loadLastSelected();
   }
 
-  void _listenToCountriesChanges() =>
-      _firestore.collection(COUNTRIES_KEY).snapshots().listen((snapshot) {
+  void _listenToCountriesChanges() => _streamSubscriptions.add(
+          _firestore.collection(COUNTRIES_KEY).snapshots().listen((snapshot) {
         List<Country> countries = snapshot.documents
             .map((doc) => Country.fromJson(doc.data, id: doc.documentID))
             .toList();
         _countriesController.add(countries);
-      });
+      }));
 
-  void _listenToCurrenciesChanges() =>
-      _firestore.collection(CURRENCIES_KEY).getDocuments().then((snapshot) {
+  void _listenToCurrenciesChanges() => _streamSubscriptions.add(
+          _firestore.collection(CURRENCIES_KEY).snapshots().listen((snapshot) {
         List<Currency> currencies = snapshot.documents
             .map((doc) => Currency.fromJson(doc.data, id: doc.documentID))
             .toList();
         _currenciesController.add(currencies);
-      });
+      }));
 
-  void _listenToCategoriesChanges() =>
-      _firestore.collection(CATEGORIES_KEY).getDocuments().then((snapshot) {
+  void _listenToCategoriesChanges() => _streamSubscriptions.add(
+          _firestore.collection(CATEGORIES_KEY).snapshots().listen((snapshot) {
         List<Category> categories = snapshot.documents
             .map((doc) => Category.fromJson(doc.data, id: doc.documentID))
             .toList();
         _categoriesController.add(categories);
-      });
+      }));
+
+  void _loadLastSelected() => _streamSubscriptions.add(_firestore
+          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .document(LAST_SELECTED_DOC)
+          .snapshots()
+          .listen((docSnapshot) {
+        _lastSelectedCountryController.add(
+            docSnapshot.data.containsKey(LAST_SELECTED_COUNTRY)
+                ? docSnapshot.data[LAST_SELECTED_COUNTRY]
+                : null);
+        _lastSelectedCurrencyController.add(
+            docSnapshot.data.containsKey(LAST_SELECTED_CURRENCY)
+                ? docSnapshot.data[LAST_SELECTED_CURRENCY]
+                : null);
+      }));
 
   // AUTH
   Future<String> signUp(
@@ -153,6 +190,12 @@ class Repository {
     return AuthState.ERROR;
   }
 
+  Country getCountryWithId(String countryId) => countries?.value
+      ?.singleWhere((country) => country?.id ?? "" == countryId);
+
+  Currency getCurrencyWithId(String currencyId) => currencies?.value
+      ?.singleWhere((currency) => currency?.id ?? "" == currencyId);
+
   /// Function that recovers the password given an email
   /// If the recovery fails it returns FALSE if not TRUE
   Future<bool> recoverPassword({@required String email}) async {
@@ -168,6 +211,8 @@ class Repository {
     _categoriesController.close();
     _currenciesController.close();
     _countriesController.close();
+    _lastSelectedCountryController.close();
+    _lastSelectedCurrencyController.close();
 
     _streamSubscriptions
         .forEach((streamSubscription) => streamSubscription.cancel());
@@ -183,3 +228,12 @@ const String EXPENSE_CLAIMS_KEY = "expense_claims";
 const String COUNTRIES_KEY = "countries";
 const String CURRENCIES_KEY = "currencies";
 const String CATEGORIES_KEY = "categories";
+const String USERS_KEY = "users";
+const String EDITABLE_INFO_KEY = "editable_info";
+
+// FIRESTORE DOCUMENT KEYS
+const String LAST_SELECTED_DOC = "last_selected";
+
+// LAST SELECTED ATRIBUTES
+const String LAST_SELECTED_COUNTRY = "country";
+const String LAST_SELECTED_CURRENCY = "currency";
