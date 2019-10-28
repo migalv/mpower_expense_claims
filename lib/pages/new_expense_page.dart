@@ -8,6 +8,7 @@ import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/respository.dart';
+import 'package:expense_claims_app/widgets/dropdown_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -99,12 +100,13 @@ class _NewExpensePageState extends State<NewExpensePage> {
                   : Container(),
               _buildDescription(),
               _buildCost(),
-              // _buildDropdown(
-              //     "Aproved by",
-              //     'Someone',
-              //     _expenseClaimBloc.selectedCategory,
-              //     categories,
-              //     _expenseClaimBloc.selectCategory),
+              _buildDropdown(
+                _expenseClaimBloc.approvedByValidator,
+                _expenseClaimBloc.selectApprover,
+                _expenseClaimBloc.selectedApprovedBy,
+                repository.approvers,
+                hint: "Select the approver",
+              ),
               _buildAttachmentsTile(),
               _buildDoneButton(),
             ],
@@ -477,6 +479,34 @@ class _NewExpensePageState extends State<NewExpensePage> {
         ),
       );
 
+  Widget _buildDropdown(
+          String Function(String) validator,
+          Function(String) selectFunction,
+          Stream selectedValueStream,
+          Stream itemsStream,
+          {String hint}) =>
+      StreamBuilder<String>(
+          stream: selectedValueStream,
+          builder: (context, selectedValueSnapshot) {
+            return StreamBuilder(
+                stream: itemsStream,
+                initialData: <DropdownMenuItem>[],
+                builder: (context, itemsSnapshot) {
+                  return DropdownFormField(
+                    validator: validator,
+                    onChanged: selectFunction,
+                    value: selectedValueSnapshot.data,
+                    items: itemsSnapshot?.data
+                            ?.map((item) => DropdownMenuItem(
+                                  child: Text(item.name),
+                                  value: item.id,
+                                ))
+                            ?.toList() ??
+                        <DropdownMenuItem>[],
+                  );
+                });
+          });
+
   Widget _buildFieldLabel(String label) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Text(
@@ -658,25 +688,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
     }
   }
 }
-
-List<DropdownMenuItem<String>> countries =
-    ['Spain', 'Switzerland', 'Zambia', 'Togo', 'Cameroon', 'China', 'Other']
-        .map((countryName) => DropdownMenuItem(
-              child: Text(countryName),
-              value: countryName,
-            ))
-        .toList();
-List<Category> categories = [
-  Category(icon: Icons.directions_car, name: 'Transport', eg: ""),
-  Category(icon: Icons.fastfood, name: 'Food', eg: ""),
-  Category(icon: Icons.attach_money, name: 'Other', eg: ""),
-];
-List<DropdownMenuItem<String>> currencies = ['Euro', 'Dollars']
-    .map((currency) => DropdownMenuItem(
-          child: Text(currency),
-          value: currency,
-        ))
-    .toList();
 
 // [
 // Container(

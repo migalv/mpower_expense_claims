@@ -25,6 +25,7 @@ dependencies:
   flutter_masked_text: 0.8.0
   firebase_storage: 3.0.6
   scrollable_bottom_sheet: ^0.2.1
+  auto_size_text: ^2.1.0
 
 dev_dependencies:
   flutter_test:

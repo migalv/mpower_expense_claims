@@ -75,8 +75,8 @@ class NewExpenseBloc {
     _selectedCurrencyController.add(currencyId);
   }
 
-  void selectApprovedBy(String approvedBy) =>
-      _selectedApprovedByController.add(approvedBy);
+  void selectApprover(String approvedById) =>
+      _selectedApprovedByController.add(approvedById);
   void selectInvoiceDate(DateTime invoiceDate) =>
       _invoiceDateController.add(invoiceDate);
 
@@ -152,6 +152,9 @@ class NewExpenseBloc {
 
   String dateValidator(ValueObservable dateStream) =>
       dateStream.value == null ? "Select a date" : null;
+
+  String approvedByValidator(String value) =>
+      selectedApprovedBy.value == null ? "Select an approver" : null;
 
   void dispose() {
     _selectedCountryController.close();

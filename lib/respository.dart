@@ -6,6 +6,7 @@ import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
+import 'package:expense_claims_app/models/user_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,6 +30,7 @@ class Repository {
       _currenciesController.stream;
   ValueObservable<List<Category>> get categories =>
       _categoriesController.stream;
+  ValueObservable<List<User>> get approvers => _approversController.stream;
   ValueObservable<String> get lastSelectedCountry =>
       _lastSelectedCountryController.stream;
   ValueObservable<String> get lastSelectedCurrency =>
@@ -42,6 +44,7 @@ class Repository {
   final _categoriesController = BehaviorSubject<List<Category>>();
   final _lastSelectedCountryController = BehaviorSubject<String>();
   final _lastSelectedCurrencyController = BehaviorSubject<String>();
+  final _approversController = BehaviorSubject<List<User>>();
 
   void initUserId(String userId) => _userId = userId;
 
@@ -115,6 +118,7 @@ class Repository {
     _listenToCurrenciesChanges();
     _listenToCategoriesChanges();
     _loadLastSelected();
+    _listenToApproversChanges();
   }
 
   void _listenToCountriesChanges() => _streamSubscriptions.add(
@@ -139,6 +143,19 @@ class Repository {
             .map((doc) => Category.fromJson(doc.data, id: doc.documentID))
             .toList();
         _categoriesController.add(categories);
+      }));
+
+  void _listenToApproversChanges() => _streamSubscriptions.add(_firestore
+          .collection(USERS_KEY)
+          .document(userId)
+          .snapshots()
+          .listen((snapshot) {
+        Map approversMapList = snapshot.data[APPROVERS];
+        List<User> approvers = [];
+        approversMapList.forEach((approverId, map) {
+          approvers.add(User.fromJson(map, id: approverId));
+        });
+        _approversController.add(approvers);
       }));
 
   void _loadLastSelected() => _streamSubscriptions.add(_firestore
@@ -213,6 +230,7 @@ class Repository {
     _countriesController.close();
     _lastSelectedCountryController.close();
     _lastSelectedCurrencyController.close();
+    _approversController.close();
 
     _streamSubscriptions
         .forEach((streamSubscription) => streamSubscription.cancel());
@@ -233,6 +251,9 @@ const String EDITABLE_INFO_KEY = "editable_info";
 
 // FIRESTORE DOCUMENT KEYS
 const String LAST_SELECTED_DOC = "last_selected";
+
+// USER ATRIBUTES
+const String APPROVERS = "approvers";
 
 // LAST SELECTED ATRIBUTES
 const String LAST_SELECTED_COUNTRY = "country";

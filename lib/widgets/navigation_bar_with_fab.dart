@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class NavigationBarWithFAB extends StatefulWidget {
   const NavigationBarWithFAB({
@@ -70,10 +71,12 @@ class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
           children: [
             Expanded(
               child: FlatButton.icon(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
                 label: AnimatedBuilder(
                   animation: _intTweenText,
                   builder: (context, child) {
-                    return Text(
+                    return AutoSizeText(
                       widget._label1,
                       style: Theme.of(context).textTheme.body2.copyWith(
                             fontSize: _intTweenText.value.toDouble(),
@@ -112,10 +115,12 @@ class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
               ),
             ),
             Container(
-              width: 56.0,
+              width: 40.0,
             ),
             Expanded(
               child: FlatButton.icon(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
                 label: AnimatedBuilder(
                   animation: _intTweenText2,
                   builder: (context, child) {
