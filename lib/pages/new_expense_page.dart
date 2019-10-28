@@ -9,7 +9,6 @@ import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
 import 'package:expense_claims_app/respository.dart';
-import 'package:expense_claims_app/widgets/dropdown_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -35,9 +34,9 @@ class _NewExpensePageState extends State<NewExpensePage> {
   // Text Controllers
   TextEditingController _descriptionController = TextEditingController();
   TextEditingController _grossController =
-      MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
+      MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
   TextEditingController _netController =
-      MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
+      MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
 
   // Focus Nodes
   FocusNode _descriptionFocusNode = FocusNode();
@@ -46,13 +45,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   // Keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  @override
-  void initState() {
-    _grossController.clear();
-    _netController.clear();
-    super.initState();
-  }
 
   @override
   void didChangeDependencies() {
@@ -366,59 +358,56 @@ class _NewExpensePageState extends State<NewExpensePage> {
           children: <Widget>[
             _buildFieldLabel('Cost'),
             StreamBuilder<String>(
-                stream: _expenseClaimBloc.selectedCurrency,
-                builder: (context, selectedCurrencySnapshot) {
-                  String selected = selectedCurrencySnapshot?.data;
-
-                  return Container(
-                    height: 72.0,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          child: Container(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            decoration: BoxDecoration(
-                              color: Color(0xfff1f1f1),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8.0)),
-                            ),
-                            child: TextFormField(
-                              controller: _netController,
-                              focusNode: _netFocusNode,
-                              textInputAction: TextInputAction.next,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: <TextInputFormatter>[
-                                WhitelistingTextInputFormatter.digitsOnly,
-                              ],
-                              decoration: InputDecoration(
-                                hintText: 'Net',
-                                border: InputBorder.none,
-                              ),
-                            ),
+              stream: _expenseClaimBloc.selectedCurrency,
+              builder: (context, selectedCurrencySnapshot) => Container(
+                height: 72.0,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        decoration: BoxDecoration(
+                          color: Color(0xfff1f1f1),
+                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                        ),
+                        child: TextFormField(
+                          controller: _netController,
+                          focusNode: _netFocusNode,
+                          textInputAction: TextInputAction.next,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            WhitelistingTextInputFormatter.digitsOnly,
+                          ],
+                          decoration: InputDecoration(
+                            hintText: 'Net',
+                            border: InputBorder.none,
                           ),
                         ),
-                        Container(
-                          width: 16.0,
-                        ),
-                        Expanded(
-                          child: FormField(
-                            validator: (value) => value == null || value == ""
-                                ? "Enter an amount"
-                                : null,
-                            builder: (FormFieldState state) => Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  decoration: BoxDecoration(
-                                    color: Color(0xfff1f1f1),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(8.0)),
-                                  ),
-                                  child: TextFormField(
+                      ),
+                    ),
+                    Container(
+                      width: 16.0,
+                    ),
+                    Expanded(
+                      child: FormField(
+                        validator: (value) => value == null || value == ""
+                            ? "Enter an amount"
+                            : null,
+                        builder: (FormFieldState state) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              decoration: BoxDecoration(
+                                color: Color(0xfff1f1f1),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8.0)),
+                              ),
+                              child: Row(
+                                children: <Widget>[
+                                  TextFormField(
                                     controller: _grossController,
                                     focusNode: _grossFocusNode,
                                     textInputAction: TextInputAction.next,
@@ -433,46 +422,47 @@ class _NewExpensePageState extends State<NewExpensePage> {
                                     onChanged: (value) =>
                                         state.didChange(value),
                                   ),
-                                ),
-                                _buildErrorFormLabel(state),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
+                            _buildErrorFormLabel(state),
+                          ],
                         ),
-                        Container(
-                          width: 16.0,
-                        ),
-                        Expanded(
-                          child: DropdownButtonHideUnderline(
-                            child: StreamBuilder<List<Currency>>(
-                                stream: repository.currencies,
-                                initialData: <Currency>[],
-                                builder: (context, currenciesSnapshot) {
-                                  return DropdownButton<String>(
-                                    hint: Text("Currency"),
-                                    value: selectedCurrencySnapshot?.data,
-                                    items: currenciesSnapshot.data
-                                        .where(
-                                          (currency) =>
-                                              currency.hidden == false,
-                                        )
-                                        .map(
-                                          (currency) => DropdownMenuItem(
-                                            child: Text(currency.iso),
-                                            value: currency.id,
-                                          ),
-                                        )
-                                        .toList(),
-                                    onChanged: _expenseClaimBloc.selectCurrency,
-                                    isExpanded: true,
-                                  );
-                                }),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  );
-                }),
+                    Container(
+                      width: 16.0,
+                    ),
+                    Expanded(
+                      child: DropdownButtonHideUnderline(
+                        child: StreamBuilder<List<Currency>>(
+                            stream: repository.currencies,
+                            initialData: <Currency>[],
+                            builder: (context, currenciesSnapshot) {
+                              return DropdownButton<String>(
+                                hint: Text("Currency"),
+                                value: selectedCurrencySnapshot?.data,
+                                items: currenciesSnapshot.data
+                                    .where(
+                                      (currency) => currency.hidden == false,
+                                    )
+                                    .map(
+                                      (currency) => DropdownMenuItem(
+                                        child: Text(currency.iso),
+                                        value: currency.id,
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: _expenseClaimBloc.selectCurrency,
+                                isExpanded: true,
+                              );
+                            }),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       );
