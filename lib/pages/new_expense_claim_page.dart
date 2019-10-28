@@ -2,9 +2,10 @@ import 'dart:io';
 
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
-import 'package:expense_claims_app/blocs/new_expense_claim_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/widgets/dropdown_form_field.dart';
+import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
+import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -24,7 +25,7 @@ class NewExpenseClaimPage extends StatefulWidget {
 
 class _NewExpenseClaimPageState extends State<NewExpenseClaimPage> {
   // Bloc
-  NewExpenseClaimBloc _expenseClaimBloc;
+  NewExpenseBloc _expenseClaimBloc;
 
   // Text Controllers
   TextEditingController _descriptionController = TextEditingController();
@@ -44,7 +45,7 @@ class _NewExpenseClaimPageState extends State<NewExpenseClaimPage> {
 
   @override
   void didChangeDependencies() {
-    _expenseClaimBloc = Provider.of<NewExpenseClaimBloc>(context);
+    _expenseClaimBloc = Provider.of<NewExpenseBloc>(context);
     super.didChangeDependencies();
   }
 

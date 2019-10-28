@@ -22,9 +22,9 @@ dependencies:
   datetime_picker_formfield: 0.4.3
   image_picker: 0.6.1+8
   permission_handler: 3.3.0
-  flutter_fab_dialer: 0.1.1
   flutter_masked_text: 0.8.0
   firebase_storage: 3.0.6
+  scrollable_bottom_sheet: ^0.2.1
 
 dev_dependencies:
   flutter_test:

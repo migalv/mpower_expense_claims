@@ -1,13 +1,13 @@
-import 'dart:async';
 import 'dart:io';
 
-import 'package:expense_claims_app/models/expense_claim.dart';
+import 'package:expense_claims_app/models/expense_claim_model.dart';
+import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/respository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
 
-class NewExpenseClaimBloc {
+class NewExpenseBloc {
   // Streams
   ValueObservable<String> get selectedCountry =>
       _selectedCountryController.stream;
@@ -40,7 +40,7 @@ class NewExpenseClaimBloc {
   bool _multipleAttachments;
   bool get multipleAttachments => _multipleAttachments;
 
-  NewExpenseClaimBloc({@required this.expenseType}) {
+  NewExpenseBloc({@required this.expenseType}) {
     switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
         _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
@@ -107,7 +107,7 @@ class NewExpenseClaimBloc {
     ExpenseClaim newExpenseClaim = ExpenseClaim(
       country: selectedCountry.value,
       category: selectedCategory.value,
-      expenseDate: expenseDate.value,
+      date: expenseDate.value,
       description: description,
       currency: selectedCurrency.value,
       gross: gross,
@@ -118,6 +118,7 @@ class NewExpenseClaimBloc {
     repository.uploadNewExpenseClaim(newExpenseClaim, _attachments);
   }
 
+  // VALIDATORS
   String attachmentsValidator() {
     switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
@@ -132,6 +133,15 @@ class NewExpenseClaimBloc {
     return null;
   }
 
+  String categoryValidator(String value) =>
+      selectedCategory.value == null ? "Select a category" : null;
+
+  String countryValidator(String value) =>
+      selectedCountry.value == null ? "Select a country" : null;
+
+  String dateValidator(ValueObservable dateStream) =>
+      dateStream.value == null ? "Select a date" : null;
+
   void dispose() {
     _selectedCountryController.close();
     _selectedCategoryController.close();
@@ -141,11 +151,6 @@ class NewExpenseClaimBloc {
     _invoiceDateController.close();
     _selectedApprovedByController.close();
   }
-}
-
-enum ExpenseType {
-  EXPENSE_CLAIM,
-  INVOICE,
 }
 
 const String ATTACHMENTS_EXPENSE_CLAIM_NAME = "Reciep";

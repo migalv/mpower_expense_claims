@@ -6,12 +6,13 @@ import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/models/category.dart';
 import 'package:expense_claims_app/models/country.dart';
 import 'package:expense_claims_app/models/currency.dart';
-import 'package:expense_claims_app/models/expense_claim.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
+
+import 'models/expense_claim_model.dart';
 
 class Repository {
   String _userId;

@@ -1,36 +1,33 @@
-class Invoice {
+abstract class Expense {
   final String id;
+  final String approvedBy;
   final String country;
   final String category;
-  final DateTime date;
-  final DateTime dueDate;
-  final String description;
   final String currency;
+  final DateTime date;
+  final String description;
   final double gross;
   final double net;
   final int vat;
-  final String approvedBy;
 
-  Invoice({
+  Expense({
     this.id,
+    this.approvedBy,
     this.country,
     this.category,
-    this.date,
-    this.dueDate,
-    this.description,
     this.currency,
+    this.date,
+    this.description,
     this.gross,
     this.net,
     this.vat,
-    this.approvedBy,
   });
 
-  Invoice.fromJson(Map<String, dynamic> json, {String id})
+  Expense.fromJson(Map<String, dynamic> json, String id)
       : this.id = id,
         this.country = json[COUNTRY_KEY],
         this.category = json[CATEGORY_KEY],
         this.date = DateTime.fromMillisecondsSinceEpoch(json[DATE_KEY]),
-        this.dueDate = DateTime.fromMillisecondsSinceEpoch(json[DUE_DATE_KEY]),
         this.description = json[DESCRIPTION_KEY],
         this.currency = json[CURRENCY_KEY],
         this.gross = json[GROSS_KEY],
@@ -40,16 +37,15 @@ class Invoice {
 
   Map<String, dynamic> toJson() => {
         'id': this.id,
+        APPROVED_BY_KEY: this.approvedBy,
         COUNTRY_KEY: this.country,
         CATEGORY_KEY: this.category,
-        DATE_KEY: this.date.millisecondsSinceEpoch,
-        DUE_DATE_KEY: this.dueDate.millisecondsSinceEpoch,
-        DESCRIPTION_KEY: this.description,
         CURRENCY_KEY: this.currency,
+        DATE_KEY: this.date.millisecondsSinceEpoch,
+        DESCRIPTION_KEY: this.description,
         GROSS_KEY: this.gross,
         NET_KEY: this.net,
         VAT_KEY: this.vat,
-        APPROVED_BY_KEY: this.approvedBy,
       };
 
   static const String COUNTRY_KEY = "country";
@@ -62,4 +58,9 @@ class Invoice {
   static const String NET_KEY = "net";
   static const String VAT_KEY = "vat";
   static const String APPROVED_BY_KEY = "approved_by";
+}
+
+enum ExpenseType {
+  EXPENSE_CLAIM,
+  INVOICE,
 }

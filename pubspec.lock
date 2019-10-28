@@ -90,13 +90,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_fab_dialer:
-    dependency: "direct main"
-    description:
-      name: flutter_fab_dialer
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.1"
   flutter_masked_text:
     dependency: "direct main"
     description:
@@ -214,6 +207,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.22.2"
+  scrollable_bottom_sheet:
+    dependency: "direct main"
+    description:
+      name: scrollable_bottom_sheet
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.1"
   sky_engine:
     dependency: transitive
     description: flutter
