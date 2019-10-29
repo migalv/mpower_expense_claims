@@ -30,6 +30,12 @@ class Category {
     return "Category: {\n\tid: $id,\n\t$NAME_KEY: $name,\n\t$HIDDEN_KEY: $hidden,\n\t$EXAMPLE_KEY: $eg,\n}";
   }
 
+  @override
+  bool operator ==(category) => category is Category && category.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
+
   static const Map<String, IconData> categoryIcons = {
     "Transport": Icons.directions_car,
     "Travel": Icons.card_travel,

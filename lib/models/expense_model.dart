@@ -1,3 +1,6 @@
+import 'package:expense_claims_app/models/expense_claim_model.dart';
+import 'package:expense_claims_app/models/invoice_model.dart';
+
 abstract class Expense {
   final String id;
   final String approvedBy;
@@ -23,7 +26,7 @@ abstract class Expense {
     this.vat,
   });
 
-  Expense.fromJson(Map<String, dynamic> json, String id)
+  Expense.fromJson(Map<String, dynamic> json, {String id})
       : this.id = id,
         this.country = json[COUNTRY_KEY],
         this.category = json[CATEGORY_KEY],
@@ -46,6 +49,22 @@ abstract class Expense {
         NET_KEY: this.net,
         VAT_KEY: this.vat,
       };
+
+  @override
+  bool operator ==(expense) => expense is Expense && expense.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() {
+    String expenseType;
+    if (this is ExpenseClaim)
+      expenseType = "Expense claim";
+    else if (this is Invoice) expenseType = "Invoice";
+
+    return "$expenseType: {\n\tid: $id,\n\tdescription: $description\n}";
+  }
 
   static const String COUNTRY_KEY = "country";
   static const String CATEGORY_KEY = "category";

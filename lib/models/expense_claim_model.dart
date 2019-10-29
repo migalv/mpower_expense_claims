@@ -25,8 +25,8 @@ class ExpenseClaim extends Expense {
           vat: vat,
         );
 
-  ExpenseClaim.fromJson(String id, final Map<String, dynamic> json)
-      : super.fromJson(json, id);
+  ExpenseClaim.fromJson(final Map<String, dynamic> json, {String id})
+      : super.fromJson(json, id: id);
 
   Map<String, dynamic> toJson() => super.toJson();
 }

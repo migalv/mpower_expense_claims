@@ -20,7 +20,7 @@ class NewExpenseBloc {
   ValueObservable<Map<String, File>> get attachments =>
       _attachmentsController.stream;
   ValueObservable<DateTime> get invoiceDate => _invoiceDateController.stream;
-  ValueObservable<User> get selectedApprover =>
+  ValueObservable<String> get selectedApprover =>
       _selectedApproverController.stream;
 
   // Controllers
@@ -30,7 +30,7 @@ class NewExpenseBloc {
   final _expenseDateController = BehaviorSubject<DateTime>();
   final _attachmentsController = BehaviorSubject<Map<String, File>>();
   final _invoiceDateController = BehaviorSubject<DateTime>();
-  final _selectedApproverController = BehaviorSubject<User>();
+  final _selectedApproverController = BehaviorSubject<String>();
 
   Map<String, File> _attachments = Map();
 
@@ -58,6 +58,8 @@ class NewExpenseBloc {
       selectCountry(repository.lastSelectedCountry.value);
     if (repository?.lastSelectedCurrency?.value != null)
       selectCurrency(repository.lastSelectedCurrency.value);
+    if (repository?.lastSelectedApprover?.value != null)
+      selectApprover(repository.lastSelectedApprover.value);
     selectExpenseDate(DateTime.now());
   }
 
@@ -76,8 +78,8 @@ class NewExpenseBloc {
     _selectedCurrencyController.add(currencyId);
   }
 
-  void selectApprover(User approver) =>
-      _selectedApproverController.add(approver);
+  void selectApprover(String approverId) =>
+      _selectedApproverController.add(approverId);
 
   void selectInvoiceDate(DateTime invoiceDate) =>
       _invoiceDateController.add(invoiceDate);
@@ -127,7 +129,7 @@ class NewExpenseBloc {
       currency: selectedCurrency.value,
       gross: gross,
       net: net,
-      approvedBy: selectedApprover.value.id,
+      approvedBy: selectedApprover.value,
     );
 
     repository.uploadNewExpenseClaim(newExpenseClaim, _attachments);

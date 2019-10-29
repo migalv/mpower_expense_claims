@@ -11,5 +11,11 @@ class User {
       : this.id = id,
         this.name = json[NAME_KEY];
 
+  @override
+  bool operator ==(user) => user is User && user.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
+
   static const String NAME_KEY = "name";
 }

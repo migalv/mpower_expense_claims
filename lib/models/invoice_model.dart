@@ -28,10 +28,10 @@ class Invoice extends Expense {
           vat: vat,
         );
 
-  Invoice.fromJson(String id, final Map<String, dynamic> json)
+  Invoice.fromJson(final Map<String, dynamic> json, {String id})
       : this.dueDate =
             DateTime.fromMillisecondsSinceEpoch(json[Expense.DUE_DATE_KEY]),
-        super.fromJson(json, id);
+        super.fromJson(json, id: id);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = super.toJson();

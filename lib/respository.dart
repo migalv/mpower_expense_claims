@@ -35,6 +35,10 @@ class Repository {
       _lastSelectedCountryController.stream;
   ValueObservable<String> get lastSelectedCurrency =>
       _lastSelectedCurrencyController.stream;
+  ValueObservable<String> get lastSelectedApprover =>
+      _lastSelectedApproverController.stream;
+  ValueObservable<List<ExpenseClaim>> get expenseClaims =>
+      _expenseClaimsController.stream;
 
   List<StreamSubscription> _streamSubscriptions = [];
 
@@ -44,8 +48,9 @@ class Repository {
   final _categoriesController = BehaviorSubject<List<Category>>();
   final _lastSelectedCountryController = BehaviorSubject<String>();
   final _lastSelectedCurrencyController = BehaviorSubject<String>();
+  final _lastSelectedApproverController = BehaviorSubject<String>();
+  final _expenseClaimsController = StreamController<List<ExpenseClaim>>();
   final _approversController = BehaviorSubject<List<User>>();
-
   void initUserId(String userId) => _userId = userId;
 
   void init() {
@@ -112,13 +117,21 @@ class Repository {
         LAST_SELECTED_CURRENCY: currencyId,
       }, merge: true);
 
+  void updateLastSelectedApprover(String approverId) => _firestore
+          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .document(LAST_SELECTED_DOC)
+          .setData({
+        LAST_SELECTED_APPROVER: approverId,
+      }, merge: true);
+
   // LOAD
   void loadSettings() {
     _listenToCountriesChanges();
     _listenToCurrenciesChanges();
     _listenToCategoriesChanges();
-    _loadLastSelected();
     _listenToApproversChanges();
+    _listenToExpenseClaimsChanges();
+    _loadLastSelected();
   }
 
   void _listenToCountriesChanges() => _streamSubscriptions.add(
@@ -152,10 +165,19 @@ class Repository {
           .listen((snapshot) {
         Map approversMap = snapshot.data[APPROVERS];
         List<User> approvers = [];
-        approversMap?.forEach((approverId, map) {
-          approvers.add(User.fromJson(map, id: approverId));
-        });
+        approversMap?.forEach((approverId, map) => approvers
+            .add(User.fromJson(map.cast<String, String>(), id: approverId)));
         _approversController.add(approvers);
+      }));
+
+  void _listenToExpenseClaimsChanges() => _streamSubscriptions.add(_firestore
+          .collection(EXPENSE_CLAIMS_KEY)
+          .snapshots()
+          .listen((snapshot) {
+        List<ExpenseClaim> expenseClaims = snapshot.documents
+            .map((doc) => ExpenseClaim.fromJson(doc.data, id: doc.documentID))
+            .toList();
+        _expenseClaimsController.add(expenseClaims);
       }));
 
   void _loadLastSelected() => _streamSubscriptions.add(_firestore
@@ -170,6 +192,10 @@ class Repository {
         _lastSelectedCurrencyController.add(
             (docSnapshot.data?.containsKey(LAST_SELECTED_CURRENCY) ?? false)
                 ? docSnapshot.data[LAST_SELECTED_CURRENCY]
+                : null);
+        _lastSelectedApproverController.add(
+            (docSnapshot.data?.containsKey(LAST_SELECTED_APPROVER) ?? false)
+                ? docSnapshot.data[LAST_SELECTED_APPROVER]
                 : null);
       }));
 
@@ -230,8 +256,9 @@ class Repository {
     _countriesController.close();
     _lastSelectedCountryController.close();
     _lastSelectedCurrencyController.close();
+    _lastSelectedApproverController.close();
+    _expenseClaimsController.close();
     _approversController.close();
-
     _streamSubscriptions
         .forEach((streamSubscription) => streamSubscription.cancel());
   }
@@ -258,3 +285,4 @@ const String APPROVERS = "approvers";
 // LAST SELECTED ATRIBUTES
 const String LAST_SELECTED_COUNTRY = "country";
 const String LAST_SELECTED_CURRENCY = "currency";
+const String LAST_SELECTED_APPROVER = "approver";

@@ -397,8 +397,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
                                 value: selectedCurrencySnapshot?.data,
                                 items: currenciesSnapshot.data
                                     .where(
-                                      (currency) => currency.hidden == false,
-                                    )
+                                        (currency) => currency.hidden == false)
                                     .map(
                                       (currency) => DropdownMenuItem(
                                         child: Text(currency.iso),
@@ -420,32 +419,41 @@ class _NewExpensePageState extends State<NewExpensePage> {
         ),
       );
 
-  Widget _buildApproverTile() => StreamBuilder(
-        stream: repository.approvers,
-        builder: (BuildContext context, AsyncSnapshot<List<User>> snapshot) =>
-            (snapshot?.data?.isEmpty ?? false)
-                ? Text("You don't have any approvers")
-                : DropdownButtonHideUnderline(
-                    child: StreamBuilder<User>(
-                      stream: _expenseClaimBloc.selectedApprover,
-                      builder: (context, snapshot) {
-                        return DropdownButton<User>(
-                          hint: Text("Select who will approve your Expense"),
-                          value: snapshot?.data,
-                          items: repository.approvers.value
-                              .map(
-                                (User user) => DropdownMenuItem(
-                                  child: Text(user.name),
-                                  value: user,
-                                ),
-                              )
-                              .toList(),
-                          onChanged: _expenseClaimBloc.selectApprover,
-                          isExpanded: true,
-                        );
-                      },
-                    ),
+  Widget _buildApproverTile() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: FormField(
+          validator: _expenseClaimBloc.approvedByValidator,
+          builder: (FormFieldState state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _buildFieldLabel("Approver"),
+              StreamBuilder(
+                stream: repository.approvers,
+                initialData: <User>[],
+                builder: (BuildContext context,
+                        AsyncSnapshot<List<User>> itemsSnapshot) =>
+                    DropdownButtonHideUnderline(
+                  child: StreamBuilder<String>(
+                    stream: _expenseClaimBloc.selectedApprover,
+                    builder: (context, selectedApproverSnapshot) {
+                      return DropdownButton<String>(
+                        hint: Text("Select who will approve your Expense"),
+                        value: selectedApproverSnapshot?.data,
+                        items: itemsSnapshot.data
+                            .map((User user) => DropdownMenuItem(
+                                child: Text(user.name), value: user.id))
+                            .toList(),
+                        onChanged: _expenseClaimBloc.selectApprover,
+                        isExpanded: true,
+                      );
+                    },
                   ),
+                ),
+              ),
+              _buildErrorFormLabel(state),
+            ],
+          ),
+        ),
       );
 
   Widget _buildFieldLabel(String label) => Padding(
