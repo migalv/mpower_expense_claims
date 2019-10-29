@@ -140,6 +140,7 @@ class NewExpenseBloc {
       net: net,
       approvedBy: selectedApprover.value,
       vat: vat,
+      createdBy: repository.userId,
     );
 
     repository.uploadNewExpenseClaim(newExpenseClaim, _attachments);

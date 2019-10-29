@@ -12,6 +12,7 @@ abstract class Expense {
   final double gross;
   final double net;
   final double vat;
+  final String createdBy;
 
   Expense({
     this.id,
@@ -24,6 +25,7 @@ abstract class Expense {
     this.gross,
     this.net,
     this.vat,
+    this.createdBy,
   });
 
   Expense.fromJson(Map<String, dynamic> json, {String id})
@@ -36,7 +38,8 @@ abstract class Expense {
         this.gross = json[GROSS_KEY],
         this.net = json[NET_KEY],
         this.vat = json[VAT_KEY],
-        this.approvedBy = json[APPROVED_BY_KEY];
+        this.approvedBy = json[APPROVED_BY_KEY],
+        this.createdBy = json[CREATED_BY_KEY];
 
   Map<String, dynamic> toJson() => {
         APPROVED_BY_KEY: this.approvedBy,
@@ -48,6 +51,7 @@ abstract class Expense {
         GROSS_KEY: this.gross,
         NET_KEY: this.net,
         VAT_KEY: this.vat,
+        CREATED_BY_KEY: this.createdBy
       };
 
   @override
@@ -76,6 +80,7 @@ abstract class Expense {
   static const String NET_KEY = "net";
   static const String VAT_KEY = "vat";
   static const String APPROVED_BY_KEY = "approved_by";
+  static const String CREATED_BY_KEY = "created_by";
 }
 
 enum ExpenseType {

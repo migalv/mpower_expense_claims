@@ -15,6 +15,7 @@ class Invoice extends Expense {
     double net,
     double vat,
     String approvedBy,
+    String createdBy,
   }) : super(
           id: id,
           approvedBy: approvedBy,
@@ -26,6 +27,7 @@ class Invoice extends Expense {
           gross: gross,
           net: net,
           vat: vat,
+          createdBy: createdBy,
         );
 
   Invoice.fromJson(final Map<String, dynamic> json, {String id})

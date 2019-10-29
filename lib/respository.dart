@@ -137,9 +137,24 @@ class Repository {
 
   void _setUpStream(String collection, StreamController streamController) {
     List list = [];
+    Query query;
 
-    _streamSubscriptions
-        .add(_firestore.collection(collection).snapshots().listen((snapshot) {
+    switch (collection) {
+      case EXPENSE_CLAIMS_KEY:
+        query = _firestore
+            .collection(collection)
+            .where("availableTo", arrayContains: userId);
+        break;
+      case INVOICES_KEY:
+        query = _firestore
+            .collection(collection)
+            .where("availableTo", arrayContains: userId);
+        break;
+      default:
+        query = _firestore.collection(collection);
+    }
+
+    _streamSubscriptions.add(query.snapshots().listen((snapshot) {
       switch (collection) {
         case COUNTRIES_KEY:
           list = snapshot.documents
@@ -281,6 +296,7 @@ final Repository repository = Repository();
 
 // FIRESTORE COLLECTION KEYS
 const String EXPENSE_CLAIMS_KEY = "expense_claims";
+const String INVOICES_KEY = "invoices";
 const String COUNTRIES_KEY = "countries";
 const String CURRENCIES_KEY = "currencies";
 const String CATEGORIES_KEY = "categories";
