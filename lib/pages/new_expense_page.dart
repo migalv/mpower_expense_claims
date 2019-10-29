@@ -78,17 +78,12 @@ class _NewExpensePageState extends State<NewExpensePage> {
               _buildTitle(),
               _buildCountry(),
               _buildCategory(),
-              _expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
-                  ? _buildDate("Date", _expenseClaimBloc.expenseDate,
-                      _expenseClaimBloc.selectExpenseDate)
-                  : Container(height: 0.0, width: 0.0),
+              _buildDate("Date", _expenseClaimBloc.expenseDate,
+                  _expenseClaimBloc.selectExpenseDate),
               _expenseClaimBloc.expenseType == ExpenseType.INVOICE
-                  ? _buildDate("Date", _expenseClaimBloc.invoiceDate,
-                      _expenseClaimBloc.selectInvoiceDate)
-                  : Container(),
-              _expenseClaimBloc.expenseType == ExpenseType.INVOICE
-                  ? _buildDate("Due date", _expenseClaimBloc.invoiceDate,
-                      _expenseClaimBloc.selectInvoiceDate)
+                  ? _buildDate("Due date", _expenseClaimBloc.selectedDueDate,
+                      _expenseClaimBloc.selectDueDate,
+                      lastDate: DateTime(2030))
                   : Container(),
               _buildDescription(),
               _buildCost(),
@@ -106,14 +101,20 @@ class _NewExpensePageState extends State<NewExpensePage> {
           children: <Widget>[
             Expanded(
               child: Text(
-                'New expense',
+                'New ' +
+                    (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
+                        ? "Expense claim"
+                        : "Invoice"),
                 style: Theme.of(context).textTheme.title,
               ),
             ),
             FlatButton(
               child: Text(
                 'Cancel',
-                style: TextStyle(color: Colors.blue),
+                style: Theme.of(context)
+                    .textTheme
+                    .button
+                    .copyWith(color: secondaryLightColor),
               ),
               onPressed: () => Navigator.pop(context),
             )
@@ -216,30 +217,27 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
       return Padding(
         padding: const EdgeInsets.only(right: 8.0),
-        child: Tooltip(
-          message: category.eg ?? "",
-          child: ActionChip(
-            label: Text(
-              category.name,
-              style: Theme.of(context).textTheme.body2.copyWith(
-                  color:
-                      category.id == selected ? Colors.white : Colors.black38),
-            ),
-            avatar: category.icon != null
-                ? Icon(
-                    category.icon,
-                    size: 16.0,
-                    color:
-                        category.id == selected ? Colors.white : Colors.black26,
-                  )
-                : null,
-            backgroundColor:
-                category.id == selected ? Colors.blue : Color(0xfff1f1f1),
-            onPressed: () {
-              _expenseClaimBloc.selectCategory(category.id);
-            },
-            pressElevation: 4.0,
+        child: ActionChip(
+          label: Text(
+            category.name,
+            style: Theme.of(context).textTheme.body2.copyWith(
+                color: category.id == selected ? Colors.white : Colors.black38),
           ),
+          avatar: category.icon != null
+              ? Icon(
+                  category.icon,
+                  size: 16.0,
+                  color:
+                      category.id == selected ? Colors.white : Colors.black26,
+                )
+              : null,
+          backgroundColor:
+              category.id == selected ? secondaryColor : Color(0xfff1f1f1),
+          onPressed: () {
+            _expenseClaimBloc.selectCategory(category.id);
+          },
+          pressElevation: 4.0,
+          tooltip: category.eg ?? "",
         ),
       );
     }).toList());
@@ -248,7 +246,8 @@ class _NewExpensePageState extends State<NewExpensePage> {
   }
 
   Widget _buildDate(String label, ValueObservable<DateTime> stream,
-          Function selectFunction) =>
+          Function selectFunction,
+          {DateTime lastDate}) =>
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: FormField(
@@ -263,7 +262,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
                     context: context,
                     initialDate: DateTime.now(),
                     firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
+                    lastDate: lastDate ?? DateTime.now(),
                   );
                   selectFunction(selectedDate);
                 },
@@ -587,9 +586,12 @@ class _NewExpensePageState extends State<NewExpensePage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),
           ),
-          color: Colors.blue,
+          color: secondaryLightColor,
           child: Text(
-            'Done',
+            'Create new ' +
+                (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
+                    ? "Expense claim"
+                    : "Invoice"),
             style: TextStyle(color: Colors.white),
           ),
           onPressed: () => _validateAndUpload(),
@@ -669,7 +671,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   void _validateAndUpload() {
     if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadNewExpenseClaim(
+      _expenseClaimBloc.uploadNewExpense(
         _descriptionController.text,
         _grossController.text,
         stringNet: _netController.text,

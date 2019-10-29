@@ -6,6 +6,8 @@ import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
+import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -39,6 +41,7 @@ class Repository {
       _lastSelectedApproverController.stream;
   ValueObservable<List<ExpenseClaim>> get expenseClaims =>
       _expenseClaimsController.stream;
+  ValueObservable<List<Invoice>> get invoices => _invoicesController.stream;
 
   List<StreamSubscription> _streamSubscriptions = [];
 
@@ -50,6 +53,7 @@ class Repository {
   final _lastSelectedCurrencyController = BehaviorSubject<String>();
   final _lastSelectedApproverController = BehaviorSubject<String>();
   final _expenseClaimsController = BehaviorSubject<List<ExpenseClaim>>();
+  final _invoicesController = BehaviorSubject<List<Invoice>>();
   final _approversController = BehaviorSubject<List<User>>();
   void initUserId(String userId) => _userId = userId;
 
@@ -60,13 +64,19 @@ class Repository {
   }
 
   // UPLOAD
-  void uploadNewExpenseClaim(
-      ExpenseClaim expenseClaim, Map<String, File> attachments) {
-    DocumentReference docRef =
-        _firestore.collection(EXPENSE_CLAIMS_KEY).document();
+  void uploadNewExpense(Expense expense, Map<String, File> attachments) {
+    String collection;
+    DocumentReference docRef;
 
-    docRef.setData(expenseClaim.toJson());
-
+    switch (expense.runtimeType) {
+      case ExpenseClaim:
+        collection = EXPENSE_CLAIMS_KEY;
+        break;
+      case Invoice:
+        collection = INVOICES_KEY;
+    }
+    docRef = _firestore.collection(collection).document();
+    docRef.setData(expense.toJson());
     _uploadAttachments(docRef.documentID, attachments);
   }
 
@@ -130,6 +140,7 @@ class Repository {
     _setUpStream(CURRENCIES_KEY, _currenciesController);
     _setUpStream(CATEGORIES_KEY, _categoriesController);
     _setUpStream(EXPENSE_CLAIMS_KEY, _expenseClaimsController);
+    _setUpStream(INVOICES_KEY, _invoicesController);
     _listenToApproversChanges();
     _listenToExpenseClaimsChanges();
     _loadLastSelected();
@@ -174,6 +185,11 @@ class Repository {
         case EXPENSE_CLAIMS_KEY:
           list = snapshot.documents
               .map((doc) => ExpenseClaim.fromJson(doc.data, id: doc.documentID))
+              .toList();
+          break;
+        case INVOICES_KEY:
+          list = snapshot.documents
+              .map((doc) => Invoice.fromJson(doc.data, id: doc.documentID))
               .toList();
           break;
       }
@@ -285,6 +301,7 @@ class Repository {
     _lastSelectedApproverController.close();
     _expenseClaimsController.close();
     _approversController.close();
+    _invoicesController.close();
     _streamSubscriptions
         .forEach((streamSubscription) => streamSubscription.cancel());
   }

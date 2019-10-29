@@ -1,5 +1,6 @@
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
+import 'package:flutter/material.dart';
 
 abstract class Expense {
   final String id;
@@ -13,19 +14,21 @@ abstract class Expense {
   final double net;
   final double vat;
   final String createdBy;
+  final List<String> availableTo;
 
   Expense({
     this.id,
-    this.approvedBy,
-    this.country,
-    this.category,
-    this.currency,
-    this.date,
-    this.description,
-    this.gross,
-    this.net,
-    this.vat,
+    @required this.approvedBy,
+    @required this.country,
+    @required this.category,
+    @required this.currency,
+    @required this.date,
+    @required this.description,
+    @required this.gross,
+    @required this.net,
+    @required this.vat,
     this.createdBy,
+    this.availableTo,
   });
 
   Expense.fromJson(Map<String, dynamic> json, {String id})
@@ -39,7 +42,8 @@ abstract class Expense {
         this.net = json[NET_KEY],
         this.vat = json[VAT_KEY],
         this.approvedBy = json[APPROVED_BY_KEY],
-        this.createdBy = json[CREATED_BY_KEY];
+        this.createdBy = json[CREATED_BY_KEY],
+        this.availableTo = json[AVAILABLE_TO].cast<String>();
 
   Map<String, dynamic> toJson() => {
         APPROVED_BY_KEY: this.approvedBy,
@@ -51,7 +55,8 @@ abstract class Expense {
         GROSS_KEY: this.gross,
         NET_KEY: this.net,
         VAT_KEY: this.vat,
-        CREATED_BY_KEY: this.createdBy
+        CREATED_BY_KEY: this.createdBy,
+        AVAILABLE_TO: this.availableTo,
       };
 
   @override
@@ -81,6 +86,7 @@ abstract class Expense {
   static const String VAT_KEY = "vat";
   static const String APPROVED_BY_KEY = "approved_by";
   static const String CREATED_BY_KEY = "created_by";
+  static const String AVAILABLE_TO = "availableTo";
 }
 
 enum ExpenseType {

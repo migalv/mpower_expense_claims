@@ -3,6 +3,7 @@ import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/pages/new_expense_page.dart';
 import 'package:expense_claims_app/respository.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
@@ -79,19 +80,29 @@ class _HomePageState extends State<HomePage>
         },
         children: <Widget>[
           StreamBuilder<List<ExpenseClaim>>(
-            stream: repository.expenseClaims,
-            initialData: <ExpenseClaim>[],
-            builder: (context, snapshot) {
-              return ListView(
-                children: snapshot.data.map((expense) => ExpenseTile(expense: expense,)).toList(),
-              );
-            }
-          ),
-          Center(
-            child: Container(
-              child: Text('Empty Body 3'),
-            ),
-          )
+              stream: repository.expenseClaims,
+              initialData: <ExpenseClaim>[],
+              builder: (context, snapshot) {
+                return snapshot.data.isNotEmpty
+                    ? ListView(
+                        children: snapshot.data
+                            .map((expense) => ExpenseTile(expense: expense))
+                            .toList(),
+                      )
+                    : Center(child: Text("You don't have any expense claims."));
+              }),
+          StreamBuilder<List<Invoice>>(
+              stream: repository.invoices,
+              initialData: <Invoice>[],
+              builder: (context, snapshot) {
+                return snapshot.data.isNotEmpty
+                    ? ListView(
+                        children: snapshot.data
+                            .map((expense) => ExpenseTile(expense: expense))
+                            .toList(),
+                      )
+                    : Center(child: Text("You don't have any invoices."));
+              }),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

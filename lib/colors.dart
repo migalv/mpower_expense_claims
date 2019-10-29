@@ -15,3 +15,5 @@ const primaryTextColor = const Color(0xFFFFFFFF);
 const secondaryTextColor = const Color(0xFFFFFFFF);
 
 const primaryErrorColor = const Color(0xFFCC0000);
+
+const black60 = const Color(0x99000000);
