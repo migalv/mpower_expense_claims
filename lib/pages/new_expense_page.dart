@@ -216,25 +216,30 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
       return Padding(
         padding: const EdgeInsets.only(right: 8.0),
-        child: ActionChip(
-          label: Text(
-            category.name,
-            style: Theme.of(context).textTheme.body2.copyWith(
-                color: category.id == selected ? Colors.white : Colors.black38),
-          ),
-          avatar: category.icon != null
-              ? Icon(
-                  category.icon,
-                  size: 16.0,
+        child: Tooltip(
+          message: category.eg ?? "",
+          child: ActionChip(
+            label: Text(
+              category.name,
+              style: Theme.of(context).textTheme.body2.copyWith(
                   color:
-                      category.id == selected ? Colors.white : Colors.black26,
-                )
-              : null,
-          backgroundColor:
-              category.id == selected ? Colors.blue : Color(0xfff1f1f1),
-          onPressed: () {
-            _expenseClaimBloc.selectCategory(category.id);
-          },
+                      category.id == selected ? Colors.white : Colors.black38),
+            ),
+            avatar: category.icon != null
+                ? Icon(
+                    category.icon,
+                    size: 16.0,
+                    color:
+                        category.id == selected ? Colors.white : Colors.black26,
+                  )
+                : null,
+            backgroundColor:
+                category.id == selected ? Colors.blue : Color(0xfff1f1f1),
+            onPressed: () {
+              _expenseClaimBloc.selectCategory(category.id);
+            },
+            pressElevation: 4.0,
+          ),
         ),
       );
     }).toList());
