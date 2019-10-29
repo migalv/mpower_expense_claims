@@ -21,7 +21,9 @@ import 'package:rxdart/rxdart.dart';
 // TODO: MAKE JUMPING FROM FIELD TO FIELD
 
 class NewExpensePage extends StatefulWidget {
-  NewExpensePage();
+  final ScrollController scrollController;
+
+  NewExpensePage({@required this.scrollController});
 
   @override
   _NewExpensePageState createState() => _NewExpensePageState();
@@ -41,7 +43,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
   // Focus Nodes
   final _descriptionFocusNode = FocusNode();
   final _grossFocusNode = FocusNode();
-  final _netFocusNode = FocusNode();
 
   // Keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -53,27 +54,23 @@ class _NewExpensePageState extends State<NewExpensePage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return _buildBody();
-  }
+  Widget build(BuildContext context) => Scaffold(body: _buildBody());
 
-  Widget _buildBody() => Container(
-        constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 2 / 3),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            new BoxShadow(
-              color: Colors.black12,
-              offset: new Offset(0, -2),
-              blurRadius: 2.0,
-            )
-          ],
-        ),
-        child: Form(
-          key: _formKey,
+  Widget _buildBody() => Form(
+        key: _formKey,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              new BoxShadow(
+                color: Colors.black12,
+                offset: new Offset(0, -2),
+                blurRadius: 2.0,
+              )
+            ],
+          ),
           child: ListView(
-            shrinkWrap: true,
+            controller: widget.scrollController,
             children: <Widget>[
               _buildTitle(),
               _buildCountry(),
@@ -97,28 +94,12 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   Widget _buildTitle() => Padding(
         padding: const EdgeInsets.only(left: 16.0, right: 0.0, top: 16.0),
-        child: Row(
-          children: <Widget>[
-            Expanded(
-              child: Text(
-                'New ' +
-                    (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
-                        ? "Expense claim"
-                        : "Invoice"),
-                style: Theme.of(context).textTheme.title,
-              ),
-            ),
-            FlatButton(
-              child: Text(
-                'Cancel',
-                style: Theme.of(context)
-                    .textTheme
-                    .button
-                    .copyWith(color: secondaryLightColor),
-              ),
-              onPressed: () => Navigator.pop(context),
-            )
-          ],
+        child: Text(
+            'New ' +
+                (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
+                    ? "Expense claim"
+                    : "Invoice"),
+          style: Theme.of(context).textTheme.title,)
         ),
       );
 
