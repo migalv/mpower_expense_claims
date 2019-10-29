@@ -49,7 +49,7 @@ class Repository {
   final _lastSelectedCountryController = BehaviorSubject<String>();
   final _lastSelectedCurrencyController = BehaviorSubject<String>();
   final _lastSelectedApproverController = BehaviorSubject<String>();
-  final _expenseClaimsController = StreamController<List<ExpenseClaim>>();
+  final _expenseClaimsController = BehaviorSubject<List<ExpenseClaim>>();
   final _approversController = BehaviorSubject<List<User>>();
   void initUserId(String userId) => _userId = userId;
 
@@ -234,10 +234,13 @@ class Repository {
   }
 
   Country getCountryWithId(String countryId) => countries?.value
-      ?.singleWhere((country) => country?.id ?? "" == countryId);
+      ?.singleWhere((country) => (country?.id ?? "") == countryId);
 
   Currency getCurrencyWithId(String currencyId) => currencies?.value
-      ?.singleWhere((currency) => currency?.id ?? "" == currencyId);
+      ?.singleWhere((currency) => (currency?.id ?? "") == currencyId);
+
+  Category getCategoryWithId(String categoryId) => categories?.value
+      ?.singleWhere((category) => (category?.id ?? "") == categoryId);
 
   /// Function that recovers the password given an email
   /// If the recovery fails it returns FALSE if not TRUE

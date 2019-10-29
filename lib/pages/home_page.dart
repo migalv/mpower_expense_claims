@@ -1,8 +1,11 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
+import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/new_expense_page.dart';
+import 'package:expense_claims_app/respository.dart';
+import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/navigation_bar_with_fab.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -75,10 +78,14 @@ class _HomePageState extends State<HomePage>
           _pageChanged(index);
         },
         children: <Widget>[
-          Center(
-            child: Container(
-              child: Text('Empty Body 0'),
-            ),
+          StreamBuilder<List<ExpenseClaim>>(
+            stream: repository.expenseClaims,
+            initialData: <ExpenseClaim>[],
+            builder: (context, snapshot) {
+              return ListView(
+                children: snapshot.data.map((expense) => ExpenseTile(expense: expense,)).toList(),
+              );
+            }
           ),
           Center(
             child: Container(
