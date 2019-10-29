@@ -126,37 +126,45 @@ class Repository {
 
   // LOAD
   void loadSettings() {
-    _listenToCountriesChanges();
-    _listenToCurrenciesChanges();
-    _listenToCategoriesChanges();
+    _setUpStream(COUNTRIES_KEY, _countriesController);
+    _setUpStream(CURRENCIES_KEY, _currenciesController);
+    _setUpStream(CATEGORIES_KEY, _categoriesController);
+    _setUpStream(EXPENSE_CLAIMS_KEY, _expenseClaimsController);
     _listenToApproversChanges();
     _listenToExpenseClaimsChanges();
     _loadLastSelected();
   }
 
-  void _listenToCountriesChanges() => _streamSubscriptions.add(
-          _firestore.collection(COUNTRIES_KEY).snapshots().listen((snapshot) {
-        List<Country> countries = snapshot.documents
-            .map((doc) => Country.fromJson(doc.data, id: doc.documentID))
-            .toList();
-        _countriesController.add(countries);
-      }));
+  void _setUpStream(String collection, StreamController streamController) {
+    List list = [];
 
-  void _listenToCurrenciesChanges() => _streamSubscriptions.add(
-          _firestore.collection(CURRENCIES_KEY).snapshots().listen((snapshot) {
-        List<Currency> currencies = snapshot.documents
-            .map((doc) => Currency.fromJson(doc.data, id: doc.documentID))
-            .toList();
-        _currenciesController.add(currencies);
-      }));
-
-  void _listenToCategoriesChanges() => _streamSubscriptions.add(
-          _firestore.collection(CATEGORIES_KEY).snapshots().listen((snapshot) {
-        List<Category> categories = snapshot.documents
-            .map((doc) => Category.fromJson(doc.data, id: doc.documentID))
-            .toList();
-        _categoriesController.add(categories);
-      }));
+    _streamSubscriptions
+        .add(_firestore.collection(collection).snapshots().listen((snapshot) {
+      switch (collection) {
+        case COUNTRIES_KEY:
+          list = snapshot.documents
+              .map((doc) => Country.fromJson(doc.data, id: doc.documentID))
+              .toList();
+          break;
+        case CURRENCIES_KEY:
+          list = snapshot.documents
+              .map((doc) => Currency.fromJson(doc.data, id: doc.documentID))
+              .toList();
+          break;
+        case CATEGORIES_KEY:
+          list = snapshot.documents
+              .map((doc) => Category.fromJson(doc.data, id: doc.documentID))
+              .toList();
+          break;
+        case EXPENSE_CLAIMS_KEY:
+          list = snapshot.documents
+              .map((doc) => ExpenseClaim.fromJson(doc.data, id: doc.documentID))
+              .toList();
+          break;
+      }
+      streamController.add(list);
+    }));
+  }
 
   void _listenToApproversChanges() => _streamSubscriptions.add(_firestore
           .collection(USERS_KEY)

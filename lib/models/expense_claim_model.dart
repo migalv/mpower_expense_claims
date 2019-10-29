@@ -10,7 +10,7 @@ class ExpenseClaim extends Expense {
     String currency,
     double gross,
     double net,
-    int vat,
+    double vat,
     String approvedBy,
   }) : super(
           id: id,

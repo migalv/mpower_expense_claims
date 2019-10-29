@@ -12,7 +12,7 @@ class Category {
     this.id,
     @required this.name,
     this.hidden = false,
-    @required this.eg,
+    this.eg,
     this.icon,
   });
 

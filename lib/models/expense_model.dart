@@ -11,7 +11,7 @@ abstract class Expense {
   final String description;
   final double gross;
   final double net;
-  final int vat;
+  final double vat;
 
   Expense({
     this.id,

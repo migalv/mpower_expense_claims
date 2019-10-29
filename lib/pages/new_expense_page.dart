@@ -129,7 +129,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               _buildFieldLabel('Country'),
-              StreamBuilder<String>(
+              StreamBuilder<Country>(
                 stream: _expenseClaimBloc.selectedCountry,
                 builder: (context, selectedCountrySnapshot) {
                   return Container(
@@ -145,13 +145,13 @@ class _NewExpensePageState extends State<NewExpensePage> {
                             stream: repository.countries,
                             initialData: <Country>[],
                             builder: (context, countriesSnapshot) {
-                              return DropdownButton<String>(
+                              return DropdownButton<Country>(
                                 value: selectedCountrySnapshot.data,
                                 items: countriesSnapshot.data
                                     .where((country) => country.hidden == false)
-                                    .map((country) => DropdownMenuItem(
+                                    .map((country) => DropdownMenuItem<Country>(
                                           child: Text(country.name),
-                                          value: country.id,
+                                          value: country,
                                         ))
                                     .toList(),
                                 onChanged: _expenseClaimBloc.selectCountry,
@@ -349,24 +349,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
                   children: <Widget>[
                     Expanded(
                       child: TextFormField(
-                        controller: _netController,
-                        focusNode: _netFocusNode,
-                        textInputAction: TextInputAction.next,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: <TextInputFormatter>[
-                          WhitelistingTextInputFormatter.digitsOnly,
-                        ],
-                        decoration: InputDecoration(
-                          filled: true,
-                          hintText: 'Net',
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 16.0,
-                    ),
-                    Expanded(
-                      child: TextFormField(
                         controller: _grossController,
                         focusNode: _grossFocusNode,
                         textInputAction: TextInputAction.next,
@@ -381,6 +363,38 @@ class _NewExpensePageState extends State<NewExpensePage> {
                         validator: (value) => value == null || value == ""
                             ? "Enter an amount"
                             : null,
+                      ),
+                    ),
+                    Container(
+                      width: 16.0,
+                    ),
+                    Expanded(
+                      child: DropdownButtonHideUnderline(
+                        child: StreamBuilder<Country>(
+                            stream: _expenseClaimBloc.selectedCountry,
+                            builder: (context, selectedCountrySnapshot) {
+                              return StreamBuilder<Object>(
+                                  stream: _expenseClaimBloc.selectedVat,
+                                  builder: (context, selectedVatSnapshot) {
+                                    return DropdownButton<double>(
+                                      hint: Text("VAT"),
+                                      value: selectedVatSnapshot?.data,
+                                      items: selectedCountrySnapshot
+                                              ?.data?.vatOptions
+                                              ?.map(
+                                                (vat) => DropdownMenuItem(
+                                                  child: Text(
+                                                      vat.toString() + "%"),
+                                                  value: vat,
+                                                ),
+                                              )
+                                              ?.toList() ??
+                                          [],
+                                      onChanged: _expenseClaimBloc.selectVat,
+                                      isExpanded: true,
+                                    );
+                                  });
+                            }),
                       ),
                     ),
                     Container(
