@@ -369,60 +369,82 @@ class _NewExpensePageState extends State<NewExpensePage> {
                       width: 16.0,
                     ),
                     Expanded(
-                      child: DropdownButtonHideUnderline(
-                        child: StreamBuilder<Country>(
-                            stream: _expenseClaimBloc.selectedCountry,
-                            builder: (context, selectedCountrySnapshot) {
-                              return StreamBuilder<Object>(
-                                  stream: _expenseClaimBloc.selectedVat,
-                                  builder: (context, selectedVatSnapshot) {
-                                    return DropdownButton<double>(
-                                      hint: Text("VAT"),
-                                      value: selectedVatSnapshot?.data,
-                                      items: selectedCountrySnapshot
-                                              ?.data?.vatOptions
-                                              ?.map(
-                                                (vat) => DropdownMenuItem(
-                                                  child: Text(
-                                                      vat.toString() + "%"),
-                                                  value: vat,
-                                                ),
-                                              )
-                                              ?.toList() ??
-                                          [],
-                                      onChanged: _expenseClaimBloc.selectVat,
-                                      isExpanded: true,
-                                    );
-                                  });
-                            }),
+                      child: FormField(
+                        validator: _expenseClaimBloc.vatValidator,
+                        builder: (FormFieldState state) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            DropdownButtonHideUnderline(
+                              child: StreamBuilder<Country>(
+                                  stream: _expenseClaimBloc.selectedCountry,
+                                  builder: (context, selectedCountrySnapshot) {
+                                    return StreamBuilder<Object>(
+                                        stream: _expenseClaimBloc.selectedVat,
+                                        builder:
+                                            (context, selectedVatSnapshot) {
+                                          return DropdownButton<double>(
+                                            hint: Text("VAT"),
+                                            value: selectedVatSnapshot?.data,
+                                            items: selectedCountrySnapshot
+                                                    ?.data?.vatOptions
+                                                    ?.map(
+                                                      (vat) => DropdownMenuItem(
+                                                        child: Text(
+                                                            vat.toString() +
+                                                                "%"),
+                                                        value: vat,
+                                                      ),
+                                                    )
+                                                    ?.toList() ??
+                                                [],
+                                            onChanged:
+                                                _expenseClaimBloc.selectVat,
+                                            isExpanded: true,
+                                          );
+                                        });
+                                  }),
+                            ),
+                            _buildErrorFormLabel(state),
+                          ],
+                        ),
                       ),
                     ),
                     Container(
                       width: 16.0,
                     ),
                     Expanded(
-                      child: DropdownButtonHideUnderline(
-                        child: StreamBuilder<List<Currency>>(
-                            stream: repository.currencies,
-                            initialData: <Currency>[],
-                            builder: (context, currenciesSnapshot) {
-                              return DropdownButton<String>(
-                                hint: Text("Currency"),
-                                value: selectedCurrencySnapshot?.data,
-                                items: currenciesSnapshot.data
-                                    .where(
-                                        (currency) => currency.hidden == false)
-                                    .map(
-                                      (currency) => DropdownMenuItem(
-                                        child: Text(currency.iso),
-                                        value: currency.id,
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: _expenseClaimBloc.selectCurrency,
-                                isExpanded: true,
-                              );
-                            }),
+                      child: FormField(
+                        validator: _expenseClaimBloc.currencyValidator,
+                        builder: (FormFieldState state) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            DropdownButtonHideUnderline(
+                              child: StreamBuilder<List<Currency>>(
+                                  stream: repository.currencies,
+                                  initialData: <Currency>[],
+                                  builder: (context, currenciesSnapshot) {
+                                    return DropdownButton<String>(
+                                      hint: Text("Currency"),
+                                      value: selectedCurrencySnapshot?.data,
+                                      items: currenciesSnapshot.data
+                                          .where((currency) =>
+                                              currency.hidden == false)
+                                          .map(
+                                            (currency) => DropdownMenuItem(
+                                              child: Text(currency.iso),
+                                              value: currency.id,
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged:
+                                          _expenseClaimBloc.selectCurrency,
+                                      isExpanded: true,
+                                    );
+                                  }),
+                            ),
+                            _buildErrorFormLabel(state),
+                          ],
+                        ),
                       ),
                     ),
                   ],

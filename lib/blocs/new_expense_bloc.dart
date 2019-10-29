@@ -172,6 +172,12 @@ class NewExpenseBloc {
   String approvedByValidator(String value) =>
       selectedApprover.value == null ? "Select an approver" : null;
 
+  String vatValidator(String value) =>
+      selectedVat.value == null ? "Select a VAT" : null;
+
+  String currencyValidator(String value) =>
+      selectedCurrency.value == null ? "Select a currency" : null;
+
   void dispose() {
     _selectedCountryController.close();
     _selectedCategoryController.close();
