@@ -3,9 +3,9 @@ import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/pages/expense_claims_page.dart';
 import 'package:expense_claims_app/pages/new_expense_page.dart';
 import 'package:expense_claims_app/respository.dart';
-import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/fab_add_to_close.dart';
 import 'package:expense_claims_app/widgets/navigation_bar_with_fab.dart';
@@ -62,9 +62,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         builder: (context, snapshot) => NavigationBarWithFAB(
           animationController: _navBarController,
           index: snapshot.data,
-          label1: 'Expense claims',
           icon1: MdiIcons.receipt,
-          label2: 'Invoices',
           icon2: FontAwesomeIcons.fileInvoiceDollar,
           onItemPressed: (int index) {
             _homeBloc.setPageIndex(index);
@@ -87,18 +85,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     _pageChanged(index);
                   },
                   children: <Widget>[
-                    StreamBuilder<List<ExpenseClaim>>(
-                        stream: repository.expenseClaims,
-                        initialData: <ExpenseClaim>[],
-                        builder: (context, snapshot) {
-                          return ListView(
-                            children: snapshot.data
-                                .map((expense) => ExpenseTile(
-                                      expense: expense,
-                                    ))
-                                .toList(),
-                          );
-                        }),
+                    ExpenseClaimsPage(),
                     Center(
                       child: Container(
                         child: Text('Empty Body 3'),
