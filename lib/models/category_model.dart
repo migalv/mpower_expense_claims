@@ -7,6 +7,7 @@ class Category {
   final bool hidden;
   final String eg;
   final IconData icon;
+  final Color color;
 
   Category({
     this.id,
@@ -14,6 +15,7 @@ class Category {
     this.hidden = false,
     this.eg,
     this.icon,
+    this.color,
   });
 
   Category.fromJson(Map<String, dynamic> json, {String id})
@@ -23,12 +25,10 @@ class Category {
         this.eg = json[EXAMPLE_KEY],
         this.icon = categoryIcons.containsKey(json[NAME_KEY])
             ? categoryIcons[json[NAME_KEY]]
+            : null,
+        this.color = categoryColors.containsKey(json[NAME_KEY])
+            ? categoryColors[json[NAME_KEY]]
             : null;
-
-  @override
-  String toString() {
-    return "Category: {\n\tid: $id,\n\t$NAME_KEY: $name,\n\t$HIDDEN_KEY: $hidden,\n\t$EXAMPLE_KEY: $eg,\n}";
-  }
 
   @override
   bool operator ==(category) => category is Category && category.id == id;
@@ -41,6 +41,13 @@ class Category {
     "Travel": Icons.card_travel,
     "Food": Icons.fastfood,
     "Other": Icons.attach_money,
+  };
+
+  static const Map<String, Color> categoryColors = {
+    "Transport": Colors.amber,
+    "Travel": Colors.brown,
+    "Food": Colors.red,
+    "Other": Colors.black26,
   };
 
   static const String NAME_KEY = "name";

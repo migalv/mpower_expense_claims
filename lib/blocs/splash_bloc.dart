@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:expense_claims_app/respository.dart';
+import 'package:expense_claims_app/repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -20,7 +20,7 @@ class SplashBloc {
 
     FirebaseUser firebaseUser = await firebaseAuth.currentUser();
 
-    if (firebaseUser != null) repository.initUserId(firebaseUser.uid);
+    if (firebaseUser != null) await repository.initUser(firebaseUser.uid);
 
     _isLoggedInController.add(firebaseUser != null);
   }

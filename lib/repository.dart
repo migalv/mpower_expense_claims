@@ -16,8 +16,10 @@ import 'package:rxdart/rxdart.dart';
 import 'models/expense_claim_model.dart';
 
 class Repository {
-  String _userId;
-  String get userId => _userId;
+  String _currentUserId;
+  String get currentUserId => _currentUserId;
+  User _currentUser;
+  User get currentUser => _currentUser;
 
   //
   // DATA SOURCES
@@ -51,12 +53,19 @@ class Repository {
   final _lastSelectedApproverController = BehaviorSubject<String>();
   final _expenseClaimsController = BehaviorSubject<List<ExpenseClaim>>();
   final _approversController = BehaviorSubject<List<User>>();
-  void initUserId(String userId) => _userId = userId;
 
   void init() {
     _countriesController.add([]);
     _currenciesController.add([]);
     _categoriesController.add([]);
+  }
+
+  Future initUser(String userId) async {
+    _currentUserId = userId;
+
+    DocumentSnapshot documentSnapshot =
+        await _firestore.document('$USERS_KEY/$userId').get();
+    _currentUser = User.fromJson(documentSnapshot.data, id: userId);
   }
 
   // UPLOAD
@@ -104,21 +113,21 @@ class Repository {
   }
 
   void updateLastSelectedCountry(String countryId) => _firestore
-          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .collection("$USERS_KEY/$currentUserId/$EDITABLE_INFO_KEY")
           .document(LAST_SELECTED_DOC)
           .setData({
         LAST_SELECTED_COUNTRY: countryId,
       }, merge: true);
 
   void updateLastSelectedCurrency(String currencyId) => _firestore
-          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .collection("$USERS_KEY/$currentUserId/$EDITABLE_INFO_KEY")
           .document(LAST_SELECTED_DOC)
           .setData({
         LAST_SELECTED_CURRENCY: currencyId,
       }, merge: true);
 
   void updateLastSelectedApprover(String approverId) => _firestore
-          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .collection("$USERS_KEY/$currentUserId/$EDITABLE_INFO_KEY")
           .document(LAST_SELECTED_DOC)
           .setData({
         LAST_SELECTED_APPROVER: approverId,
@@ -168,7 +177,7 @@ class Repository {
 
   void _listenToApproversChanges() => _streamSubscriptions.add(_firestore
           .collection(USERS_KEY)
-          .document(userId)
+          .document(currentUserId)
           .snapshots()
           .listen((snapshot) {
         Map approversMap = snapshot.data[APPROVERS];
@@ -189,7 +198,7 @@ class Repository {
       }));
 
   void _loadLastSelected() => _streamSubscriptions.add(_firestore
-          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .collection("$USERS_KEY/$currentUserId/$EDITABLE_INFO_KEY")
           .document(LAST_SELECTED_DOC)
           .snapshots()
           .listen((docSnapshot) {
@@ -223,7 +232,7 @@ class Repository {
     }
 
     if (authResult != null) {
-      _userId = authResult.user.uid;
+      _currentUserId = authResult.user.uid;
       return AuthState.SUCCESS;
     }
     return AuthState.ERROR;
@@ -235,20 +244,11 @@ class Repository {
         email: email, password: password);
 
     if (authResult != null) {
-      _userId = authResult.user.uid;
+      _currentUserId = authResult.user.uid;
       return AuthState.SUCCESS;
     }
     return AuthState.ERROR;
   }
-
-  Country getCountryWithId(String countryId) => countries?.value
-      ?.singleWhere((country) => (country?.id ?? "") == countryId);
-
-  Currency getCurrencyWithId(String currencyId) => currencies?.value
-      ?.singleWhere((currency) => (currency?.id ?? "") == currencyId);
-
-  Category getCategoryWithId(String categoryId) => categories?.value
-      ?.singleWhere((category) => (category?.id ?? "") == categoryId);
 
   /// Function that recovers the password given an email
   /// If the recovery fails it returns FALSE if not TRUE
@@ -261,6 +261,20 @@ class Repository {
     return true;
   }
 
+  //
+  // GETTERS
+
+  Country getCountryWithId(String countryId) => countries?.value
+      ?.singleWhere((country) => (country?.id ?? "") == countryId);
+
+  Currency getCurrencyWithId(String currencyId) => currencies?.value
+      ?.singleWhere((currency) => (currency?.id ?? "") == currencyId);
+
+  Category getCategoryWithId(String categoryId) => categories?.value
+      ?.singleWhere((category) => (category?.id ?? "") == categoryId);
+
+  //
+  // DISPOSE
   void dispose() {
     _categoriesController.close();
     _currenciesController.close();

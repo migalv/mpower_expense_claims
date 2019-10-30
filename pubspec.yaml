@@ -27,6 +27,7 @@ dependencies:
   scrollable_bottom_sheet: ^0.2.1
   auto_size_text: ^2.1.0
   timeago: ^2.0.21
+  cached_network_image: ^1.1.2+1
 
 dev_dependencies:
   flutter_test:

@@ -1,12 +1,9 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
-import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/expense_claims_page.dart';
 import 'package:expense_claims_app/pages/new_expense_page.dart';
-import 'package:expense_claims_app/respository.dart';
-import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/fab_add_to_close.dart';
 import 'package:expense_claims_app/widgets/navigation_bar_with_fab.dart';
 import 'package:flutter/material.dart';

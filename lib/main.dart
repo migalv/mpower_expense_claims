@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/splash_bloc.dart';
 import 'package:expense_claims_app/pages/splash_page.dart';
-import 'package:expense_claims_app/respository.dart';
+import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 

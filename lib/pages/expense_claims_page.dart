@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:expense_claims_app/colors.dart';
+import 'package:expense_claims_app/bloc_provider.dart';
+import 'package:expense_claims_app/blocs/expense_tile_bloc.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
-import 'package:expense_claims_app/respository.dart';
+import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/widgets/collapsible.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/search_widget.dart';
@@ -44,7 +45,7 @@ class _ExpenseClaimsPageState extends State<ExpenseClaimsPage> {
       child: Padding(
         padding: EdgeInsets.only(top: devicePadding.top),
         child: SingleChildScrollView(
-          padding: EdgeInsets.only(top: 20.0, left: 20, right: 20, bottom: 20),
+          padding: EdgeInsets.only(top: 0.0, left: 20, right: 20, bottom: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -53,14 +54,23 @@ class _ExpenseClaimsPageState extends State<ExpenseClaimsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(
-                      "Expense claims",
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                          color: darkText.withOpacity(darkText.opacity * 0.75),
-                          fontSize: 34.0,
-                          fontFamily: "RobotoMedium"),
+                    Container(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.settings,
+                          color: Colors.black45,
+                        ),
+                        onPressed: () {},
+                      ),
                     ),
+                    Text("Expense claims",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 30.0,
+                          fontWeight: FontWeight.w500,
+                        )),
                   ],
                 ),
               ),
@@ -70,25 +80,25 @@ class _ExpenseClaimsPageState extends State<ExpenseClaimsPage> {
               ),
               StreamBuilder<List<ExpenseClaim>>(
                 stream: repository.expenseClaims,
-                initialData: <ExpenseClaim>[],
+                initialData: [],
                 builder: (context, snapshot) => ListView(
                   shrinkWrap: true,
                   children: snapshot.data
                       .map(
                         (expense) => Container(
-                          margin: EdgeInsets.only(top: 20.0),
-                          child: ExpenseTile(
-                            expense: expense,
+                          margin: EdgeInsets.only(bottom: 20.0),
+                          child: BlocProvider<ExpenseTileBloc>(
+                            initBloc: (_, bloc) =>
+                                bloc ?? ExpenseTileBloc(expenseId: expense.id),
+                            onDispose: (_, bloc) {
+                              bloc.dispose();
+                            },
+                            child: ExpenseTile(),
                           ),
                         ),
                       )
                       .toList(),
                 ),
-              ),
-              Container(
-                margin: EdgeInsets.only(top: 40.0, bottom: 22),
-                height: 1.0,
-                color: const Color.fromRGBO(151, 151, 151, 0.29),
               ),
             ],
           ),
