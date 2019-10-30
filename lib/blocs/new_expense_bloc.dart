@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/models/expense_template_model.dart';
+import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rxdart/rxdart.dart';
@@ -19,7 +21,8 @@ class NewExpenseBloc {
       _selectedCurrencyController.stream;
   ValueObservable<Map<String, File>> get attachments =>
       _attachmentsController.stream;
-  ValueObservable<DateTime> get invoiceDate => _invoiceDateController.stream;
+  ValueObservable<DateTime> get selectedDueDate =>
+      _selectedDueDateController.stream;
   ValueObservable<String> get selectedApprover =>
       _selectedApproverController.stream;
   ValueObservable<double> get selectedVat => _selectedVatController.stream;
@@ -30,7 +33,7 @@ class NewExpenseBloc {
   final _selectedCurrencyController = BehaviorSubject<String>();
   final _expenseDateController = BehaviorSubject<DateTime>();
   final _attachmentsController = BehaviorSubject<Map<String, File>>();
-  final _invoiceDateController = BehaviorSubject<DateTime>();
+  final _selectedDueDateController = BehaviorSubject<DateTime>();
   final _selectedApproverController = BehaviorSubject<String>();
   final _selectedVatController = BehaviorSubject<double>();
 
@@ -39,11 +42,13 @@ class NewExpenseBloc {
   /// This will determine the type of the form.
   final ExpenseType expenseType;
 
+  final FormTemplate template;
+
   // Flags
   bool _multipleAttachments;
   bool get multipleAttachments => _multipleAttachments;
 
-  NewExpenseBloc({@required this.expenseType}) {
+  NewExpenseBloc({@required this.expenseType, this.template}) {
     switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
         _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
@@ -56,6 +61,7 @@ class NewExpenseBloc {
         _multipleAttachments = true;
         break;
     }
+    if (template != null) _buildFormFromTemplate();
     if (repository?.lastSelectedCountry?.value != null)
       selectCountry(
           repository.getCountryWithId(repository.lastSelectedCountry.value));
@@ -86,8 +92,8 @@ class NewExpenseBloc {
       _selectedCategoryController.add(categoryId);
   void selectExpenseDate(DateTime expenseDate) =>
       _expenseDateController.add(expenseDate);
-  void selectInvoiceDate(DateTime invoiceDate) =>
-      _invoiceDateController.add(invoiceDate);
+  void selectDueDate(DateTime dueDate) =>
+      _selectedDueDateController.add(dueDate);
   void selectVat(double vat) => _selectedVatController.add(vat);
 
   // ATTACHMENTS
@@ -117,32 +123,48 @@ class NewExpenseBloc {
   }
 
   // UPLOAD DATA
-  void uploadNewExpenseClaim(
-    String description,
-    String stringGross, {
-    String stringNet,
-  }) {
+  void uploadNewExpense(String description, String stringGross) {
     if (description == null ||
         stringGross == null ||
         selectedApprover.value == null) return;
     double gross = double.tryParse(stringGross.replaceAll(',', '.'));
-    double net = stringNet != null ? double.tryParse(stringNet) : null;
+    double net;
     double vat = selectedVat.value;
     if (net == null && vat != null) net = gross - (gross * vat) / 100;
+    Expense expense;
 
-    ExpenseClaim newExpenseClaim = ExpenseClaim(
-      country: selectedCountry.value.id,
-      category: selectedCategory.value,
-      date: expenseDate.value,
-      description: description,
-      currency: selectedCurrency.value,
-      gross: gross,
-      net: net,
-      approvedBy: selectedApprover.value,
-      vat: vat,
-    );
+    if (expenseType == ExpenseType.EXPENSE_CLAIM) {
+      expense = ExpenseClaim(
+        country: selectedCountry.value.id,
+        category: selectedCategory.value,
+        date: expenseDate.value,
+        description: description,
+        currency: selectedCurrency.value,
+        gross: gross,
+        net: net,
+        approvedBy: selectedApprover.value,
+        vat: vat,
+        createdBy: repository.currentUserId,
+        availableTo: [repository.currentUserId],
+      );
+    } else if (expenseType == ExpenseType.INVOICE) {
+      expense = Invoice(
+        country: selectedCountry.value.id,
+        category: selectedCategory.value,
+        date: expenseDate.value,
+        dueDate: selectedDueDate.value,
+        description: description,
+        currency: selectedCurrency.value,
+        gross: gross,
+        net: net,
+        approvedBy: selectedApprover.value,
+        vat: vat,
+        createdBy: repository.currentUserId,
+        availableTo: [repository.currentUserId],
+      );
+    }
 
-    repository.uploadNewExpenseClaim(newExpenseClaim, _attachments);
+    repository.uploadNewExpense(expense, _attachments);
   }
 
   // VALIDATORS
@@ -178,13 +200,21 @@ class NewExpenseBloc {
   String currencyValidator(String value) =>
       selectedCurrency.value == null ? "Select a currency" : null;
 
+  void _buildFormFromTemplate() {
+    selectCategory(template.category);
+    selectCountry(repository.getCountryWithId(template.country));
+    selectVat(template.vat);
+    selectCurrency(template.currency);
+    selectApprover(template.approvedBy);
+  }
+
   void dispose() {
     _selectedCountryController.close();
     _selectedCategoryController.close();
     _expenseDateController.close();
     _selectedCurrencyController.close();
     _attachmentsController.close();
-    _invoiceDateController.close();
+    _selectedDueDateController.close();
     _selectedApproverController.close();
     _selectedVatController.close();
   }

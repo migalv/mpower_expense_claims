@@ -12,6 +12,8 @@ class ExpenseClaim extends Expense {
     double net,
     double vat,
     String approvedBy,
+    String createdBy,
+    List<String> availableTo,
   }) : super(
           id: id,
           approvedBy: approvedBy,
@@ -23,6 +25,8 @@ class ExpenseClaim extends Expense {
           gross: gross,
           net: net,
           vat: vat,
+          createdBy: createdBy,
+          availableTo: availableTo,
         );
 
   ExpenseClaim.fromJson(final Map<String, dynamic> json, {String id})

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
@@ -18,13 +19,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 
-// TODO: MAKE JUMPING FROM FIELD TO FIELD
-
 class NewExpensePage extends StatefulWidget {
   final ScrollController scrollController;
 
   NewExpensePage({@required this.scrollController});
-
   @override
   _NewExpensePageState createState() => _NewExpensePageState();
 }
@@ -37,12 +35,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
   final _descriptionController = TextEditingController();
   final _grossController =
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
-  final _netController =
-      MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
-
-  // Focus Nodes
-  final _descriptionFocusNode = FocusNode();
-  final _grossFocusNode = FocusNode();
 
   // Keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -68,6 +60,10 @@ class _NewExpensePageState extends State<NewExpensePage> {
                 blurRadius: 2.0,
               )
             ],
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(32.0),
+              topRight: Radius.circular(32.0),
+            ),
           ),
           child: ListView(
             controller: widget.scrollController,
@@ -75,23 +71,18 @@ class _NewExpensePageState extends State<NewExpensePage> {
               _buildTitle(),
               _buildCountry(),
               _buildCategory(),
-              _expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
-                  ? _buildDate("Date", _expenseClaimBloc.expenseDate,
-                      _expenseClaimBloc.selectExpenseDate)
-                  : Container(height: 0.0, width: 0.0),
+              _buildDate("Date", _expenseClaimBloc.expenseDate,
+                  _expenseClaimBloc.selectExpenseDate),
               _expenseClaimBloc.expenseType == ExpenseType.INVOICE
-                  ? _buildDate("Date", _expenseClaimBloc.invoiceDate,
-                      _expenseClaimBloc.selectInvoiceDate)
-                  : Container(),
-              _expenseClaimBloc.expenseType == ExpenseType.INVOICE
-                  ? _buildDate("Due date", _expenseClaimBloc.invoiceDate,
-                      _expenseClaimBloc.selectInvoiceDate)
+                  ? _buildDate("Due date", _expenseClaimBloc.selectedDueDate,
+                      _expenseClaimBloc.selectDueDate,
+                      lastDate: DateTime(2030))
                   : Container(),
               _buildDescription(),
               _buildCost(),
               _buildApproverTile(),
               _buildAttachmentsTile(),
-              _buildDoneButton(),
+              _buildButtons(),
             ],
           ),
         ),
@@ -100,7 +91,10 @@ class _NewExpensePageState extends State<NewExpensePage> {
   Widget _buildTitle() => Padding(
         padding: const EdgeInsets.only(left: 16.0, right: 0.0, top: 16.0),
         child: Text(
-          'New expense',
+          'New ' +
+              (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
+                  ? "Expense claim"
+                  : "Invoice"),
           style: Theme.of(context).textTheme.title,
         ),
       );
@@ -215,10 +209,12 @@ class _NewExpensePageState extends State<NewExpensePage> {
                 )
               : null,
           backgroundColor:
-              category.id == selected ? Colors.blue : Color(0xfff1f1f1),
+              category.id == selected ? secondaryColor : Color(0xfff1f1f1),
           onPressed: () {
             _expenseClaimBloc.selectCategory(category.id);
           },
+          pressElevation: 4.0,
+          tooltip: category.eg ?? "",
         ),
       );
     }).toList());
@@ -227,7 +223,8 @@ class _NewExpensePageState extends State<NewExpensePage> {
   }
 
   Widget _buildDate(String label, ValueObservable<DateTime> stream,
-          Function selectFunction) =>
+          Function selectFunction,
+          {DateTime lastDate}) =>
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: FormField(
@@ -242,7 +239,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
                     context: context,
                     initialDate: DateTime.now(),
                     firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
+                    lastDate: lastDate ?? DateTime.now(),
                   );
                   selectFunction(selectedDate);
                 },
@@ -301,8 +298,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
               controller: _descriptionController,
               maxLines: null,
               autocorrect: true,
-              focusNode: _descriptionFocusNode,
-              textInputAction: TextInputAction.next,
               keyboardType: TextInputType.text,
               decoration: InputDecoration(
                 filled: true,
@@ -334,8 +329,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
                     Expanded(
                       child: TextFormField(
                         controller: _grossController,
-                        focusNode: _grossFocusNode,
-                        textInputAction: TextInputAction.next,
                         keyboardType: TextInputType.number,
                         inputFormatters: <TextInputFormatter>[
                           WhitelistingTextInputFormatter.digitsOnly,
@@ -559,19 +552,46 @@ class _NewExpensePageState extends State<NewExpensePage> {
         ),
       );
 
-  Widget _buildDoneButton() => Padding(
+  Widget _buildButtons() => Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.0),
-        child: FlatButton(
-          padding: EdgeInsets.all(14.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          color: Colors.blue,
-          child: Text(
-            'Done',
-            style: TextStyle(color: Colors.white),
-          ),
-          onPressed: () => _validateAndUpload(),
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: FlatButton(
+                padding: EdgeInsets.all(14.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                color: secondaryLightColor,
+                child: Text(
+                  'Create Template',
+                  style: TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+                onPressed: () => _validateAndUpload(),
+              ),
+            ),
+            SizedBox(width: 16.0),
+            Expanded(
+              child: FlatButton(
+                padding: EdgeInsets.all(14.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                color: secondaryLightColor,
+                child: Text(
+                  'Create ' +
+                      (_expenseClaimBloc.expenseType ==
+                              ExpenseType.EXPENSE_CLAIM
+                          ? "Expense"
+                          : "Invoice"),
+                  style: TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+                onPressed: () => _validateAndUpload(),
+              ),
+            ),
+          ],
         ),
       );
 
@@ -579,7 +599,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
       ? Column(
           children: <Widget>[
             SizedBox(height: 5.0),
-            Text(
+            AutoSizeText(
               state.errorText,
               style: TextStyle(color: primaryErrorColor, fontSize: 12.0),
             ),
@@ -648,10 +668,9 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   void _validateAndUpload() {
     if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadNewExpenseClaim(
+      _expenseClaimBloc.uploadNewExpense(
         _descriptionController.text,
         _grossController.text,
-        stringNet: _netController.text,
       );
       Navigator.pop(context);
     }

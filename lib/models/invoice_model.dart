@@ -15,6 +15,8 @@ class Invoice extends Expense {
     double net,
     double vat,
     String approvedBy,
+    String createdBy,
+    List<String> availableTo,
   }) : super(
           id: id,
           approvedBy: approvedBy,
@@ -26,11 +28,14 @@ class Invoice extends Expense {
           gross: gross,
           net: net,
           vat: vat,
+          createdBy: createdBy,
+          availableTo: availableTo,
         );
 
   Invoice.fromJson(final Map<String, dynamic> json, {String id})
-      : this.dueDate =
-            DateTime.fromMillisecondsSinceEpoch(json[Expense.DUE_DATE_KEY]),
+      : this.dueDate = json.containsKey(Expense.DUE_DATE_KEY)
+            ? DateTime.fromMillisecondsSinceEpoch(json[Expense.DUE_DATE_KEY])
+            : null,
         super.fromJson(json, id: id);
 
   Map<String, dynamic> toJson() {

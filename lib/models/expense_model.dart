@@ -13,6 +13,8 @@ abstract class Expense {
   final double gross;
   final double net;
   final double vat;
+  final String createdBy;
+  final List<String> availableTo;
 
   Expense({
     this.id,
@@ -26,20 +28,26 @@ abstract class Expense {
     this.gross,
     this.net,
     this.vat,
+    this.createdBy,
+    this.availableTo,
   });
 
   Expense.fromJson(Map<String, dynamic> json, {String id})
       : this.id = id,
         this.country = json[COUNTRY_KEY],
         this.category = json[CATEGORY_KEY],
-        this.date = DateTime.fromMillisecondsSinceEpoch(json[DATE_KEY]),
+        this.date = json.containsKey(DATE_KEY)
+            ? DateTime.fromMillisecondsSinceEpoch(json[DATE_KEY])
+            : null,
         this.description = json[DESCRIPTION_KEY],
         this.currency = json[CURRENCY_KEY],
         this.gross = json[GROSS_KEY],
         this.net = json[NET_KEY],
         this.vat = json[VAT_KEY],
         this.approvedBy = json[APPROVED_BY_KEY],
-        this.approvedByName = json[APPROVED_BY_NAME_KEY];
+        this.approvedByName = json[APPROVED_BY_NAME_KEY],
+        this.createdBy = json[CREATED_BY_KEY],
+        this.availableTo = json[AVAILABLE_TO].cast<String>();
 
   Map<String, dynamic> toJson() => {
         APPROVED_BY_KEY: this.approvedBy,
@@ -52,6 +60,8 @@ abstract class Expense {
         GROSS_KEY: this.gross,
         NET_KEY: this.net,
         VAT_KEY: this.vat,
+        CREATED_BY_KEY: this.createdBy,
+        AVAILABLE_TO: this.availableTo,
       };
 
   @override
@@ -80,6 +90,8 @@ abstract class Expense {
   static const String NET_KEY = "net";
   static const String VAT_KEY = "vat";
   static const String APPROVED_BY_KEY = "approved_by";
+  static const String CREATED_BY_KEY = "created_by";
+  static const String AVAILABLE_TO = "availableTo";
   static const String APPROVED_BY_NAME_KEY = "approved_by_name";
 }
 

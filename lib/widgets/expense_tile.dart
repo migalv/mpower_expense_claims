@@ -1,5 +1,6 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_tile_bloc.dart';
+import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:flutter/cupertino.dart';
@@ -113,11 +114,11 @@ class _ExpenseTileState extends State<ExpenseTile>
                       Container(
                         alignment: Alignment.centerRight,
                         child: Chip(
-                          backgroundColor: Colors.blue[50],
+                          backgroundColor: secondary100Color,
                           label: Text(
                             '${expense.gross.toString()} ${_expenseTileBloc.currencySymbol ?? ''}',
                             style: Theme.of(context).textTheme.subhead.copyWith(
-                                  color: Colors.blue,
+                                  color: secondaryColor,
                                 ),
                           ),
                         ),

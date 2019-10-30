@@ -1,3 +1,4 @@
+import 'package:expense_claims_app/colors.dart';
 import 'package:flutter/material.dart';
 
 class NavigationBarWithFAB extends StatefulWidget {
@@ -30,9 +31,9 @@ class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
 
   @override
   void initState() {
-    _colorTween = ColorTween(begin: Colors.blue, end: Colors.black38)
+    _colorTween = ColorTween(begin: secondaryColor, end: Colors.black38)
         .animate(widget._animationController);
-    _colorTween2 = ColorTween(begin: Colors.black38, end: Colors.blue)
+    _colorTween2 = ColorTween(begin: Colors.black38, end: secondaryColor)
         .animate(widget._animationController);
 
     _intTween =
@@ -86,7 +87,7 @@ class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
               ),
             ),
             Container(
-              width: 40.0,
+              width: 32.0,
             ),
             Expanded(
               child: IconButton(
