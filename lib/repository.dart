@@ -190,57 +190,66 @@ class Repository {
         queries.add(_firestore.collection(collection));
     }
 
-    queries.forEach((query) =>
-        _streamSubscriptions.add(query.snapshots().listen((snapshot) {
-          // This list is used to cast the data
-          List auxList;
-          switch (collection) {
-            case COUNTRIES_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) => Country.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<Country>();
-              break;
-            case CURRENCIES_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) => Currency.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<Currency>();
-              break;
-            case CATEGORIES_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) => Category.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<Category>();
-              break;
-            case EXPENSE_CLAIMS_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) =>
-                      ExpenseClaim.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<ExpenseClaim>();
-              break;
-            case INVOICES_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) => Invoice.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<Invoice>();
-              break;
-            case TEMPLATES_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) =>
-                      FormTemplate.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<FormTemplate>();
-              break;
-          }
-          if (list.isEmpty)
-            list = auxList;
-          else
-            list.addAll(auxList);
+    queries.forEach(
+      (query) => _streamSubscriptions.add(
+        query.snapshots().listen(
+          (snapshot) {
+            // This list is used to cast the data
+            List auxList;
+            switch (collection) {
+              case COUNTRIES_COLLECTION:
+                auxList = snapshot.documents
+                    .map(
+                        (doc) => Country.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<Country>();
+                break;
+              case CURRENCIES_COLLECTION:
+                auxList = snapshot.documents
+                    .map((doc) =>
+                        Currency.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<Currency>();
+                break;
+              case CATEGORIES_COLLECTION:
+                auxList = snapshot.documents
+                    .map((doc) =>
+                        Category.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<Category>();
+                break;
+              case EXPENSE_CLAIMS_COLLECTION:
+                auxList = snapshot.documents
+                    .map((doc) =>
+                        ExpenseClaim.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<ExpenseClaim>();
+                break;
+              case INVOICES_COLLECTION:
+                auxList = snapshot.documents
+                    .map(
+                        (doc) => Invoice.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<Invoice>();
+                break;
+              case TEMPLATES_COLLECTION:
+                auxList = snapshot.documents
+                    .map((doc) =>
+                        FormTemplate.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<FormTemplate>();
+                break;
+            }
+            if (list.isEmpty)
+              list = auxList;
+            else
+              list.addAll(auxList);
 
-          streamController.add(list);
-        })));
+            streamController.add(list);
+          },
+        ),
+      ),
+    );
   }
 
   void _listenToApproversChanges() => _streamSubscriptions.add(_firestore

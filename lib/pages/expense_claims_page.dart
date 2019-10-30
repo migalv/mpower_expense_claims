@@ -59,7 +59,6 @@ class _ExpenseClaimsPageState extends State<ExpenseClaimsPage> {
                       child: IconButton(
                         icon: Icon(
                           Icons.settings,
-                          color: Colors.black45,
                         ),
                         onPressed: () {},
                       ),
@@ -126,16 +125,10 @@ class _ExpenseClaimsPageState extends State<ExpenseClaimsPage> {
   updateSearch() {
     cancelSearch();
     if (!_isSearching) {
-      setState(() {
-        // _searchResults = List<TimelineEntry>();
-      });
       return;
     }
     String txt = _searchTextController.text.trim();
 
-    /// Perform search.
-    ///
-    /// A [Timer] is used to prevent unnecessary searches while the user is typing.
     _searchTimer = Timer(Duration(milliseconds: txt.isEmpty ? 0 : 350), () {
       // Set<TimelineEntry> res = SearchManager.init().performSearch(txt);
       // setState(() {
