@@ -1,29 +1,23 @@
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
-import 'package:expense_claims_app/respository.dart';
+import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class ExpenseTile extends StatefulWidget {
+class ExpenseTile extends StatelessWidget {
   final Expense expense;
 
   const ExpenseTile({Key key, @required this.expense}) : super(key: key);
 
-  @override
-  _ExpenseTileState createState() => _ExpenseTileState();
-}
-
-class _ExpenseTileState extends State<ExpenseTile> {
-  @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(widget.expense.description),
-      subtitle: _buildCategorySubTitle(widget.expense.category),
+      title: Text(expense.description),
+      subtitle: _buildCategorySubTitle(expense.category),
       trailing: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
-          Text(timeago.format(widget.expense.date)),
+          Text(timeago.format(expense.date)),
           SizedBox(height: 16.0),
           _buildCost(),
         ],
@@ -47,8 +41,8 @@ class _ExpenseTileState extends State<ExpenseTile> {
   }
 
   Widget _buildCost() {
-    Currency currency = repository.getCurrencyWithId(widget.expense.currency);
+    Currency currency = repository.getCurrencyWithId(expense.currency);
 
-    return Text(widget.expense.gross.toString() + " " + currency.symbol);
+    return Text(expense.gross.toString() + " " + currency.symbol);
   }
 }

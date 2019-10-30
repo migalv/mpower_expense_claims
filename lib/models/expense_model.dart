@@ -1,6 +1,5 @@
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
-import 'package:flutter/material.dart';
 
 abstract class Expense {
   final String id;
@@ -18,15 +17,15 @@ abstract class Expense {
 
   Expense({
     this.id,
-    @required this.approvedBy,
-    @required this.country,
-    @required this.category,
-    @required this.currency,
-    @required this.date,
-    @required this.description,
-    @required this.gross,
-    @required this.net,
-    @required this.vat,
+    this.approvedBy,
+    this.country,
+    this.category,
+    this.currency,
+    this.date,
+    this.description,
+    this.gross,
+    this.net,
+    this.vat,
     this.createdBy,
     this.availableTo,
   });
@@ -35,7 +34,9 @@ abstract class Expense {
       : this.id = id,
         this.country = json[COUNTRY_KEY],
         this.category = json[CATEGORY_KEY],
-        this.date = DateTime.fromMillisecondsSinceEpoch(json[DATE_KEY]),
+        this.date = json.containsKey(DATE_KEY)
+            ? DateTime.fromMillisecondsSinceEpoch(json[DATE_KEY])
+            : null,
         this.description = json[DESCRIPTION_KEY],
         this.currency = json[CURRENCY_KEY],
         this.gross = json[GROSS_KEY],

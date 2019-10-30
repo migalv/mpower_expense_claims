@@ -3,8 +3,9 @@ import 'dart:io';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/models/expense_template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
-import 'package:expense_claims_app/respository.dart';
+import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
@@ -41,11 +42,13 @@ class NewExpenseBloc {
   /// This will determine the type of the form.
   final ExpenseType expenseType;
 
+  final ExpenseTemplate template;
+
   // Flags
   bool _multipleAttachments;
   bool get multipleAttachments => _multipleAttachments;
 
-  NewExpenseBloc({@required this.expenseType}) {
+  NewExpenseBloc({@required this.expenseType, this.template}) {
     switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
         _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
@@ -58,14 +61,20 @@ class NewExpenseBloc {
         _multipleAttachments = true;
         break;
     }
-    if (repository?.lastSelectedCountry?.value != null)
-      selectCountry(
-          repository.getCountryWithId(repository.lastSelectedCountry.value));
-    if (repository?.lastSelectedCurrency?.value != null)
-      selectCurrency(repository.lastSelectedCurrency.value);
-    if (repository?.lastSelectedApprover?.value != null)
-      selectApprover(repository.lastSelectedApprover.value);
-    selectExpenseDate(DateTime.now());
+    // The user selected a template
+    if (template != null)
+      _createBasedOnTemplate();
+    else {
+      // A new expense from scratch
+      if (repository?.lastSelectedCountry?.value != null)
+        selectCountry(
+            repository.getCountryWithId(repository.lastSelectedCountry.value));
+      if (repository?.lastSelectedCurrency?.value != null)
+        selectCurrency(repository.lastSelectedCurrency.value);
+      if (repository?.lastSelectedApprover?.value != null)
+        selectApprover(repository.lastSelectedApprover.value);
+      selectExpenseDate(DateTime.now());
+    }
   }
 
   // SELECTS
@@ -199,6 +208,14 @@ class NewExpenseBloc {
 
   String currencyValidator(String value) =>
       selectedCurrency.value == null ? "Select a currency" : null;
+
+  void _createBasedOnTemplate() {
+    selectCategory(template.category);
+    selectCountry(repository.getCountryWithId(template.country));
+    selectVat(template.vat);
+    selectCurrency(template.currency);
+    selectApprover(template.approvedBy);
+  }
 
   void dispose() {
     _selectedCountryController.close();

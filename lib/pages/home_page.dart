@@ -3,8 +3,10 @@ import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/models/expense_template_model.dart';
+import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/pages/new_expense_page.dart';
-import 'package:expense_claims_app/respository.dart';
+import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/fab_add_to_close.dart';
 import 'package:expense_claims_app/widgets/navigation_bar_with_fab.dart';
@@ -25,6 +27,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   AnimationController _navBarController, _bottomSheetController;
   HomeBloc _homeBloc;
   Tween<Offset> _tween = Tween(begin: Offset(0, 1), end: Offset(0, 0));
+
+  ExpenseTemplate _expenseTemplate = ExpenseTemplate(
+    name: 'test template',
+    category: "A0xjzuNOzkHsfoKWiBqg",
+    description: "Template description",
+    country: "77U4GKjZPoVNCCw9DTsp",
+    vat: 21.0,
+    currency: "YHynSplXBwq9piJj6bnr",
+    approvedBy: "jXrh5j8UBndSdrh7dOnsfGLuONN2",
+  );
 
   @override
   void initState() {
@@ -77,6 +89,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       body: StreamBuilder<int>(
           stream: _homeBloc.pageIndex,
+          initialData: 0,
           builder: (context, pageIndexSnapshot) {
             return Stack(
               children: <Widget>[
@@ -92,17 +105,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         builder: (context, snapshot) {
                           return ListView(
                             children: snapshot.data
-                                .map((expense) => ExpenseTile(
-                                      expense: expense,
-                                    ))
+                                .map((expense) => ExpenseTile(expense: expense))
                                 .toList(),
                           );
                         }),
-                    Center(
-                      child: Container(
-                        child: Text('Empty Body 3'),
-                      ),
-                    )
+                    StreamBuilder<List<Invoice>>(
+                        stream: repository.invoices,
+                        initialData: <Invoice>[],
+                        builder: (context, snapshot) {
+                          return ListView(
+                            children: snapshot.data
+                                .map((expense) => ExpenseTile(expense: expense))
+                                .toList(),
+                          );
+                        }),
                   ],
                 ),
                 SizedBox.expand(

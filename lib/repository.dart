@@ -7,6 +7,7 @@ import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/models/expense_template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -42,6 +43,8 @@ class Repository {
   ValueObservable<List<ExpenseClaim>> get expenseClaims =>
       _expenseClaimsController.stream;
   ValueObservable<List<Invoice>> get invoices => _invoicesController.stream;
+  ValueObservable<List<ExpenseTemplate>> get templates =>
+      _templatesController.stream;
 
   List<StreamSubscription> _streamSubscriptions = [];
 
@@ -55,6 +58,8 @@ class Repository {
   final _expenseClaimsController = BehaviorSubject<List<ExpenseClaim>>();
   final _invoicesController = BehaviorSubject<List<Invoice>>();
   final _approversController = BehaviorSubject<List<User>>();
+  final _templatesController = BehaviorSubject<List<ExpenseTemplate>>();
+
   void initUserId(String userId) => _userId = userId;
 
   void init() {
@@ -70,10 +75,10 @@ class Repository {
 
     switch (expense.runtimeType) {
       case ExpenseClaim:
-        collection = EXPENSE_CLAIMS_KEY;
+        collection = EXPENSE_CLAIMS_COLLECTION;
         break;
       case Invoice:
-        collection = INVOICES_KEY;
+        collection = INVOICES_COLLECTION;
     }
     docRef = _firestore.collection(collection).document();
     docRef.setData(expense.toJson());
@@ -114,21 +119,21 @@ class Repository {
   }
 
   void updateLastSelectedCountry(String countryId) => _firestore
-          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .collection("$USERS_COLLECTION/$userId/$EDITABLE_INFO_COLLECTION")
           .document(LAST_SELECTED_DOC)
           .setData({
         LAST_SELECTED_COUNTRY: countryId,
       }, merge: true);
 
   void updateLastSelectedCurrency(String currencyId) => _firestore
-          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .collection("$USERS_COLLECTION/$userId/$EDITABLE_INFO_COLLECTION")
           .document(LAST_SELECTED_DOC)
           .setData({
         LAST_SELECTED_CURRENCY: currencyId,
       }, merge: true);
 
   void updateLastSelectedApprover(String approverId) => _firestore
-          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .collection("$USERS_COLLECTION/$userId/$EDITABLE_INFO_COLLECTION")
           .document(LAST_SELECTED_DOC)
           .setData({
         LAST_SELECTED_APPROVER: approverId,
@@ -136,11 +141,12 @@ class Repository {
 
   // LOAD
   void loadSettings() {
-    _setUpStream(COUNTRIES_KEY, _countriesController);
-    _setUpStream(CURRENCIES_KEY, _currenciesController);
-    _setUpStream(CATEGORIES_KEY, _categoriesController);
-    _setUpStream(EXPENSE_CLAIMS_KEY, _expenseClaimsController);
-    _setUpStream(INVOICES_KEY, _invoicesController);
+    _setUpStream(COUNTRIES_COLLECTION, _countriesController);
+    _setUpStream(CURRENCIES_COLLECTION, _currenciesController);
+    _setUpStream(CATEGORIES_COLLECTION, _categoriesController);
+    _setUpStream(EXPENSE_CLAIMS_COLLECTION, _expenseClaimsController);
+    _setUpStream(INVOICES_COLLECTION, _invoicesController);
+    _setUpStream(TEMPLATES_COLLECTION, _templatesController);
     _listenToApproversChanges();
     _listenToExpenseClaimsChanges();
     _loadLastSelected();
@@ -148,57 +154,80 @@ class Repository {
 
   void _setUpStream(String collection, StreamController streamController) {
     List list = [];
-    Query query;
+    List queries = [];
 
     switch (collection) {
-      case EXPENSE_CLAIMS_KEY:
-        query = _firestore
+      case EXPENSE_CLAIMS_COLLECTION:
+        queries.add(_firestore
             .collection(collection)
-            .where("availableTo", arrayContains: userId);
+            .where("availableTo", arrayContains: userId));
         break;
-      case INVOICES_KEY:
-        query = _firestore
+      case INVOICES_COLLECTION:
+        queries.add(_firestore
             .collection(collection)
-            .where("availableTo", arrayContains: userId);
+            .where("availableTo", arrayContains: userId));
+        break;
+      case TEMPLATES_COLLECTION:
+        queries.add(_firestore
+            .collection(collection)
+            .where("availableTo", arrayContains: userId));
+        queries.add(_firestore
+            .collection(collection)
+            .where("availableTo", isEqualTo: null));
         break;
       default:
-        query = _firestore.collection(collection);
+        queries.add(_firestore.collection(collection));
     }
 
-    _streamSubscriptions.add(query.snapshots().listen((snapshot) {
-      switch (collection) {
-        case COUNTRIES_KEY:
-          list = snapshot.documents
-              .map((doc) => Country.fromJson(doc.data, id: doc.documentID))
-              .toList();
-          break;
-        case CURRENCIES_KEY:
-          list = snapshot.documents
-              .map((doc) => Currency.fromJson(doc.data, id: doc.documentID))
-              .toList();
-          break;
-        case CATEGORIES_KEY:
-          list = snapshot.documents
-              .map((doc) => Category.fromJson(doc.data, id: doc.documentID))
-              .toList();
-          break;
-        case EXPENSE_CLAIMS_KEY:
-          list = snapshot.documents
-              .map((doc) => ExpenseClaim.fromJson(doc.data, id: doc.documentID))
-              .toList();
-          break;
-        case INVOICES_KEY:
-          list = snapshot.documents
-              .map((doc) => Invoice.fromJson(doc.data, id: doc.documentID))
-              .toList();
-          break;
-      }
-      streamController.add(list);
-    }));
+    queries.forEach((query) =>
+        _streamSubscriptions.add(query.snapshots().listen((snapshot) {
+          switch (collection) {
+            case COUNTRIES_COLLECTION:
+              list = snapshot.documents
+                  .map((doc) => Country.fromJson(doc.data, id: doc.documentID))
+                  .toList()
+                  .cast<Country>();
+              break;
+            case CURRENCIES_COLLECTION:
+              list = snapshot.documents
+                  .map((doc) => Currency.fromJson(doc.data, id: doc.documentID))
+                  .toList()
+                  .cast<Currency>();
+              break;
+            case CATEGORIES_COLLECTION:
+              list = snapshot.documents
+                  .map((doc) => Category.fromJson(doc.data, id: doc.documentID))
+                  .toList()
+                  .cast<Category>();
+              break;
+            case EXPENSE_CLAIMS_COLLECTION:
+              list = snapshot.documents
+                  .map((doc) =>
+                      ExpenseClaim.fromJson(doc.data, id: doc.documentID))
+                  .toList()
+                  .cast<ExpenseClaim>();
+              break;
+            case INVOICES_COLLECTION:
+              list = snapshot.documents
+                  .map((doc) => Invoice.fromJson(doc.data, id: doc.documentID))
+                  .toList()
+                  .cast<Invoice>();
+              break;
+            case TEMPLATES_COLLECTION:
+              list = snapshot.documents
+                  .map((doc) =>
+                      ExpenseTemplate.fromJson(doc.data, id: doc.documentID))
+                  .toList()
+                  .cast<ExpenseTemplate>();
+              list.forEach((ele) => print(ele));
+              break;
+          }
+          streamController.add(list);
+        })));
   }
 
   void _listenToApproversChanges() => _streamSubscriptions.add(_firestore
-          .collection(USERS_KEY)
+          .collection(USERS_COLLECTION)
           .document(userId)
           .snapshots()
           .listen((snapshot) {
@@ -210,7 +239,7 @@ class Repository {
       }));
 
   void _listenToExpenseClaimsChanges() => _streamSubscriptions.add(_firestore
-          .collection(EXPENSE_CLAIMS_KEY)
+          .collection(EXPENSE_CLAIMS_COLLECTION)
           .snapshots()
           .listen((snapshot) {
         List<ExpenseClaim> expenseClaims = snapshot.documents
@@ -220,7 +249,7 @@ class Repository {
       }));
 
   void _loadLastSelected() => _streamSubscriptions.add(_firestore
-          .collection("$USERS_KEY/$userId/$EDITABLE_INFO_KEY")
+          .collection("$USERS_COLLECTION/$userId/$EDITABLE_INFO_COLLECTION")
           .document(LAST_SELECTED_DOC)
           .snapshots()
           .listen((docSnapshot) {
@@ -272,14 +301,32 @@ class Repository {
     return AuthState.ERROR;
   }
 
-  Country getCountryWithId(String countryId) => countries?.value
-      ?.singleWhere((country) => (country?.id ?? "") == countryId);
+  Country getCountryWithId(String countryId) {
+    try {
+      return countries?.value?.singleWhere(
+          (country) => (country?.id ?? "") == countryId,
+          orElse: null);
+    } catch (_) {}
+    return null;
+  }
 
-  Currency getCurrencyWithId(String currencyId) => currencies?.value
-      ?.singleWhere((currency) => (currency?.id ?? "") == currencyId);
+  Currency getCurrencyWithId(String currencyId) {
+    try {
+      return currencies?.value?.singleWhere(
+          (currency) => (currency?.id ?? "") == currencyId,
+          orElse: null);
+    } catch (_) {}
+    return null;
+  }
 
-  Category getCategoryWithId(String categoryId) => categories?.value
-      ?.singleWhere((category) => (category?.id ?? "") == categoryId);
+  Category getCategoryWithId(String categoryId) {
+    try {
+      return categories?.value?.singleWhere(
+          (category) => (category?.id ?? "") == categoryId,
+          orElse: null);
+    } catch (_) {}
+    return null;
+  }
 
   /// Function that recovers the password given an email
   /// If the recovery fails it returns FALSE if not TRUE
@@ -302,6 +349,7 @@ class Repository {
     _expenseClaimsController.close();
     _approversController.close();
     _invoicesController.close();
+    _templatesController.close();
     _streamSubscriptions
         .forEach((streamSubscription) => streamSubscription.cancel());
   }
@@ -312,13 +360,14 @@ class Repository {
 final Repository repository = Repository();
 
 // FIRESTORE COLLECTION KEYS
-const String EXPENSE_CLAIMS_KEY = "expense_claims";
-const String INVOICES_KEY = "invoices";
-const String COUNTRIES_KEY = "countries";
-const String CURRENCIES_KEY = "currencies";
-const String CATEGORIES_KEY = "categories";
-const String USERS_KEY = "users";
-const String EDITABLE_INFO_KEY = "editable_info";
+const String EXPENSE_CLAIMS_COLLECTION = "expense_claims";
+const String INVOICES_COLLECTION = "invoices";
+const String COUNTRIES_COLLECTION = "countries";
+const String CURRENCIES_COLLECTION = "currencies";
+const String CATEGORIES_COLLECTION = "categories";
+const String USERS_COLLECTION = "users";
+const String EDITABLE_INFO_COLLECTION = "editable_info";
+const String TEMPLATES_COLLECTION = "templates";
 
 // FIRESTORE DOCUMENT KEYS
 const String LAST_SELECTED_DOC = "last_selected";

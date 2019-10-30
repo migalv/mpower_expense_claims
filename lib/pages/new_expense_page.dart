@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
@@ -8,7 +9,7 @@ import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
-import 'package:expense_claims_app/respository.dart';
+import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -17,8 +18,6 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
-
-// TODO: MAKE JUMPING FROM FIELD TO FIELD
 
 class NewExpensePage extends StatefulWidget {
   final ScrollController scrollController;
@@ -40,16 +39,14 @@ class _NewExpensePageState extends State<NewExpensePage> {
   final _netController =
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
 
-  // Focus Nodes
-  final _descriptionFocusNode = FocusNode();
-  final _grossFocusNode = FocusNode();
-
   // Keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void didChangeDependencies() {
     _expenseClaimBloc = Provider.of<NewExpenseBloc>(context);
+    if (_expenseClaimBloc.template != null)
+      _descriptionController.text = _expenseClaimBloc.template.description;
     super.didChangeDependencies();
   }
 
@@ -95,11 +92,11 @@ class _NewExpensePageState extends State<NewExpensePage> {
   Widget _buildTitle() => Padding(
         padding: const EdgeInsets.only(left: 16.0, right: 0.0, top: 16.0),
         child: Text(
-            'New ' +
-                (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
-                    ? "Expense claim"
-                    : "Invoice"),
-          style: Theme.of(context).textTheme.title,)
+          'New ' +
+              (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
+                  ? "Expense claim"
+                  : "Invoice"),
+          style: Theme.of(context).textTheme.title,
         ),
       );
 
@@ -302,7 +299,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
               controller: _descriptionController,
               maxLines: null,
               autocorrect: true,
-              focusNode: _descriptionFocusNode,
               textInputAction: TextInputAction.next,
               keyboardType: TextInputType.text,
               decoration: InputDecoration(
@@ -335,7 +331,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
                     Expanded(
                       child: TextFormField(
                         controller: _grossController,
-                        focusNode: _grossFocusNode,
                         textInputAction: TextInputAction.next,
                         keyboardType: TextInputType.number,
                         inputFormatters: <TextInputFormatter>[
@@ -583,7 +578,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
       ? Column(
           children: <Widget>[
             SizedBox(height: 5.0),
-            Text(
+            AutoSizeText(
               state.errorText,
               style: TextStyle(color: primaryErrorColor, fontSize: 12.0),
             ),
