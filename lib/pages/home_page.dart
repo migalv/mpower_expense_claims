@@ -10,6 +10,7 @@ import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/fab_add_to_close.dart';
 import 'package:expense_claims_app/widgets/navigation_bar_with_fab.dart';
+import 'package:expense_claims_app/widgets/templates_list.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -28,7 +29,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   HomeBloc _homeBloc;
   Tween<Offset> _tween = Tween(begin: Offset(0, 1), end: Offset(0, 0));
 
-  ExpenseTemplate _expenseTemplate = ExpenseTemplate(
+  FormTemplate _expenseTemplate = FormTemplate(
     name: 'test template',
     category: "A0xjzuNOzkHsfoKWiBqg",
     description: "Template description",
@@ -121,36 +122,77 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         }),
                   ],
                 ),
-                SizedBox.expand(
-                  child: SlideTransition(
-                    position: _tween.animate(_bottomSheetController),
-                    child: DraggableScrollableSheet(
-                      builder: (BuildContext context,
-                              ScrollController scrollController) =>
-                          BlocProvider<NewExpenseBloc>(
-                        child:
-                            NewExpensePage(scrollController: scrollController),
-                        initBloc: (_, bloc) =>
-                            bloc ??
-                            NewExpenseBloc(
-                                expenseType: pageIndexSnapshot.data == 0
-                                    ? ExpenseType.EXPENSE_CLAIM
-                                    : ExpenseType.INVOICE),
-                        onDispose: (_, bloc) => bloc?.dispose(),
-                      ),
-                    ),
-                  ),
-                ),
+                StreamBuilder<BottomSheetState>(
+                    stream: _homeBloc.bottomSheetState,
+                    initialData: BottomSheetState.CLOSED,
+                    builder: (context, bottomSheetStateSnapshot) {
+                      Map<BottomSheetState, Widget> bottomSheets = Map();
+
+                      bottomSheets[BottomSheetState.CLOSED] = Container();
+                      bottomSheets[BottomSheetState.TEMPLATES] =
+                          DraggableScrollableSheet(
+                        builder: (BuildContext context,
+                                ScrollController scrollController) =>
+                            StreamBuilder<List<FormTemplate>>(
+                                stream: repository.templates,
+                                builder: (context, templatesSnapshot) {
+                                  return TemplateList(
+                                    templatesList:
+                                        templatesSnapshot?.data ?? [],
+                                    expenseType: pageIndexSnapshot.data == 0
+                                        ? ExpenseType.EXPENSE_CLAIM
+                                        : ExpenseType.INVOICE,
+                                    bottomSheetController:
+                                        _bottomSheetController,
+                                    scrollController: scrollController,
+                                    homeBloc: _homeBloc,
+                                  );
+                                }),
+                      );
+                      bottomSheets[BottomSheetState.FORM] =
+                          DraggableScrollableSheet(
+                        builder: (BuildContext context,
+                                ScrollController scrollController) =>
+                            StreamBuilder<FormTemplate>(
+                                stream: _homeBloc.selectedFormTemplate,
+                                builder: (_, formTemplateSnapshot) {
+                                  return BlocProvider<NewExpenseBloc>(
+                                    initBloc: (_, bloc) =>
+                                        bloc ??
+                                        NewExpenseBloc(
+                                          expenseType:
+                                              pageIndexSnapshot.data == 0
+                                                  ? ExpenseType.EXPENSE_CLAIM
+                                                  : ExpenseType.INVOICE,
+                                          template: formTemplateSnapshot.data,
+                                        ),
+                                    onDispose: (_, bloc) => bloc?.dispose(),
+                                    child: NewExpensePage(
+                                        scrollController: scrollController),
+                                  );
+                                }),
+                      );
+
+                      return SizedBox.expand(
+                        child: SlideTransition(
+                          position: _tween.animate(_bottomSheetController),
+                          child: bottomSheets[bottomSheetStateSnapshot.data],
+                        ),
+                      );
+                    }),
               ],
             );
           }),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FabAddToClose(
         onPressed: () {
-          if (_bottomSheetController.isDismissed)
+          if (_bottomSheetController.isDismissed) {
+            _homeBloc.setBottomSheetState(BottomSheetState.TEMPLATES);
             _bottomSheetController.forward();
-          else if (_bottomSheetController.isCompleted)
-            _bottomSheetController.reverse();
+          } else if (_bottomSheetController.isCompleted) {
+            _bottomSheetController.reverse().then(
+                (_) => _homeBloc.setBottomSheetState(BottomSheetState.CLOSED));
+          }
         },
       ),
     );

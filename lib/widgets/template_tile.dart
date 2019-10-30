@@ -1,11 +1,16 @@
+import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/models/expense_template_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/material.dart';
 
 class TemplateTile extends StatelessWidget {
-  final ExpenseTemplate template;
+  final FormTemplate template;
+  final AnimationController bottomSheetController;
+  final HomeBloc homeBloc;
 
-  const TemplateTile({Key key, this.template}) : super(key: key);
+  const TemplateTile(
+      {Key key, this.template, this.bottomSheetController, this.homeBloc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +24,14 @@ class TemplateTile extends StatelessWidget {
         template.description,
         style: Theme.of(context).textTheme.subtitle,
       ),
+      onTap: () async {
+        if (bottomSheetController.isCompleted) {
+          await bottomSheetController.reverse();
+          homeBloc.setBottomSheetState(BottomSheetState.FORM);
+          homeBloc.selectFormTemplate(template);
+          bottomSheetController.forward();
+        }
+      },
     );
   }
 }

@@ -42,7 +42,7 @@ class NewExpenseBloc {
   /// This will determine the type of the form.
   final ExpenseType expenseType;
 
-  final ExpenseTemplate template;
+  final FormTemplate template;
 
   // Flags
   bool _multipleAttachments;
@@ -61,20 +61,15 @@ class NewExpenseBloc {
         _multipleAttachments = true;
         break;
     }
-    // The user selected a template
-    if (template != null)
-      _createBasedOnTemplate();
-    else {
-      // A new expense from scratch
-      if (repository?.lastSelectedCountry?.value != null)
-        selectCountry(
-            repository.getCountryWithId(repository.lastSelectedCountry.value));
-      if (repository?.lastSelectedCurrency?.value != null)
-        selectCurrency(repository.lastSelectedCurrency.value);
-      if (repository?.lastSelectedApprover?.value != null)
-        selectApprover(repository.lastSelectedApprover.value);
-      selectExpenseDate(DateTime.now());
-    }
+    if (template != null) _buildFormFromTemplate();
+    if (repository?.lastSelectedCountry?.value != null)
+      selectCountry(
+          repository.getCountryWithId(repository.lastSelectedCountry.value));
+    if (repository?.lastSelectedCurrency?.value != null)
+      selectCurrency(repository.lastSelectedCurrency.value);
+    if (repository?.lastSelectedApprover?.value != null)
+      selectApprover(repository.lastSelectedApprover.value);
+    selectExpenseDate(DateTime.now());
   }
 
   // SELECTS
@@ -128,16 +123,12 @@ class NewExpenseBloc {
   }
 
   // UPLOAD DATA
-  void uploadNewExpense(
-    String description,
-    String stringGross, {
-    String stringNet,
-  }) {
+  void uploadNewExpense(String description, String stringGross) {
     if (description == null ||
         stringGross == null ||
         selectedApprover.value == null) return;
     double gross = double.tryParse(stringGross.replaceAll(',', '.'));
-    double net = stringNet != null ? double.tryParse(stringNet) : null;
+    double net;
     double vat = selectedVat.value;
     if (net == null && vat != null) net = gross - (gross * vat) / 100;
     Expense expense;
@@ -209,7 +200,7 @@ class NewExpenseBloc {
   String currencyValidator(String value) =>
       selectedCurrency.value == null ? "Select a currency" : null;
 
-  void _createBasedOnTemplate() {
+  void _buildFormFromTemplate() {
     selectCategory(template.category);
     selectCountry(repository.getCountryWithId(template.country));
     selectVat(template.vat);

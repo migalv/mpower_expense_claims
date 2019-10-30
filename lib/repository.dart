@@ -43,7 +43,7 @@ class Repository {
   ValueObservable<List<ExpenseClaim>> get expenseClaims =>
       _expenseClaimsController.stream;
   ValueObservable<List<Invoice>> get invoices => _invoicesController.stream;
-  ValueObservable<List<ExpenseTemplate>> get templates =>
+  ValueObservable<List<FormTemplate>> get templates =>
       _templatesController.stream;
 
   List<StreamSubscription> _streamSubscriptions = [];
@@ -58,7 +58,7 @@ class Repository {
   final _expenseClaimsController = BehaviorSubject<List<ExpenseClaim>>();
   final _invoicesController = BehaviorSubject<List<Invoice>>();
   final _approversController = BehaviorSubject<List<User>>();
-  final _templatesController = BehaviorSubject<List<ExpenseTemplate>>();
+  final _templatesController = BehaviorSubject<List<FormTemplate>>();
 
   void initUserId(String userId) => _userId = userId;
 
@@ -181,47 +181,53 @@ class Repository {
 
     queries.forEach((query) =>
         _streamSubscriptions.add(query.snapshots().listen((snapshot) {
+          // This list is used to cast the data
+          List auxList;
           switch (collection) {
             case COUNTRIES_COLLECTION:
-              list = snapshot.documents
+              auxList = snapshot.documents
                   .map((doc) => Country.fromJson(doc.data, id: doc.documentID))
                   .toList()
                   .cast<Country>();
               break;
             case CURRENCIES_COLLECTION:
-              list = snapshot.documents
+              auxList = snapshot.documents
                   .map((doc) => Currency.fromJson(doc.data, id: doc.documentID))
                   .toList()
                   .cast<Currency>();
               break;
             case CATEGORIES_COLLECTION:
-              list = snapshot.documents
+              auxList = snapshot.documents
                   .map((doc) => Category.fromJson(doc.data, id: doc.documentID))
                   .toList()
                   .cast<Category>();
               break;
             case EXPENSE_CLAIMS_COLLECTION:
-              list = snapshot.documents
+              auxList = snapshot.documents
                   .map((doc) =>
                       ExpenseClaim.fromJson(doc.data, id: doc.documentID))
                   .toList()
                   .cast<ExpenseClaim>();
               break;
             case INVOICES_COLLECTION:
-              list = snapshot.documents
+              auxList = snapshot.documents
                   .map((doc) => Invoice.fromJson(doc.data, id: doc.documentID))
                   .toList()
                   .cast<Invoice>();
               break;
             case TEMPLATES_COLLECTION:
-              list = snapshot.documents
+              auxList = snapshot.documents
                   .map((doc) =>
-                      ExpenseTemplate.fromJson(doc.data, id: doc.documentID))
+                      FormTemplate.fromJson(doc.data, id: doc.documentID))
                   .toList()
-                  .cast<ExpenseTemplate>();
-              list.forEach((ele) => print(ele));
+                  .cast<FormTemplate>();
               break;
           }
+          if (list.isEmpty)
+            list = auxList;
+          else
+            list.addAll(auxList);
+
           streamController.add(list);
         })));
   }

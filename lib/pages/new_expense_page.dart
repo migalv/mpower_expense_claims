@@ -23,7 +23,6 @@ class NewExpensePage extends StatefulWidget {
   final ScrollController scrollController;
 
   NewExpensePage({@required this.scrollController});
-
   @override
   _NewExpensePageState createState() => _NewExpensePageState();
 }
@@ -36,8 +35,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
   final _descriptionController = TextEditingController();
   final _grossController =
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
-  final _netController =
-      MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
 
   // Keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -45,8 +42,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
   @override
   void didChangeDependencies() {
     _expenseClaimBloc = Provider.of<NewExpenseBloc>(context);
-    if (_expenseClaimBloc.template != null)
-      _descriptionController.text = _expenseClaimBloc.template.description;
     super.didChangeDependencies();
   }
 
@@ -65,6 +60,10 @@ class _NewExpensePageState extends State<NewExpensePage> {
                 blurRadius: 2.0,
               )
             ],
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(32.0),
+              topRight: Radius.circular(32.0),
+            ),
           ),
           child: ListView(
             controller: widget.scrollController,
@@ -83,7 +82,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
               _buildCost(),
               _buildApproverTile(),
               _buildAttachmentsTile(),
-              _buildDoneButton(),
+              _buildButtons(),
             ],
           ),
         ),
@@ -299,7 +298,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
               controller: _descriptionController,
               maxLines: null,
               autocorrect: true,
-              textInputAction: TextInputAction.next,
               keyboardType: TextInputType.text,
               decoration: InputDecoration(
                 filled: true,
@@ -331,7 +329,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
                     Expanded(
                       child: TextFormField(
                         controller: _grossController,
-                        textInputAction: TextInputAction.next,
                         keyboardType: TextInputType.number,
                         inputFormatters: <TextInputFormatter>[
                           WhitelistingTextInputFormatter.digitsOnly,
@@ -555,22 +552,46 @@ class _NewExpensePageState extends State<NewExpensePage> {
         ),
       );
 
-  Widget _buildDoneButton() => Padding(
+  Widget _buildButtons() => Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.0),
-        child: FlatButton(
-          padding: EdgeInsets.all(14.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          color: secondaryLightColor,
-          child: Text(
-            'Create new ' +
-                (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
-                    ? "Expense claim"
-                    : "Invoice"),
-            style: TextStyle(color: Colors.white),
-          ),
-          onPressed: () => _validateAndUpload(),
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: FlatButton(
+                padding: EdgeInsets.all(14.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                color: secondaryLightColor,
+                child: Text(
+                  'Create Template',
+                  style: TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+                onPressed: () => _validateAndUpload(),
+              ),
+            ),
+            SizedBox(width: 16.0),
+            Expanded(
+              child: FlatButton(
+                padding: EdgeInsets.all(14.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                color: secondaryLightColor,
+                child: Text(
+                  'Create ' +
+                      (_expenseClaimBloc.expenseType ==
+                              ExpenseType.EXPENSE_CLAIM
+                          ? "Expense"
+                          : "Invoice"),
+                  style: TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+                onPressed: () => _validateAndUpload(),
+              ),
+            ),
+          ],
         ),
       );
 
@@ -650,7 +671,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
       _expenseClaimBloc.uploadNewExpense(
         _descriptionController.text,
         _grossController.text,
-        stringNet: _netController.text,
       );
       Navigator.pop(context);
     }
