@@ -45,8 +45,7 @@ class Repository {
   ValueObservable<List<ExpenseClaim>> get expenseClaims =>
       _expenseClaimsController.stream;
   ValueObservable<List<Invoice>> get invoices => _invoicesController.stream;
-  ValueObservable<List<FormTemplate>> get templates =>
-      _templatesController.stream;
+  ValueObservable<List<Template>> get templates => _templatesController.stream;
 
   List<StreamSubscription> _streamSubscriptions = [];
 
@@ -60,7 +59,7 @@ class Repository {
   final _expenseClaimsController = BehaviorSubject<List<ExpenseClaim>>();
   final _invoicesController = BehaviorSubject<List<Invoice>>();
   final _approversController = BehaviorSubject<List<User>>();
-  final _templatesController = BehaviorSubject<List<FormTemplate>>();
+  final _templatesController = BehaviorSubject<List<Template>>();
 
   void init() {
     _countriesController.add([]);
@@ -235,9 +234,9 @@ class Repository {
               case TEMPLATES_COLLECTION:
                 auxList = snapshot.documents
                     .map((doc) =>
-                        FormTemplate.fromJson(doc.data, id: doc.documentID))
+                        Template.fromJson(doc.data, id: doc.documentID))
                     .toList()
-                    .cast<FormTemplate>();
+                    .cast<Template>();
                 break;
             }
             if (list.isEmpty)

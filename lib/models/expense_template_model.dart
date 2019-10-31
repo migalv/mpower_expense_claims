@@ -1,6 +1,6 @@
 import 'package:expense_claims_app/models/expense_model.dart';
 
-class FormTemplate {
+class Template {
   final String id;
   final String name;
   final String approvedBy;
@@ -12,7 +12,7 @@ class FormTemplate {
   final List<String> availableTo;
   final ExpenseType expenseType;
 
-  FormTemplate({
+  Template({
     this.id,
     this.name,
     this.approvedBy,
@@ -25,7 +25,7 @@ class FormTemplate {
     this.expenseType,
   });
 
-  FormTemplate.fromJson(final Map<String, dynamic> json, {String id})
+  Template.fromJson(final Map<String, dynamic> json, {String id})
       : this.id = id,
         this.name = json[NAME_KEY],
         this.country = json[COUNTRY_KEY],

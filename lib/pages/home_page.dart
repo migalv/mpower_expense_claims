@@ -1,14 +1,12 @@
 import 'package:expense_claims_app/bloc_provider.dart';
+import 'package:expense_claims_app/blocs/custom_draggable_scrollable_sheet_bloc.dart';
 import 'package:expense_claims_app/blocs/home_bloc.dart';
-import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
-import 'package:expense_claims_app/models/expense_template_model.dart';
 import 'package:expense_claims_app/pages/expense_claims_page.dart';
-import 'package:expense_claims_app/pages/new_expense_page.dart';
-import 'package:expense_claims_app/repository.dart';
+import 'package:expense_claims_app/widgets/custom_draggable_scrollable_sheet.dart';
 import 'package:expense_claims_app/widgets/fab_add_to_close.dart';
 import 'package:expense_claims_app/widgets/navigation_bar_with_fab.dart';
-import 'package:expense_claims_app/widgets/templates_list.dart';
+import 'package:expense_claims_app/widgets/templates_section.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -26,6 +24,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   AnimationController _navBarController, _bottomSheetController;
   HomeBloc _homeBloc;
   Tween<Offset> _tween = Tween(begin: Offset(0, 1), end: Offset(0, 0));
+  Widget selectedWidget, templates, form;
 
   @override
   void initState() {
@@ -55,6 +54,48 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    templates = DraggableScrollableSheet(
+      builder: (BuildContext context, ScrollController scrollController) =>
+          TemplatesSection(
+        bottomSheetController: _bottomSheetController,
+        scrollController: scrollController,
+        expenseType: ExpenseType.EXPENSE_CLAIM,
+        templatesList: [],
+        onTap: () {
+          setState(() {
+            selectedWidget = templates;
+          });
+        },
+      ),
+    );
+    form = DraggableScrollableSheet(
+      builder: (BuildContext context, ScrollController scrollController) =>
+          Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x10000000),
+              offset: Offset(0, -2),
+              blurRadius: 6.0,
+            )
+          ],
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(32.0),
+            topRight: Radius.circular(32.0),
+          ),
+        ),
+        child: FlatButton(
+          child: Text('adio'),
+          onPressed: () {
+            setState(() {
+              selectedWidget = form;
+            });
+          },
+        ),
+      ),
+    );
+
     return Scaffold(
       bottomNavigationBar: StreamBuilder<int>(
         initialData: 0,
@@ -76,7 +117,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       body: StreamBuilder<int>(
           stream: _homeBloc.pageIndex,
-          initialData: 0,
           builder: (context, pageIndexSnapshot) {
             return Stack(
               children: <Widget>[
@@ -94,77 +134,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     )
                   ],
                 ),
-                StreamBuilder<BottomSheetState>(
-                    stream: _homeBloc.bottomSheetState,
-                    initialData: BottomSheetState.CLOSED,
-                    builder: (context, bottomSheetStateSnapshot) {
-                      Map<BottomSheetState, Widget> bottomSheets = Map();
-
-                      bottomSheets[BottomSheetState.CLOSED] = Container();
-                      bottomSheets[BottomSheetState.TEMPLATES] =
-                          DraggableScrollableSheet(
-                        builder: (BuildContext context,
-                                ScrollController scrollController) =>
-                            StreamBuilder<List<FormTemplate>>(
-                                stream: repository.templates,
-                                builder: (context, templatesSnapshot) {
-                                  return TemplateList(
-                                    templatesList:
-                                        templatesSnapshot?.data ?? [],
-                                    expenseType: pageIndexSnapshot.data == 0
-                                        ? ExpenseType.EXPENSE_CLAIM
-                                        : ExpenseType.INVOICE,
-                                    bottomSheetController:
-                                        _bottomSheetController,
-                                    scrollController: scrollController,
-                                    homeBloc: _homeBloc,
-                                  );
-                                }),
-                      );
-                      bottomSheets[BottomSheetState.FORM] =
-                          DraggableScrollableSheet(
-                        builder: (BuildContext context,
-                                ScrollController scrollController) =>
-                            StreamBuilder<FormTemplate>(
-                                stream: _homeBloc.selectedFormTemplate,
-                                builder: (_, formTemplateSnapshot) {
-                                  return BlocProvider<NewExpenseBloc>(
-                                    initBloc: (_, bloc) =>
-                                        bloc ??
-                                        NewExpenseBloc(
-                                          expenseType:
-                                              pageIndexSnapshot.data == 0
-                                                  ? ExpenseType.EXPENSE_CLAIM
-                                                  : ExpenseType.INVOICE,
-                                          template: formTemplateSnapshot.data,
-                                        ),
-                                    onDispose: (_, bloc) => bloc?.dispose(),
-                                    child: NewExpensePage(
-                                        scrollController: scrollController),
-                                  );
-                                }),
-                      );
-
-                      return SizedBox.expand(
-                        child: SlideTransition(
-                          position: _tween.animate(_bottomSheetController),
-                          child: bottomSheets[bottomSheetStateSnapshot.data],
-                        ),
-                      );
-                    }),
+                SizedBox.expand(
+                  child: SlideTransition(
+                    position: _tween.animate(_bottomSheetController),
+                    child: AnimatedSwitcher(
+                      duration: Duration(seconds: 1),
+                      child: selectedWidget ?? templates,
+                    ),
+                  ),
+                ),
               ],
             );
           }),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FabAddToClose(
         onPressed: () {
-          if (_bottomSheetController.isDismissed) {
-            _homeBloc.setBottomSheetState(BottomSheetState.TEMPLATES);
+          if (_bottomSheetController.isDismissed)
             _bottomSheetController.forward();
-          } else if (_bottomSheetController.isCompleted) {
-            _bottomSheetController.reverse().then(
-                (_) => _homeBloc.setBottomSheetState(BottomSheetState.CLOSED));
-          }
+          else if (_bottomSheetController.isCompleted)
+            _bottomSheetController.reverse();
         },
       ),
     );

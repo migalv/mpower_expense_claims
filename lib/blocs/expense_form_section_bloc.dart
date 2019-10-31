@@ -10,7 +10,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
 
-class NewExpenseBloc {
+class ExpenseFormSectionBloc {
   // Streams
   ValueObservable<Country> get selectedCountry =>
       _selectedCountryController.stream;
@@ -42,13 +42,13 @@ class NewExpenseBloc {
   /// This will determine the type of the form.
   final ExpenseType expenseType;
 
-  final FormTemplate template;
+  final Template template;
 
   // Flags
   bool _multipleAttachments;
   bool get multipleAttachments => _multipleAttachments;
 
-  NewExpenseBloc({@required this.expenseType, this.template}) {
+  ExpenseFormSectionBloc({@required this.expenseType, this.template}) {
     switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
         _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;

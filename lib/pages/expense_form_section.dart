@@ -2,12 +2,13 @@ import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
-import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
+import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/models/expense_template_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/material.dart';
@@ -19,17 +20,21 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 
-class NewExpensePage extends StatefulWidget {
-  final ScrollController scrollController;
+class ExpenseFormSection extends StatefulWidget {
+  final ScrollController _scrollController;
+  final Template _template;
 
-  NewExpensePage({@required this.scrollController});
+  ExpenseFormSection(
+      {@required ScrollController scrollController, Template template})
+      : _scrollController = scrollController,
+        _template = template;
   @override
-  _NewExpensePageState createState() => _NewExpensePageState();
+  _ExpenseFormSectionState createState() => _ExpenseFormSectionState();
 }
 
-class _NewExpensePageState extends State<NewExpensePage> {
+class _ExpenseFormSectionState extends State<ExpenseFormSection> {
   // Bloc
-  NewExpenseBloc _expenseClaimBloc;
+  ExpenseFormSectionBloc _expenseClaimBloc;
 
   // Text Controllers
   final _descriptionController = TextEditingController();
@@ -41,7 +46,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   @override
   void didChangeDependencies() {
-    _expenseClaimBloc = Provider.of<NewExpenseBloc>(context);
+    _expenseClaimBloc = Provider.of<ExpenseFormSectionBloc>(context);
     super.didChangeDependencies();
   }
 
@@ -66,7 +71,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
             ),
           ),
           child: ListView(
-            controller: widget.scrollController,
+            controller: widget._scrollController,
             children: <Widget>[
               _buildTitle(),
               _buildCountry(),
