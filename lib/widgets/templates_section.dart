@@ -1,58 +1,45 @@
+import 'package:expense_claims_app/bloc_provider.dart';
+import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
-import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/expense_template_model.dart';
 import 'package:expense_claims_app/widgets/template_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TemplatesSection extends StatelessWidget {
-  final List<Template> templatesList;
-  final ExpenseType expenseType;
   final AnimationController bottomSheetController;
   final ScrollController scrollController;
   final Function onTap;
 
   const TemplatesSection({
     Key key,
-    @required this.templatesList,
-    @required this.expenseType,
     @required this.bottomSheetController,
     @required this.onTap,
     this.scrollController,
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    List<Widget> listWidgets = [_buildTitle(context)];
+    TemplatesSectionBloc bloc = Provider.of<TemplatesSectionBloc>(context);
 
-    listWidgets.addAll(
-      templatesList
-          .where((template) => template.expenseType == expenseType)
-          .map(
-            (template) => TemplateTile(
-              template: template,
-            ),
-          ),
-    );
+    return StreamBuilder<List<Template>>(
+      stream: bloc.templates,
+      initialData: [],
+      builder: (BuildContext context, AsyncSnapshot<List<Template>> snapshot) {
+        List<Widget> listWidgets = [_buildTitle(context)];
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x10000000),
-            offset: Offset(0, -2),
-            blurRadius: 6.0,
-          )
-        ],
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(32.0),
-          topRight: Radius.circular(32.0),
-        ),
-      ),
-      child: ListView(
-        controller: scrollController,
-        children: listWidgets,
-      ),
+        listWidgets.addAll(
+          snapshot.data
+                  ?.map(
+                    (template) => TemplateTile(
+                      template: template,
+                    ),
+                  )
+                  ?.toList() ??
+              [],
+        );
+
+        return ListView(children: listWidgets);
+      },
     );
   }
 

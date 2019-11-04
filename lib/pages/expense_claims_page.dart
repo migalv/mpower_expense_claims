@@ -39,16 +39,17 @@ class _ExpenseClaimsPageState extends State<ExpenseClaimsPage> {
 
   @override
   Widget build(BuildContext context) {
-    EdgeInsets devicePadding = MediaQuery.of(context).padding;
+    EdgeInsets edgeInsets = MediaQuery.of(context).padding;
+
     return WillPopScope(
       onWillPop: _popSearch,
       child: Padding(
-        padding: EdgeInsets.only(top: devicePadding.top),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.only(top: 0.0, left: 20, right: 20, bottom: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
+        padding: EdgeInsets.fromLTRB(20.0, edgeInsets.top, 20.0, 0),
+        child: StreamBuilder<List<ExpenseClaim>>(
+          stream: repository.expenseClaims,
+          initialData: [],
+          builder: (context, snapshot) {
+            List<Widget> list = [
               Collapsible(
                 isCollapsed: _isSearching,
                 child: Column(
@@ -63,44 +64,46 @@ class _ExpenseClaimsPageState extends State<ExpenseClaimsPage> {
                         onPressed: () {},
                       ),
                     ),
-                    Text("Expense claims",
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 30.0,
-                          fontWeight: FontWeight.w500,
-                        )),
+                    Text(
+                      "Expense claims",
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 30.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 22.0),
+                padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
                 child: SearchWidget(_searchFocusNode, _searchTextController),
               ),
-              StreamBuilder<List<ExpenseClaim>>(
-                stream: repository.expenseClaims,
-                initialData: [],
-                builder: (context, snapshot) => ListView(
-                  shrinkWrap: true,
-                  children: snapshot.data
-                      .map(
-                        (expense) => Container(
-                          margin: EdgeInsets.only(bottom: 20.0),
-                          child: BlocProvider<ExpenseTileBloc>(
-                            initBloc: (_, bloc) =>
-                                bloc ?? ExpenseTileBloc(expenseId: expense.id),
-                            onDispose: (_, bloc) {
-                              bloc.dispose();
-                            },
-                            child: ExpenseTile(),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-            ],
-          ),
+            ];
+
+            list.addAll(snapshot.data
+                .map(
+                  (expense) => Container(
+                    margin: EdgeInsets.only(bottom: 20.0),
+                    child: BlocProvider<ExpenseTileBloc>(
+                      initBloc: (_, bloc) =>
+                          bloc ?? ExpenseTileBloc(expenseId: expense.id),
+                      onDispose: (_, bloc) {
+                        bloc.dispose();
+                      },
+                      child: ExpenseTile(),
+                    ),
+                  ),
+                )
+                .toList());
+
+            list.add(Container(
+              height: 20.0,
+            ));
+
+            return ListView(shrinkWrap: true, children: list);
+          },
         ),
       ),
     );

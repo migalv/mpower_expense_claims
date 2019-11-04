@@ -8,12 +8,12 @@ import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
-import 'package:expense_claims_app/models/expense_template_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -22,12 +22,14 @@ import 'package:rxdart/rxdart.dart';
 
 class ExpenseFormSection extends StatefulWidget {
   final ScrollController _scrollController;
-  final Template _template;
+  final Function _onBackPressed;
 
-  ExpenseFormSection(
-      {@required ScrollController scrollController, Template template})
-      : _scrollController = scrollController,
-        _template = template;
+  ExpenseFormSection({
+    @required ScrollController scrollController,
+    @required Function onBackPressed,
+  })  : _scrollController = scrollController,
+        _onBackPressed = onBackPressed;
+
   @override
   _ExpenseFormSectionState createState() => _ExpenseFormSectionState();
 }
@@ -55,52 +57,52 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   Widget _buildBody() => Form(
         key: _formKey,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              new BoxShadow(
-                color: Colors.black12,
-                offset: new Offset(0, -2),
-                blurRadius: 2.0,
-              )
-            ],
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(32.0),
-              topRight: Radius.circular(32.0),
-            ),
-          ),
-          child: ListView(
-            controller: widget._scrollController,
-            children: <Widget>[
-              _buildTitle(),
-              _buildCountry(),
-              _buildCategory(),
-              _buildDate("Date", _expenseClaimBloc.expenseDate,
-                  _expenseClaimBloc.selectExpenseDate),
-              _expenseClaimBloc.expenseType == ExpenseType.INVOICE
-                  ? _buildDate("Due date", _expenseClaimBloc.selectedDueDate,
-                      _expenseClaimBloc.selectDueDate,
-                      lastDate: DateTime(2030))
-                  : Container(),
-              _buildDescription(),
-              _buildCost(),
-              _buildApproverTile(),
-              _buildAttachmentsTile(),
-              _buildButtons(),
-            ],
-          ),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(8.0, 24.0, 8.0, 24.0),
+          shrinkWrap: true,
+          controller: widget._scrollController,
+          children: <Widget>[
+            _buildTitle(),
+            _buildCountry(),
+            _buildCategory(),
+            _buildDate("Date", _expenseClaimBloc.expenseDate,
+                _expenseClaimBloc.selectExpenseDate),
+            _expenseClaimBloc.expenseType == ExpenseType.INVOICE
+                ? _buildDate("Due date", _expenseClaimBloc.selectedDueDate,
+                    _expenseClaimBloc.selectDueDate,
+                    lastDate: DateTime(2030))
+                : Container(),
+            _buildDescription(),
+            _buildCost(),
+            _buildApproverTile(),
+            _buildAttachmentsTile(),
+            _buildButtons(),
+          ],
         ),
       );
 
   Widget _buildTitle() => Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 0.0, top: 16.0),
-        child: Text(
-          'New ' +
-              (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
-                  ? "Expense claim"
-                  : "Invoice"),
-          style: Theme.of(context).textTheme.title,
+        padding: const EdgeInsets.only(bottom: 24.0),
+        child: Row(
+          children: <Widget>[
+            GestureDetector(
+              child: Padding(
+                padding: EdgeInsets.only(left: 16.0, right: 16.0),
+                child: Icon(
+                  FontAwesomeIcons.chevronLeft,
+                  size: 20.0,
+                ),
+              ),
+              onTap: widget._onBackPressed,
+            ),
+            Text(
+              'New ' +
+                  (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
+                      ? "expense claim"
+                      : "invoice"),
+              style: Theme.of(context).textTheme.title,
+            ),
+          ],
         ),
       );
 
@@ -453,18 +455,17 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                     DropdownButtonHideUnderline(
                   child: StreamBuilder<String>(
                     stream: _expenseClaimBloc.selectedApprover,
-                    builder: (context, selectedApproverSnapshot) {
-                      return DropdownButton<String>(
-                        hint: Text("Select who will approve your Expense"),
-                        value: selectedApproverSnapshot?.data,
-                        items: itemsSnapshot.data
-                            .map((User user) => DropdownMenuItem(
-                                child: Text(user.name), value: user.id))
-                            .toList(),
-                        onChanged: _expenseClaimBloc.selectApprover,
-                        isExpanded: true,
-                      );
-                    },
+                    builder: (context, selectedApproverSnapshot) =>
+                        DropdownButton<String>(
+                      hint: Text("Select who will approve your Expense"),
+                      value: selectedApproverSnapshot?.data,
+                      items: itemsSnapshot.data
+                          .map((User user) => DropdownMenuItem(
+                              child: Text(user.name), value: user.id))
+                          .toList(),
+                      onChanged: _expenseClaimBloc.selectApprover,
+                      isExpanded: true,
+                    ),
                   ),
                 ),
               ),

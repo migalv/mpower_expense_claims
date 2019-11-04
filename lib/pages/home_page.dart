@@ -1,9 +1,10 @@
 import 'package:expense_claims_app/bloc_provider.dart';
-import 'package:expense_claims_app/blocs/custom_draggable_scrollable_sheet_bloc.dart';
+import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:expense_claims_app/blocs/home_bloc.dart';
+import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/expense_claims_page.dart';
-import 'package:expense_claims_app/widgets/custom_draggable_scrollable_sheet.dart';
+import 'package:expense_claims_app/widgets/expense_form_section.dart';
 import 'package:expense_claims_app/widgets/fab_add_to_close.dart';
 import 'package:expense_claims_app/widgets/navigation_bar_with_fab.dart';
 import 'package:expense_claims_app/widgets/templates_section.dart';
@@ -20,11 +21,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final PageController _pageController = PageController(
     initialPage: 0,
     keepPage: true,
+  ),
+      _pageController2 = PageController(
+    initialPage: 0,
+    keepPage: true,
   );
   AnimationController _navBarController, _bottomSheetController;
   HomeBloc _homeBloc;
   Tween<Offset> _tween = Tween(begin: Offset(0, 1), end: Offset(0, 0));
-  Widget selectedWidget, templates, form;
 
   @override
   void initState() {
@@ -54,71 +58,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    templates = DraggableScrollableSheet(
-      builder: (BuildContext context, ScrollController scrollController) =>
-          TemplatesSection(
-        bottomSheetController: _bottomSheetController,
-        scrollController: scrollController,
-        expenseType: ExpenseType.EXPENSE_CLAIM,
-        templatesList: [],
-        onTap: () {
-          setState(() {
-            selectedWidget = templates;
-          });
-        },
-      ),
-    );
-    form = DraggableScrollableSheet(
-      builder: (BuildContext context, ScrollController scrollController) =>
-          Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x10000000),
-              offset: Offset(0, -2),
-              blurRadius: 6.0,
-            )
-          ],
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(32.0),
-            topRight: Radius.circular(32.0),
-          ),
-        ),
-        child: FlatButton(
-          child: Text('adio'),
-          onPressed: () {
-            setState(() {
-              selectedWidget = form;
-            });
-          },
-        ),
-      ),
-    );
-
-    return Scaffold(
-      bottomNavigationBar: StreamBuilder<int>(
+    return StreamBuilder<int>(
         initialData: 0,
         stream: _homeBloc.pageIndex,
-        builder: (context, snapshot) => NavigationBarWithFAB(
-          animationController: _navBarController,
-          index: snapshot.data,
-          icon1: MdiIcons.receipt,
-          icon2: FontAwesomeIcons.fileInvoiceDollar,
-          onItemPressed: (int index) {
-            _homeBloc.setPageIndex(index);
-            _pageController.animateToPage(
-              index,
-              duration: Duration(milliseconds: 275),
-              curve: Curves.ease,
-            );
-          },
-        ),
-      ),
-      body: StreamBuilder<int>(
-          stream: _homeBloc.pageIndex,
-          builder: (context, pageIndexSnapshot) {
-            return Stack(
+        builder: (context, pageIndexSnapshot) {
+          return Scaffold(
+            bottomNavigationBar: NavigationBarWithFAB(
+              animationController: _navBarController,
+              index: pageIndexSnapshot.data,
+              icon1: MdiIcons.receipt,
+              icon2: FontAwesomeIcons.fileInvoiceDollar,
+              onItemPressed: (int index) {
+                _homeBloc.setPageIndex(index);
+                _pageController.animateToPage(
+                  index,
+                  duration: Duration(milliseconds: 275),
+                  curve: Curves.ease,
+                );
+              },
+            ),
+            body: Stack(
               children: <Widget>[
                 PageView(
                   controller: _pageController,
@@ -137,25 +96,78 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 SizedBox.expand(
                   child: SlideTransition(
                     position: _tween.animate(_bottomSheetController),
-                    child: AnimatedSwitcher(
-                      duration: Duration(seconds: 1),
-                      child: selectedWidget ?? templates,
+                    child: DraggableScrollableSheet(
+                      builder: (BuildContext context,
+                              ScrollController scrollController) =>
+                          Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x10000000),
+                              offset: Offset(0, -2),
+                              blurRadius: 6.0,
+                            )
+                          ],
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(32.0),
+                            topRight: Radius.circular(32.0),
+                          ),
+                        ),
+                        child: PageView(
+                          controller: _pageController2,
+                          physics: NeverScrollableScrollPhysics(),
+                          children: <Widget>[
+                            BlocProvider<TemplatesSectionBloc>(
+                              child: TemplatesSection(
+                                bottomSheetController: _bottomSheetController,
+                                scrollController: scrollController,
+                                onTap: () {
+                                  _pageController2.animateTo(
+                                      MediaQuery.of(context).size.width,
+                                      duration: Duration(milliseconds: 275),
+                                      curve: Curves.easeIn);
+                                },
+                              ),
+                              initBloc: (_, bloc) => TemplatesSectionBloc(
+                                  expenseTypeStream: _homeBloc.pageIndex),
+                              onDispose: (_, bloc) => bloc.dispose(),
+                            ),
+                            BlocProvider<ExpenseFormSectionBloc>(
+                              child: ExpenseFormSection(
+                                scrollController: scrollController,
+                                onBackPressed: () {
+                                  _pageController2.animateTo(0,
+                                      duration: Duration(milliseconds: 275),
+                                      curve: Curves.easeIn);
+                                },
+                              ),
+                              initBloc: (_, bloc) =>
+                                  bloc ??
+                                  ExpenseFormSectionBloc(
+                                      expenseType: ExpenseType.EXPENSE_CLAIM),
+                              onDispose: (_, bloc) => bloc.dispose(),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ],
-            );
-          }),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FabAddToClose(
-        onPressed: () {
-          if (_bottomSheetController.isDismissed)
-            _bottomSheetController.forward();
-          else if (_bottomSheetController.isCompleted)
-            _bottomSheetController.reverse();
-        },
-      ),
-    );
+            ),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerDocked,
+            floatingActionButton: FabAddToClose(
+              onPressed: () {
+                if (_bottomSheetController.isDismissed)
+                  _bottomSheetController.forward();
+                else if (_bottomSheetController.isCompleted)
+                  _bottomSheetController.reverse();
+              },
+            ),
+          );
+        });
   }
 
   void _pageChanged(int index) {

@@ -263,15 +263,20 @@ class Repository {
         _approversController.add(approvers);
       }));
 
-  void _listenToExpenseClaimsChanges() => _streamSubscriptions.add(_firestore
-          .collection(EXPENSE_CLAIMS_COLLECTION)
-          .snapshots()
-          .listen((snapshot) {
-        List<ExpenseClaim> expenseClaims = snapshot.documents
-            .map((doc) => ExpenseClaim.fromJson(doc.data, id: doc.documentID))
-            .toList();
-        _expenseClaimsController.add(expenseClaims);
-      }));
+  void _listenToExpenseClaimsChanges() => _streamSubscriptions.add(
+        _firestore.collection(EXPENSE_CLAIMS_COLLECTION).snapshots().listen(
+          (snapshot) {
+            List<ExpenseClaim> expenseClaims = snapshot.documents
+                .map((doc) =>
+                    ExpenseClaim.fromJson(doc.data, id: doc.documentID))
+                .toList();
+
+            expenseClaims?.sort((a, b) => b.date.compareTo(a.date));
+
+            _expenseClaimsController.add(expenseClaims);
+          },
+        ),
+      );
 
   void _loadLastSelected() => _streamSubscriptions.add(_firestore
           .collection(

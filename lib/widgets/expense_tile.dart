@@ -206,7 +206,7 @@ class _ExpenseTileState extends State<ExpenseTile>
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: category.color,
+            color: category.color ?? Colors.blue,
             width: 2.0,
           ),
         ),

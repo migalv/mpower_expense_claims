@@ -146,6 +146,9 @@ class ExpenseFormSectionBloc {
         vat: vat,
         createdBy: repository.currentUserId,
         availableTo: [repository.currentUserId],
+        approvedByName: repository.approvers.value
+            .singleWhere((user) => user.id == selectedApprover.value)
+            ?.name,
       );
     } else if (expenseType == ExpenseType.INVOICE) {
       expense = Invoice(
@@ -161,6 +164,9 @@ class ExpenseFormSectionBloc {
         vat: vat,
         createdBy: repository.currentUserId,
         availableTo: [repository.currentUserId],
+        approvedByName: repository.approvers.value
+            .singleWhere((user) => user.id == selectedApprover.value)
+            ?.name,
       );
     }
 
@@ -172,7 +178,7 @@ class ExpenseFormSectionBloc {
     switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
         if (_attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] == null)
-          return "You need to attach a reciep";
+          return "You need to attach a receipt";
         break;
       case ExpenseType.INVOICE:
         if (_attachments[ATTACHMENTS_INVOICE_NAME] == null)
