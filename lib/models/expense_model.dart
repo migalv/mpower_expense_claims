@@ -4,6 +4,7 @@ import 'package:expense_claims_app/models/invoice_model.dart';
 abstract class Expense {
   final String id;
   final String approvedBy;
+  final String approvedByName;
   final String country;
   final String category;
   final String currency;
@@ -18,6 +19,7 @@ abstract class Expense {
   Expense({
     this.id,
     this.approvedBy,
+    this.approvedByName,
     this.country,
     this.category,
     this.currency,
@@ -43,11 +45,13 @@ abstract class Expense {
         this.net = json[NET_KEY],
         this.vat = json[VAT_KEY],
         this.approvedBy = json[APPROVED_BY_KEY],
+        this.approvedByName = json[APPROVED_BY_NAME_KEY],
         this.createdBy = json[CREATED_BY_KEY],
         this.availableTo = json[AVAILABLE_TO].cast<String>();
 
   Map<String, dynamic> toJson() => {
         APPROVED_BY_KEY: this.approvedBy,
+        APPROVED_BY_NAME_KEY: this.approvedByName,
         COUNTRY_KEY: this.country,
         CATEGORY_KEY: this.category,
         CURRENCY_KEY: this.currency,
@@ -88,6 +92,7 @@ abstract class Expense {
   static const String APPROVED_BY_KEY = "approved_by";
   static const String CREATED_BY_KEY = "created_by";
   static const String AVAILABLE_TO = "availableTo";
+  static const String APPROVED_BY_NAME_KEY = "approved_by_name";
 }
 
 enum ExpenseType {

@@ -20,7 +20,7 @@ class SplashBloc {
 
     FirebaseUser firebaseUser = await firebaseAuth.currentUser();
 
-    if (firebaseUser != null) repository.initUserId(firebaseUser.uid);
+    if (firebaseUser != null) await repository.initUser(firebaseUser.uid);
 
     _isLoggedInController.add(firebaseUser != null);
   }

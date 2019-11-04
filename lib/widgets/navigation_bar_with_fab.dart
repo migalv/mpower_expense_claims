@@ -1,6 +1,5 @@
 import 'package:expense_claims_app/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 
 class NavigationBarWithFAB extends StatefulWidget {
   const NavigationBarWithFAB({
@@ -8,15 +7,11 @@ class NavigationBarWithFAB extends StatefulWidget {
     @required AnimationController animationController,
     @required int index,
     @required Function onItemPressed,
-    @required String label1,
-    @required String label2,
     @required IconData icon1,
     @required IconData icon2,
   })  : _animationController = animationController,
         _index = index,
         _onItemPressed = onItemPressed,
-        _label1 = label1,
-        _label2 = label2,
         _icon1 = icon1,
         _icon2 = icon2,
         super(key: key);
@@ -24,7 +19,6 @@ class NavigationBarWithFAB extends StatefulWidget {
   final AnimationController _animationController;
   final int _index;
   final Function _onItemPressed;
-  final String _label1, _label2;
   final IconData _icon1, _icon2;
 
   @override
@@ -33,12 +27,7 @@ class NavigationBarWithFAB extends StatefulWidget {
 
 class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
     with SingleTickerProviderStateMixin {
-  Animation _colorTween,
-      _colorTween2,
-      _intTween,
-      _intTween2,
-      _intTweenText,
-      _intTweenText2;
+  Animation _colorTween, _colorTween2, _intTween, _intTween2;
 
   @override
   void initState() {
@@ -51,11 +40,6 @@ class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
         IntTween(begin: 24, end: 20).animate(widget._animationController);
     _intTween2 =
         IntTween(begin: 20, end: 24).animate(widget._animationController);
-
-    _intTweenText =
-        IntTween(begin: 14, end: 10).animate(widget._animationController);
-    _intTweenText2 =
-        IntTween(begin: 10, end: 14).animate(widget._animationController);
 
     super.initState();
   }
@@ -72,21 +56,7 @@ class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: FlatButton.icon(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                label: AnimatedBuilder(
-                  animation: _intTweenText,
-                  builder: (context, child) {
-                    return AutoSizeText(
-                      widget._label1,
-                      style: Theme.of(context).textTheme.body2.copyWith(
-                            fontSize: _intTweenText.value.toDouble(),
-                            color: _colorTween.value,
-                          ),
-                    );
-                  },
-                ),
+              child: IconButton(
                 icon: AnimatedBuilder(
                   animation: _intTween,
                   builder: (context, snapshot) {
@@ -120,21 +90,7 @@ class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
               width: 32.0,
             ),
             Expanded(
-              child: FlatButton.icon(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                label: AnimatedBuilder(
-                  animation: _intTweenText2,
-                  builder: (context, child) {
-                    return Text(
-                      widget._label2,
-                      style: Theme.of(context).textTheme.body2.copyWith(
-                            fontSize: _intTweenText2.value.toDouble(),
-                            color: _colorTween2.value,
-                          ),
-                    );
-                  },
-                ),
+              child: IconButton(
                 icon: AnimatedBuilder(
                   animation: _intTween2,
                   builder: (context, snapshot) {

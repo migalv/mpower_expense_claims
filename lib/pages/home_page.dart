@@ -1,13 +1,11 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
-import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/form_template_model.dart';
-import 'package:expense_claims_app/models/invoice_model.dart';
+import 'package:expense_claims_app/pages/expense_claims_page.dart';
 import 'package:expense_claims_app/pages/new_expense_page.dart';
 import 'package:expense_claims_app/repository.dart';
-import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/fab_add_to_close.dart';
 import 'package:expense_claims_app/widgets/navigation_bar_with_fab.dart';
 import 'package:expense_claims_app/widgets/templates_list.dart';
@@ -66,9 +64,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         builder: (context, snapshot) => NavigationBarWithFAB(
           animationController: _navBarController,
           index: snapshot.data,
-          label1: 'Expense claims',
           icon1: MdiIcons.receipt,
-          label2: 'Invoices',
           icon2: FontAwesomeIcons.fileInvoiceDollar,
           onItemPressed: (int index) {
             _homeBloc.setPageIndex(index);
@@ -92,26 +88,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     _pageChanged(index);
                   },
                   children: <Widget>[
-                    StreamBuilder<List<ExpenseClaim>>(
-                        stream: repository.expenseClaims,
-                        initialData: <ExpenseClaim>[],
-                        builder: (context, snapshot) {
-                          return ListView(
-                            children: snapshot.data
-                                .map((expense) => ExpenseTile(expense: expense))
-                                .toList(),
-                          );
-                        }),
-                    StreamBuilder<List<Invoice>>(
-                        stream: repository.invoices,
-                        initialData: <Invoice>[],
-                        builder: (context, snapshot) {
-                          return ListView(
-                            children: snapshot.data
-                                .map((expense) => ExpenseTile(expense: expense))
-                                .toList(),
-                          );
-                        }),
+                    ExpenseClaimsPage(),
+                    Center(
+                      child: Container(
+                        child: Text('Empty Body 3'),
+                      ),
+                    )
                   ],
                 ),
                 StreamBuilder<BottomSheetState>(

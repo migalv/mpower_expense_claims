@@ -19,8 +19,10 @@ import 'package:rxdart/rxdart.dart';
 import 'models/expense_claim_model.dart';
 
 class Repository {
-  String _userId;
-  String get userId => _userId;
+  String _currentUserId;
+  String get currentUserId => _currentUserId;
+  User _currentUser;
+  User get currentUser => _currentUser;
 
   //
   // DATA SOURCES
@@ -60,12 +62,18 @@ class Repository {
   final _approversController = BehaviorSubject<List<User>>();
   final _templatesController = BehaviorSubject<List<FormTemplate>>();
 
-  void initUserId(String userId) => _userId = userId;
-
   void init() {
     _countriesController.add([]);
     _currenciesController.add([]);
     _categoriesController.add([]);
+  }
+
+  Future initUser(String userId) async {
+    _currentUserId = userId;
+
+    DocumentSnapshot documentSnapshot =
+        await _firestore.document('$USERS_COLLECTION/$userId').get();
+    _currentUser = User.fromJson(documentSnapshot.data, id: userId);
   }
 
   // UPLOAD
@@ -126,21 +134,24 @@ class Repository {
   }
 
   void updateLastSelectedCountry(String countryId) => _firestore
-          .collection("$USERS_COLLECTION/$userId/$EDITABLE_INFO_COLLECTION")
+          .collection(
+              "$USERS_COLLECTION/$currentUserId/$EDITABLE_INFO_COLLECTION")
           .document(LAST_SELECTED_DOC)
           .setData({
         LAST_SELECTED_COUNTRY: countryId,
       }, merge: true);
 
   void updateLastSelectedCurrency(String currencyId) => _firestore
-          .collection("$USERS_COLLECTION/$userId/$EDITABLE_INFO_COLLECTION")
+          .collection(
+              "$USERS_COLLECTION/$currentUserId/$EDITABLE_INFO_COLLECTION")
           .document(LAST_SELECTED_DOC)
           .setData({
         LAST_SELECTED_CURRENCY: currencyId,
       }, merge: true);
 
   void updateLastSelectedApprover(String approverId) => _firestore
-          .collection("$USERS_COLLECTION/$userId/$EDITABLE_INFO_COLLECTION")
+          .collection(
+              "$USERS_COLLECTION/$currentUserId/$EDITABLE_INFO_COLLECTION")
           .document(LAST_SELECTED_DOC)
           .setData({
         LAST_SELECTED_APPROVER: approverId,
@@ -167,17 +178,17 @@ class Repository {
       case EXPENSE_CLAIMS_COLLECTION:
         queries.add(_firestore
             .collection(collection)
-            .where("availableTo", arrayContains: userId));
+            .where("availableTo", arrayContains: currentUserId));
         break;
       case INVOICES_COLLECTION:
         queries.add(_firestore
             .collection(collection)
-            .where("availableTo", arrayContains: userId));
+            .where("availableTo", arrayContains: currentUserId));
         break;
       case TEMPLATES_COLLECTION:
         queries.add(_firestore
             .collection(collection)
-            .where("availableTo", arrayContains: userId));
+            .where("availableTo", arrayContains: currentUserId));
         queries.add(_firestore
             .collection(collection)
             .where("availableTo", isEqualTo: null));
@@ -186,63 +197,71 @@ class Repository {
         queries.add(_firestore.collection(collection));
     }
 
-    queries.forEach((query) =>
-        _streamSubscriptions.add(query.snapshots().listen((snapshot) {
-          // This list is used to cast the data
-          List auxList;
-          switch (collection) {
-            case COUNTRIES_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) => Country.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<Country>();
-              break;
-            case CURRENCIES_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) => Currency.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<Currency>();
-              break;
-            case CATEGORIES_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) => Category.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<Category>();
-              break;
-            case EXPENSE_CLAIMS_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) =>
-                      ExpenseClaim.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<ExpenseClaim>();
-              break;
-            case INVOICES_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) => Invoice.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<Invoice>();
-              break;
-            case TEMPLATES_COLLECTION:
-              auxList = snapshot.documents
-                  .map((doc) =>
-                      FormTemplate.fromJson(doc.data, id: doc.documentID))
-                  .toList()
-                  .cast<FormTemplate>();
-              break;
-          }
-          // Used to cast the lists
-          if (list.isEmpty)
-            list = auxList;
-          else
-            list.addAll(auxList);
+    queries.forEach(
+      (query) => _streamSubscriptions.add(
+        query.snapshots().listen(
+          (snapshot) {
+            // This list is used to cast the data
+            List auxList;
+            switch (collection) {
+              case COUNTRIES_COLLECTION:
+                auxList = snapshot.documents
+                    .map(
+                        (doc) => Country.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<Country>();
+                break;
+              case CURRENCIES_COLLECTION:
+                auxList = snapshot.documents
+                    .map((doc) =>
+                        Currency.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<Currency>();
+                break;
+              case CATEGORIES_COLLECTION:
+                auxList = snapshot.documents
+                    .map((doc) =>
+                        Category.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<Category>();
+                break;
+              case EXPENSE_CLAIMS_COLLECTION:
+                auxList = snapshot.documents
+                    .map((doc) =>
+                        ExpenseClaim.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<ExpenseClaim>();
+                break;
+              case INVOICES_COLLECTION:
+                auxList = snapshot.documents
+                    .map(
+                        (doc) => Invoice.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<Invoice>();
+                break;
+              case TEMPLATES_COLLECTION:
+                auxList = snapshot.documents
+                    .map((doc) =>
+                        FormTemplate.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<FormTemplate>();
+                break;
+            }
+            if (list.isEmpty)
+              list = auxList;
+            else
+              list.addAll(auxList);
 
-          streamController.add(list);
-        })));
+            streamController.add(list);
+          },
+        ),
+      ),
+    );
   }
 
   void _listenToApproversChanges() => _streamSubscriptions.add(_firestore
           .collection(USERS_COLLECTION)
-          .document(userId)
+          .document(currentUserId)
           .snapshots()
           .listen((snapshot) {
         Map approversMap = snapshot.data[APPROVERS];
@@ -263,7 +282,8 @@ class Repository {
       }));
 
   void _loadLastSelected() => _streamSubscriptions.add(_firestore
-          .collection("$USERS_COLLECTION/$userId/$EDITABLE_INFO_COLLECTION")
+          .collection(
+              "$USERS_COLLECTION/$currentUserId/$EDITABLE_INFO_COLLECTION")
           .document(LAST_SELECTED_DOC)
           .snapshots()
           .listen((docSnapshot) {
@@ -297,7 +317,7 @@ class Repository {
     }
 
     if (authResult != null) {
-      _userId = authResult.user.uid;
+      _currentUserId = authResult.user.uid;
       return AuthState.SUCCESS;
     }
     return AuthState.ERROR;
@@ -309,7 +329,7 @@ class Repository {
         email: email, password: password);
 
     if (authResult != null) {
-      _userId = authResult.user.uid;
+      _currentUserId = authResult.user.uid;
       return AuthState.SUCCESS;
     }
     return AuthState.ERROR;

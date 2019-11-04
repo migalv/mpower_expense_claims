@@ -144,8 +144,8 @@ class NewExpenseBloc {
         net: net,
         approvedBy: selectedApprover.value,
         vat: vat,
-        createdBy: repository.userId,
-        availableTo: [repository.userId],
+        createdBy: repository.currentUserId,
+        availableTo: [repository.currentUserId],
       );
     } else if (expenseType == ExpenseType.INVOICE) {
       expense = Invoice(
@@ -159,8 +159,8 @@ class NewExpenseBloc {
         net: net,
         approvedBy: selectedApprover.value,
         vat: vat,
-        createdBy: repository.userId,
-        availableTo: [repository.userId],
+        createdBy: repository.currentUserId,
+        availableTo: [repository.currentUserId],
       );
     }
 
