@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
-import 'package:expense_claims_app/models/expense_template_model.dart';
+import 'package:expense_claims_app/models/form_template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/cupertino.dart';
@@ -165,6 +165,23 @@ class NewExpenseBloc {
     }
 
     repository.uploadNewExpense(expense, _attachments);
+  }
+
+  void uploadFormTemplate(String description, String templateName) {
+    if (templateName == null) return;
+    FormTemplate template;
+
+    template = FormTemplate(
+        approvedBy: selectedApprover.value,
+        category: selectedCategory.value,
+        country: selectedCountry.value.id,
+        currency: selectedCurrency.value,
+        description: description,
+        expenseType: expenseType,
+        name: templateName,
+        vat: selectedVat.value);
+
+    repository.uploadNewTemplate(template);
   }
 
   // VALIDATORS

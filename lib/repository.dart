@@ -7,7 +7,7 @@ import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
-import 'package:expense_claims_app/models/expense_template_model.dart';
+import 'package:expense_claims_app/models/form_template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -83,6 +83,13 @@ class Repository {
     docRef = _firestore.collection(collection).document();
     docRef.setData(expense.toJson());
     _uploadAttachments(docRef.documentID, attachments);
+  }
+
+  void uploadNewTemplate(FormTemplate template) {
+    _firestore
+        .collection(TEMPLATES_COLLECTION)
+        .document()
+        .setData(template.toJson());
   }
 
   Future _uploadAttachments(
@@ -223,6 +230,7 @@ class Repository {
                   .cast<FormTemplate>();
               break;
           }
+          // Used to cast the lists
           if (list.isEmpty)
             list = auxList;
           else

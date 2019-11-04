@@ -10,6 +10,7 @@ import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
 import 'package:expense_claims_app/repository.dart';
+import 'package:expense_claims_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -21,8 +22,9 @@ import 'package:rxdart/rxdart.dart';
 
 class NewExpensePage extends StatefulWidget {
   final ScrollController scrollController;
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
-  NewExpensePage({@required this.scrollController});
+  NewExpensePage({@required this.scrollController, @required this.scaffoldKey});
   @override
   _NewExpensePageState createState() => _NewExpensePageState();
 }
@@ -33,11 +35,13 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   // Text Controllers
   final _descriptionController = TextEditingController();
+  final _templateNameController = TextEditingController();
   final _grossController =
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
 
   // Keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _templateFormKey = GlobalKey<FormState>();
 
   @override
   void didChangeDependencies() {
@@ -568,7 +572,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
                   style: TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
-                onPressed: () => _validateAndUpload(),
+                onPressed: () => _createNewTemplateForm(),
               ),
             ),
             SizedBox(width: 16.0),
@@ -673,6 +677,80 @@ class _NewExpensePageState extends State<NewExpensePage> {
         _grossController.text,
       );
       Navigator.pop(context);
+      utils.showSnackbar(
+        scaffoldKey: widget.scaffoldKey,
+        message: "Your expense has been created successfully.",
+      );
+    }
+  }
+
+  void _createNewTemplateForm() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(
+          "Create template",
+          style: Theme.of(context).textTheme.title,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              "How do you want to name your new template?",
+              style: Theme.of(context).textTheme.subtitle,
+            ),
+            SizedBox(height: 8.0),
+            TextFormField(
+              key: _templateFormKey,
+              controller: _templateNameController,
+              autofocus: true,
+              keyboardType: TextInputType.text,
+              validator: (templateName) => templateName.length < 3
+                  ? "Must be at least 3 characters long"
+                  : null,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (templateName) => _validateAndUploadTemplate(),
+              decoration: InputDecoration(
+                filled: true,
+                hintText: 'ex: Taxi Zambia...',
+              ),
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text(
+              "Cancel",
+              style: Theme.of(context).textTheme.button,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+          RaisedButton(
+            child: Text(
+              "Create",
+              style: Theme.of(context)
+                  .textTheme
+                  .button
+                  .copyWith(color: Colors.white),
+            ),
+            onPressed: () => _validateAndUploadTemplate(),
+            color: secondaryLightColor,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _validateAndUploadTemplate() {
+    if (_formKey.currentState.validate()) {
+      _expenseClaimBloc.uploadFormTemplate(
+          _descriptionController.text, _templateNameController.text);
+      Navigator.pop(context);
+      utils.showSnackbar(
+        scaffoldKey: widget.scaffoldKey,
+        message: "Your template has been created successfully.",
+        duration: 2,
+      );
     }
   }
 }

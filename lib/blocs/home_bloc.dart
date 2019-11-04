@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:expense_claims_app/models/expense_template_model.dart';
+import 'package:expense_claims_app/models/form_template_model.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:rxdart/subjects.dart';

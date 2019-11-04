@@ -32,7 +32,7 @@ class FormTemplate {
         this.category = json[CATEGORY_KEY],
         this.description = json[DESCRIPTION_KEY],
         this.currency = json[CURRENCY_KEY],
-        this.vat = json[VAT_KEY].toDouble(),
+        this.vat = json[VAT_KEY]?.toDouble() ?? 0.0,
         this.approvedBy = json[APPROVED_BY_KEY],
         this.availableTo = json[AVAILABLE_TO_KEY]?.cast<String>(),
         this.expenseType = ExpenseType.values[json[EXPENSE_TYPE]];

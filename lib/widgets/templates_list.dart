@@ -1,7 +1,7 @@
 import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
-import 'package:expense_claims_app/models/expense_template_model.dart';
+import 'package:expense_claims_app/models/form_template_model.dart';
 import 'package:expense_claims_app/widgets/template_tile.dart';
 import 'package:flutter/material.dart';
 

@@ -3,7 +3,7 @@ import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
-import 'package:expense_claims_app/models/expense_template_model.dart';
+import 'package:expense_claims_app/models/form_template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/pages/new_expense_page.dart';
 import 'package:expense_claims_app/repository.dart';
@@ -28,16 +28,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   AnimationController _navBarController, _bottomSheetController;
   HomeBloc _homeBloc;
   Tween<Offset> _tween = Tween(begin: Offset(0, 1), end: Offset(0, 0));
-
-  FormTemplate _expenseTemplate = FormTemplate(
-    name: 'test template',
-    category: "A0xjzuNOzkHsfoKWiBqg",
-    description: "Template description",
-    country: "77U4GKjZPoVNCCw9DTsp",
-    vat: 21.0,
-    currency: "YHynSplXBwq9piJj6bnr",
-    approvedBy: "jXrh5j8UBndSdrh7dOnsfGLuONN2",
-  );
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -68,6 +59,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       bottomNavigationBar: StreamBuilder<int>(
         initialData: 0,
         stream: _homeBloc.pageIndex,
@@ -168,7 +160,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                         ),
                                     onDispose: (_, bloc) => bloc?.dispose(),
                                     child: NewExpensePage(
-                                        scrollController: scrollController),
+                                      scrollController: scrollController,
+                                      scaffoldKey: _scaffoldKey,
+                                    ),
                                   );
                                 }),
                       );
