@@ -13,6 +13,7 @@ class ExpenseClaim extends Expense {
     double vat,
     String approvedBy,
     String createdBy,
+    String costCentreGroup,
     List<String> availableTo,
   }) : super(
           id: id,
@@ -26,6 +27,7 @@ class ExpenseClaim extends Expense {
           net: net,
           vat: vat,
           createdBy: createdBy,
+          costCentreGroup: costCentreGroup,
           availableTo: availableTo,
         );
 

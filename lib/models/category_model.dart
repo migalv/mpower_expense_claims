@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class Category {
   final String id;
@@ -40,6 +41,7 @@ class Category {
     "Transport": Icons.directions_car,
     "Travel": Icons.card_travel,
     "Food": Icons.fastfood,
+    "Marketing": MdiIcons.lightbulb,
     "Other": Icons.attach_money,
   };
 
@@ -47,6 +49,7 @@ class Category {
     "Transport": Colors.amber,
     "Travel": Colors.brown,
     "Food": Colors.red,
+    "Marketing": Colors.purpleAccent,
     "Other": Colors.black26,
   };
 

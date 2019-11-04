@@ -26,6 +26,8 @@ class NewExpenseBloc {
   ValueObservable<String> get selectedApprover =>
       _selectedApproverController.stream;
   ValueObservable<double> get selectedVat => _selectedVatController.stream;
+  ValueObservable<String> get selectedCostCentre =>
+      _selectedCostCentreController.stream;
 
   // Controllers
   final _selectedCountryController = BehaviorSubject<Country>();
@@ -36,6 +38,7 @@ class NewExpenseBloc {
   final _selectedDueDateController = BehaviorSubject<DateTime>();
   final _selectedApproverController = BehaviorSubject<String>();
   final _selectedVatController = BehaviorSubject<double>();
+  final _selectedCostCentreController = BehaviorSubject<String>();
 
   Map<String, File> _attachments = Map();
 
@@ -88,6 +91,8 @@ class NewExpenseBloc {
     _selectedApproverController.add(approverId);
   }
 
+  void selectCostCentre(String costCenterId) =>
+      _selectedCostCentreController.add(costCenterId);
   void selectCategory(String categoryId) =>
       _selectedCategoryController.add(categoryId);
   void selectExpenseDate(DateTime expenseDate) =>
@@ -145,6 +150,7 @@ class NewExpenseBloc {
         approvedBy: selectedApprover.value,
         vat: vat,
         createdBy: repository.currentUserId,
+        costCentreGroup: selectedCostCentre.value,
         availableTo: [repository.currentUserId],
       );
     } else if (expenseType == ExpenseType.INVOICE) {
@@ -160,6 +166,7 @@ class NewExpenseBloc {
         approvedBy: selectedApprover.value,
         vat: vat,
         createdBy: repository.currentUserId,
+        costCentreGroup: selectedCostCentre.value,
         availableTo: [repository.currentUserId],
       );
     }
@@ -172,14 +179,16 @@ class NewExpenseBloc {
     FormTemplate template;
 
     template = FormTemplate(
-        approvedBy: selectedApprover.value,
-        category: selectedCategory.value,
-        country: selectedCountry.value.id,
-        currency: selectedCurrency.value,
-        description: description,
-        expenseType: expenseType,
-        name: templateName,
-        vat: selectedVat.value);
+      approvedBy: selectedApprover.value,
+      category: selectedCategory.value,
+      country: selectedCountry.value.id,
+      currency: selectedCurrency.value,
+      description: description,
+      expenseType: expenseType,
+      name: templateName,
+      costCentreGroup: selectedCostCentre.value,
+      vat: selectedVat.value,
+    );
 
     repository.uploadNewTemplate(template);
   }
@@ -217,6 +226,9 @@ class NewExpenseBloc {
   String currencyValidator(String value) =>
       selectedCurrency.value == null ? "Select a currency" : null;
 
+  String costCentreValidator(String value) =>
+      selectedCostCentre.value == null ? "Select an option" : null;
+
   void _buildFormFromTemplate() {
     selectCategory(template.category);
     selectCountry(repository.getCountryWithId(template.country));
@@ -234,6 +246,7 @@ class NewExpenseBloc {
     _selectedDueDateController.close();
     _selectedApproverController.close();
     _selectedVatController.close();
+    _selectedCostCentreController.close();
   }
 }
 

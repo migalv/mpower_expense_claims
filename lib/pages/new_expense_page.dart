@@ -5,6 +5,7 @@ import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/category_model.dart';
+import 'package:expense_claims_app/models/cost_center_groups_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
@@ -75,6 +76,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
               _buildTitle(),
               _buildCountry(),
               _buildCategory(),
+              _buildCostCenterTile(),
               _buildDate("Date", _expenseClaimBloc.expenseDate,
                   _expenseClaimBloc.selectExpenseDate),
               _expenseClaimBloc.expenseType == ExpenseType.INVOICE
@@ -461,6 +463,45 @@ class _NewExpensePageState extends State<NewExpensePage> {
                                 child: Text(user.name), value: user.id))
                             .toList(),
                         onChanged: _expenseClaimBloc.selectApprover,
+                        isExpanded: true,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              _buildErrorFormLabel(state),
+            ],
+          ),
+        ),
+      );
+
+  Widget _buildCostCenterTile() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: FormField(
+          validator: _expenseClaimBloc.costCentreValidator,
+          builder: (FormFieldState state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _buildFieldLabel("Cost related to"),
+              StreamBuilder(
+                stream: repository.costCentresGroups,
+                initialData: <CostCentreGroup>[],
+                builder: (BuildContext context,
+                        AsyncSnapshot<List<CostCentreGroup>> itemsSnapshot) =>
+                    DropdownButtonHideUnderline(
+                  child: StreamBuilder<String>(
+                    stream: _expenseClaimBloc.selectedCostCentre,
+                    builder: (context, selectedCostCentreSnapshot) {
+                      return DropdownButton<String>(
+                        hint: Text("Select what is your cost related to"),
+                        value: selectedCostCentreSnapshot?.data,
+                        items: itemsSnapshot.data
+                            .map((CostCentreGroup costCentre) =>
+                                DropdownMenuItem(
+                                    child: Text(costCentre.name),
+                                    value: costCentre.id))
+                            .toList(),
+                        onChanged: _expenseClaimBloc.selectCostCentre,
                         isExpanded: true,
                       );
                     },

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/models/category_model.dart';
+import 'package:expense_claims_app/models/cost_center_groups_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
@@ -47,6 +48,8 @@ class Repository {
   ValueObservable<List<Invoice>> get invoices => _invoicesController.stream;
   ValueObservable<List<FormTemplate>> get templates =>
       _templatesController.stream;
+  ValueObservable<List<CostCentreGroup>> get costCentresGroups =>
+      _costCentresGroupsController.stream;
 
   List<StreamSubscription> _streamSubscriptions = [];
 
@@ -61,6 +64,7 @@ class Repository {
   final _invoicesController = BehaviorSubject<List<Invoice>>();
   final _approversController = BehaviorSubject<List<User>>();
   final _templatesController = BehaviorSubject<List<FormTemplate>>();
+  final _costCentresGroupsController = BehaviorSubject<List<CostCentreGroup>>();
 
   void init() {
     _countriesController.add([]);
@@ -165,6 +169,7 @@ class Repository {
     _setUpStream(EXPENSE_CLAIMS_COLLECTION, _expenseClaimsController);
     _setUpStream(INVOICES_COLLECTION, _invoicesController);
     _setUpStream(TEMPLATES_COLLECTION, _templatesController);
+    _setUpStream(COST_CENTRES_GROUPS_COLLECTION, _costCentresGroupsController);
     _listenToApproversChanges();
     _listenToExpenseClaimsChanges();
     _loadLastSelected();
@@ -202,7 +207,7 @@ class Repository {
         query.snapshots().listen(
           (snapshot) {
             // This list is used to cast the data
-            List auxList;
+            List auxList = [];
             switch (collection) {
               case COUNTRIES_COLLECTION:
                 auxList = snapshot.documents
@@ -245,6 +250,13 @@ class Repository {
                         FormTemplate.fromJson(doc.data, id: doc.documentID))
                     .toList()
                     .cast<FormTemplate>();
+                break;
+              case COST_CENTRES_GROUPS_COLLECTION:
+                auxList = snapshot.documents
+                    .map((doc) =>
+                        CostCentreGroup.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<CostCentreGroup>();
                 break;
             }
             if (list.isEmpty)
@@ -384,6 +396,7 @@ class Repository {
     _approversController.close();
     _invoicesController.close();
     _templatesController.close();
+    _costCentresGroupsController.close();
     _streamSubscriptions
         .forEach((streamSubscription) => streamSubscription.cancel());
   }
@@ -402,6 +415,7 @@ const String CATEGORIES_COLLECTION = "categories";
 const String USERS_COLLECTION = "users";
 const String EDITABLE_INFO_COLLECTION = "editable_info";
 const String TEMPLATES_COLLECTION = "templates";
+const String COST_CENTRES_GROUPS_COLLECTION = "cost_centres_groups";
 
 // FIRESTORE DOCUMENT KEYS
 const String LAST_SELECTED_DOC = "last_selected";
