@@ -678,7 +678,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         _descriptionController.text,
         _grossController.text,
       );
-      Navigator.pop(context);
+      widget._onBackPressed();
     }
   }
 }

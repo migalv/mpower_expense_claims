@@ -226,5 +226,5 @@ class ExpenseFormSectionBloc {
   }
 }
 
-const String ATTACHMENTS_EXPENSE_CLAIM_NAME = "Reciep";
+const String ATTACHMENTS_EXPENSE_CLAIM_NAME = "Receipt";
 const String ATTACHMENTS_INVOICE_NAME = "Invoice";

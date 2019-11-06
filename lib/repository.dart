@@ -241,12 +241,12 @@ class Repository {
                     .cast<Template>();
                 break;
               case USERS_COLLECTION:
-                auxList = snapshot.data[APPROVERS]
-                        ?.map((doc) =>
-                            User.fromJson(doc.data, id: doc.documentID))
-                        ?.toList()
-                        ?.cast<User>() ??
-                    <User>[];
+                auxList = <User>[];
+                Map approvers = snapshot.data[APPROVERS];
+                approvers.forEach((id, map) {
+                  auxList
+                      .add(User.fromJson(map.cast<String, dynamic>(), id: id));
+                });
                 break;
             }
             if (list.isEmpty)
