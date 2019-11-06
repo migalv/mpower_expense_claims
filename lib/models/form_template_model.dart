@@ -10,6 +10,7 @@ class Template {
   final String description;
   final double vat;
   final List<String> availableTo;
+  final String costCentreGroup;
   final ExpenseType expenseType;
 
   Template({
@@ -22,6 +23,7 @@ class Template {
     this.description,
     this.vat,
     this.availableTo,
+    this.costCentreGroup,
     this.expenseType,
   });
 
@@ -32,9 +34,10 @@ class Template {
         this.category = json[CATEGORY_KEY],
         this.description = json[DESCRIPTION_KEY],
         this.currency = json[CURRENCY_KEY],
-        this.vat = json[VAT_KEY].toDouble(),
+        this.vat = json[VAT_KEY]?.toDouble() ?? 0.0,
         this.approvedBy = json[APPROVED_BY_KEY],
         this.availableTo = json[AVAILABLE_TO_KEY]?.cast<String>(),
+        this.costCentreGroup = json[COST_CENTRE_GROUP_KEY],
         this.expenseType = ExpenseType.values[json[EXPENSE_TYPE]];
 
   Map<String, dynamic> toJson() => {
@@ -46,6 +49,7 @@ class Template {
         VAT_KEY: this.vat,
         APPROVED_BY_KEY: this.approvedBy,
         AVAILABLE_TO_KEY: this.availableTo,
+        COST_CENTRE_GROUP_KEY: this.costCentreGroup,
         EXPENSE_TYPE: this.expenseType.index,
       };
 
@@ -63,4 +67,5 @@ class Template {
   static const String APPROVED_BY_KEY = "approved_by";
   static const String AVAILABLE_TO_KEY = "availableTo";
   static const String EXPENSE_TYPE = "expense_type";
+  static const String COST_CENTRE_GROUP_KEY = "cost_centre_group";
 }

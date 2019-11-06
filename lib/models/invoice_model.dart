@@ -17,6 +17,7 @@ class Invoice extends Expense {
     String approvedBy,
     String approvedByName,
     String createdBy,
+    String costCentreGroup,
     List<String> availableTo,
   }) : super(
           id: id,
@@ -30,6 +31,7 @@ class Invoice extends Expense {
           net: net,
           vat: vat,
           createdBy: createdBy,
+          costCentreGroup: costCentreGroup,
           availableTo: availableTo,
           approvedByName: approvedByName,
         );

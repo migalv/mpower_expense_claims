@@ -14,6 +14,7 @@ abstract class Expense {
   final double net;
   final double vat;
   final String createdBy;
+  final String costCentreGroup;
   final List<String> availableTo;
 
   Expense({
@@ -29,6 +30,7 @@ abstract class Expense {
     this.net,
     this.vat,
     this.createdBy,
+    this.costCentreGroup,
     this.availableTo,
   });
 
@@ -47,6 +49,7 @@ abstract class Expense {
         this.approvedBy = json[APPROVED_BY_KEY],
         this.approvedByName = json[APPROVED_BY_NAME_KEY],
         this.createdBy = json[CREATED_BY_KEY],
+        this.costCentreGroup = json[COST_CENTRE_GROUP],
         this.availableTo = json[AVAILABLE_TO].cast<String>();
 
   Map<String, dynamic> toJson() => {
@@ -61,6 +64,7 @@ abstract class Expense {
         NET_KEY: this.net,
         VAT_KEY: this.vat,
         CREATED_BY_KEY: this.createdBy,
+        COST_CENTRE_GROUP: this.costCentreGroup,
         AVAILABLE_TO: this.availableTo,
       };
 
@@ -92,6 +96,7 @@ abstract class Expense {
   static const String APPROVED_BY_KEY = "approved_by";
   static const String CREATED_BY_KEY = "created_by";
   static const String AVAILABLE_TO = "availableTo";
+  static const String COST_CENTRE_GROUP = "cost_centre_group";
   static const String APPROVED_BY_NAME_KEY = "approved_by_name";
 }
 

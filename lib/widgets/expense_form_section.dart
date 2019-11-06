@@ -5,11 +5,13 @@ import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/category_model.dart';
+import 'package:expense_claims_app/models/cost_center_groups_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
 import 'package:expense_claims_app/repository.dart';
+import 'package:expense_claims_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -23,12 +25,15 @@ import 'package:rxdart/rxdart.dart';
 class ExpenseFormSection extends StatefulWidget {
   final ScrollController _scrollController;
   final Function _onBackPressed;
+  final GlobalKey<ScaffoldState> _scaffoldKey;
 
   ExpenseFormSection({
     @required ScrollController scrollController,
     @required Function onBackPressed,
+    @required GlobalKey<ScaffoldState> scaffoldKey,
   })  : _scrollController = scrollController,
-        _onBackPressed = onBackPressed;
+        _onBackPressed = onBackPressed,
+        _scaffoldKey = scaffoldKey;
 
   @override
   _ExpenseFormSectionState createState() => _ExpenseFormSectionState();
@@ -40,11 +45,13 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   // Text Controllers
   final _descriptionController = TextEditingController();
+  final _templateNameController = TextEditingController();
   final _grossController =
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
 
   // Keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _templateFormKey = GlobalKey<FormState>();
 
   @override
   void didChangeDependencies() {
@@ -65,6 +72,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
             _buildTitle(),
             _buildCountry(),
             _buildCategory(),
+            _buildCostCenterTile(),
             _buildDate("Date", _expenseClaimBloc.expenseDate,
                 _expenseClaimBloc.selectExpenseDate),
             _expenseClaimBloc.expenseType == ExpenseType.INVOICE
@@ -475,6 +483,45 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         ),
       );
 
+  Widget _buildCostCenterTile() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: FormField(
+          validator: _expenseClaimBloc.costCentreValidator,
+          builder: (FormFieldState state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _buildFieldLabel("Cost related to"),
+              StreamBuilder(
+                stream: repository.costCentresGroups,
+                initialData: <CostCentreGroup>[],
+                builder: (BuildContext context,
+                        AsyncSnapshot<List<CostCentreGroup>> itemsSnapshot) =>
+                    DropdownButtonHideUnderline(
+                  child: StreamBuilder<String>(
+                    stream: _expenseClaimBloc.selectedCostCentre,
+                    builder: (context, selectedCostCentreSnapshot) {
+                      return DropdownButton<String>(
+                        hint: Text("Select what is your cost related to"),
+                        value: selectedCostCentreSnapshot?.data,
+                        items: itemsSnapshot.data
+                            .map((CostCentreGroup costCentre) =>
+                                DropdownMenuItem(
+                                    child: Text(costCentre.name),
+                                    value: costCentre.id))
+                            .toList(),
+                        onChanged: _expenseClaimBloc.selectCostCentre,
+                        isExpanded: true,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              _buildErrorFormLabel(state),
+            ],
+          ),
+        ),
+      );
+
   Widget _buildFieldLabel(String label) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Text(
@@ -574,7 +621,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                   style: TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
-                onPressed: () => _validateAndUpload(),
+                onPressed: () => _createNewTemplateForm(),
               ),
             ),
             SizedBox(width: 16.0),
@@ -678,7 +725,81 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         _descriptionController.text,
         _grossController.text,
       );
+      utils.showSnackbar(
+        scaffoldKey: widget._scaffoldKey,
+        message: "Your expense has been created successfully.",
+      );
       widget._onBackPressed();
+    }
+  }
+
+  void _createNewTemplateForm() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(
+          "Create template",
+          style: Theme.of(context).textTheme.title,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              "How do you want to name your new template?",
+              style: Theme.of(context).textTheme.subtitle,
+            ),
+            SizedBox(height: 8.0),
+            TextFormField(
+              key: _templateFormKey,
+              controller: _templateNameController,
+              autofocus: true,
+              keyboardType: TextInputType.text,
+              validator: (templateName) => templateName.length < 3
+                  ? "Must be at least 3 characters long"
+                  : null,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (templateName) => _validateAndUploadTemplate(),
+              decoration: InputDecoration(
+                filled: true,
+                hintText: 'ex: Taxi Zambia...',
+              ),
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text(
+              "Cancel",
+              style: Theme.of(context).textTheme.button,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+          RaisedButton(
+            child: Text(
+              "Create",
+              style: Theme.of(context)
+                  .textTheme
+                  .button
+                  .copyWith(color: Colors.white),
+            ),
+            onPressed: () => _validateAndUploadTemplate(),
+            color: secondaryLightColor,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _validateAndUploadTemplate() {
+    if (_formKey.currentState.validate()) {
+      _expenseClaimBloc.uploadFormTemplate(
+          _descriptionController.text, _templateNameController.text);
+      Navigator.pop(context);
+      utils.showSnackbar(
+        scaffoldKey: widget._scaffoldKey,
+        message: "Your template has been created successfully.",
+        duration: 2,
+      );
     }
   }
 }

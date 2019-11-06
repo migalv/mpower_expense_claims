@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
-import 'package:expense_claims_app/models/expense_template_model.dart';
+import 'package:expense_claims_app/models/form_template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/cupertino.dart';
@@ -26,6 +26,8 @@ class ExpenseFormSectionBloc {
   ValueObservable<String> get selectedApprover =>
       _selectedApproverController.stream;
   ValueObservable<double> get selectedVat => _selectedVatController.stream;
+  ValueObservable<String> get selectedCostCentre =>
+      _selectedCostCentreController.stream;
 
   // Controllers
   final _selectedCountryController = BehaviorSubject<Country>();
@@ -36,6 +38,7 @@ class ExpenseFormSectionBloc {
   final _selectedDueDateController = BehaviorSubject<DateTime>();
   final _selectedApproverController = BehaviorSubject<String>();
   final _selectedVatController = BehaviorSubject<double>();
+  final _selectedCostCentreController = BehaviorSubject<String>();
 
   Map<String, File> _attachments = Map();
 
@@ -88,6 +91,8 @@ class ExpenseFormSectionBloc {
     _selectedApproverController.add(approverId);
   }
 
+  void selectCostCentre(String costCenterId) =>
+      _selectedCostCentreController.add(costCenterId);
   void selectCategory(String categoryId) =>
       _selectedCategoryController.add(categoryId);
   void selectExpenseDate(DateTime expenseDate) =>
@@ -145,6 +150,7 @@ class ExpenseFormSectionBloc {
         approvedBy: selectedApprover.value,
         vat: vat,
         createdBy: repository.currentUserId,
+        costCentreGroup: selectedCostCentre.value,
         availableTo: [repository.currentUserId],
         approvedByName: repository.approvers.value
             .singleWhere((user) => user.id == selectedApprover.value)
@@ -163,6 +169,7 @@ class ExpenseFormSectionBloc {
         approvedBy: selectedApprover.value,
         vat: vat,
         createdBy: repository.currentUserId,
+        costCentreGroup: selectedCostCentre.value,
         availableTo: [repository.currentUserId],
         approvedByName: repository.approvers.value
             .singleWhere((user) => user.id == selectedApprover.value)
@@ -171,6 +178,25 @@ class ExpenseFormSectionBloc {
     }
 
     repository.uploadNewExpense(expense, _attachments);
+  }
+
+  void uploadFormTemplate(String description, String templateName) async {
+    if (templateName == null) return;
+    Template template;
+
+    template = Template(
+      approvedBy: selectedApprover.value,
+      category: selectedCategory.value,
+      country: selectedCountry.value.id,
+      currency: selectedCurrency.value,
+      description: description,
+      expenseType: expenseType,
+      name: templateName,
+      costCentreGroup: selectedCostCentre.value,
+      vat: selectedVat.value,
+    );
+
+    await repository.uploadNewTemplate(template);
   }
 
   // VALIDATORS
@@ -206,6 +232,9 @@ class ExpenseFormSectionBloc {
   String currencyValidator(String value) =>
       selectedCurrency.value == null ? "Select a currency" : null;
 
+  String costCentreValidator(String value) =>
+      selectedCostCentre.value == null ? "Select an option" : null;
+
   void _buildFormFromTemplate() {
     selectCategory(template.category);
     selectCountry(repository.getCountryWithId(template.country));
@@ -223,6 +252,7 @@ class ExpenseFormSectionBloc {
     _selectedDueDateController.close();
     _selectedApproverController.close();
     _selectedVatController.close();
+    _selectedCostCentreController.close();
   }
 }
 

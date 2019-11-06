@@ -29,6 +29,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   AnimationController _navBarController, _bottomSheetController;
   HomeBloc _homeBloc;
   Tween<Offset> _tween = Tween(begin: Offset(0, 1), end: Offset(0, 0));
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -63,6 +64,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         stream: _homeBloc.pageIndex,
         builder: (context, pageIndexSnapshot) {
           return Scaffold(
+            key: _scaffoldKey,
             bottomNavigationBar: NavigationBarWithFAB(
               animationController: _navBarController,
               index: pageIndexSnapshot.data,
@@ -141,6 +143,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                       duration: Duration(milliseconds: 275),
                                       curve: Curves.easeIn);
                                 },
+                                scaffoldKey: _scaffoldKey,
                               ),
                               initBloc: (_, bloc) =>
                                   bloc ??

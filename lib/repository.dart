@@ -4,10 +4,11 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/models/category_model.dart';
+import 'package:expense_claims_app/models/cost_center_groups_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
-import 'package:expense_claims_app/models/expense_template_model.dart';
+import 'package:expense_claims_app/models/form_template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -46,6 +47,8 @@ class Repository {
       _expenseClaimsController.stream;
   ValueObservable<List<Invoice>> get invoices => _invoicesController.stream;
   ValueObservable<List<Template>> get templates => _templatesController.stream;
+  ValueObservable<List<CostCentreGroup>> get costCentresGroups =>
+      _costCentresGroupsController.stream;
 
   List<StreamSubscription> _streamSubscriptions = [];
 
@@ -59,6 +62,7 @@ class Repository {
   final _expenseClaimsController = BehaviorSubject<List<ExpenseClaim>>();
   final _invoicesController = BehaviorSubject<List<Invoice>>();
   final _approversController = BehaviorSubject<List<User>>();
+  final _costCentresGroupsController = BehaviorSubject<List<CostCentreGroup>>();
   final _templatesController = BehaviorSubject<List<Template>>();
 
   void init() {
@@ -90,6 +94,13 @@ class Repository {
     docRef = _firestore.collection(collection).document();
     docRef.setData(expense.toJson());
     _uploadAttachments(docRef.documentID, attachments);
+  }
+
+  Future uploadNewTemplate(Template template) async {
+    await _firestore
+        .collection(TEMPLATES_COLLECTION)
+        .document()
+        .setData(template.toJson());
   }
 
   Future _uploadAttachments(
@@ -158,6 +169,7 @@ class Repository {
     _setUpStream(INVOICES_COLLECTION, _invoicesController);
     _setUpStream(TEMPLATES_COLLECTION, _templatesController);
     _setUpStream(USERS_COLLECTION, _approversController);
+    _setUpStream(COST_CENTRES_GROUPS_COLLECTION, _costCentresGroupsController);
     _loadLastSelected();
   }
 
@@ -196,7 +208,7 @@ class Repository {
         query.snapshots().listen(
           (snapshot) {
             // This list is used to cast the data
-            List auxList;
+            List auxList = [];
             switch (collection) {
               case COUNTRIES_COLLECTION:
                 auxList = snapshot.documents
@@ -247,6 +259,13 @@ class Repository {
                   auxList
                       .add(User.fromJson(map.cast<String, dynamic>(), id: id));
                 });
+                break;
+              case COST_CENTRES_GROUPS_COLLECTION:
+                auxList = snapshot.documents
+                    .map((doc) =>
+                        CostCentreGroup.fromJson(doc.data, id: doc.documentID))
+                    .toList()
+                    .cast<CostCentreGroup>();
                 break;
             }
             if (list.isEmpty)
@@ -364,6 +383,7 @@ class Repository {
     _approversController.close();
     _invoicesController.close();
     _templatesController.close();
+    _costCentresGroupsController.close();
 
     _streamSubscriptions
         .forEach((streamSubscription) => streamSubscription.cancel());
@@ -383,6 +403,7 @@ const String CATEGORIES_COLLECTION = "categories";
 const String USERS_COLLECTION = "users";
 const String EDITABLE_INFO_COLLECTION = "editable_info";
 const String TEMPLATES_COLLECTION = "templates";
+const String COST_CENTRES_GROUPS_COLLECTION = "cost_centres_groups";
 
 // FIRESTORE DOCUMENT KEYS
 const String LAST_SELECTED_DOC = "last_selected";
