@@ -68,7 +68,6 @@ class _ExpenseClaimsPageState extends State<ExpenseClaimsPage> {
                       "Expense claims",
                       textAlign: TextAlign.left,
                       style: TextStyle(
-                        color: Colors.black87,
                         fontSize: 30.0,
                         fontWeight: FontWeight.w500,
                       ),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/splash_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
+import 'package:expense_claims_app/colors.dart' as prefix0;
 import 'package:expense_claims_app/pages/splash_page.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/material.dart';
@@ -76,16 +77,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 }
 
 ThemeData _buildTheme() {
-  final ThemeData base = ThemeData.light();
+  final ThemeData base = ThemeData.dark();
   return base.copyWith(
-    primaryColor: primaryColor,
-    primaryColorLight: primaryLightColor,
-    primaryColorDark: primaryDarkColor,
-    accentColor: secondaryColor,
-    colorScheme: base.colorScheme.copyWith(secondary: secondaryColor),
-    primaryIconTheme: base.iconTheme.copyWith(color: Colors.black38),
-    accentIconTheme: base.iconTheme.copyWith(color: Colors.white),
-    textSelectionColor: secondaryColor,
-    backgroundColor: secondaryDarkColor,
-  );
+      primaryColor: primaryColor,
+      primaryColorLight: primaryLightColor,
+      primaryColorDark: primaryDarkColor,
+      accentColor: secondaryColor,
+      accentIconTheme: base.iconTheme.copyWith(color: Colors.black54),
+      colorScheme:
+          base.colorScheme.copyWith(secondary: prefix0.secondaryColor));
 }

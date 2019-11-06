@@ -65,14 +65,7 @@ class _ExpenseTileState extends State<ExpenseTile>
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10.0),
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x10000000),
-                  offset: Offset(6, 6),
-                  blurRadius: 6.0,
-                )
-              ],
+              color: Colors.white10,
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
@@ -100,10 +93,7 @@ class _ExpenseTileState extends State<ExpenseTile>
                                 left: 16.0, top: 8.0, bottom: 16.0),
                             child: Text(
                               timeago.format(expense.date),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .body1
-                                  .copyWith(color: Colors.black38),
+                              style: Theme.of(context).textTheme.body1,
                             ),
                           ),
                         ],
@@ -114,11 +104,11 @@ class _ExpenseTileState extends State<ExpenseTile>
                       Container(
                         alignment: Alignment.centerRight,
                         child: Chip(
-                          backgroundColor: secondary100Color,
                           label: Text(
                             '${expense.gross.toString()} ${_expenseTileBloc.currencySymbol ?? ''}',
                             style: Theme.of(context).textTheme.subhead.copyWith(
                                   color: secondaryColor,
+                                  fontWeight: FontWeight.bold,
                                 ),
                           ),
                         ),
@@ -130,7 +120,6 @@ class _ExpenseTileState extends State<ExpenseTile>
                           turns: _rotateAnimation,
                           child: Icon(
                             Icons.keyboard_arrow_down,
-                            color: Colors.black38,
                           ),
                         ),
                       ),
@@ -212,7 +201,6 @@ class _ExpenseTileState extends State<ExpenseTile>
         ),
         child: Icon(
           category.icon,
-          color: Colors.black45,
         ),
       );
 

@@ -31,9 +31,9 @@ class _NavigationBarWithFABState extends State<NavigationBarWithFAB>
 
   @override
   void initState() {
-    _colorTween = ColorTween(begin: secondaryColor, end: Colors.black38)
+    _colorTween = ColorTween(begin: secondaryColor, end: Colors.white30)
         .animate(widget._animationController);
-    _colorTween2 = ColorTween(begin: Colors.black38, end: secondaryColor)
+    _colorTween2 = ColorTween(begin: Colors.white30, end: secondaryColor)
         .animate(widget._animationController);
 
     _intTween =

@@ -19,23 +19,20 @@ class TemplatesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TemplatesSectionBloc bloc = Provider.of<TemplatesSectionBloc>(context);
-
     return StreamBuilder<List<Template>>(
       stream: bloc.templates,
       initialData: [],
       builder: (BuildContext context, AsyncSnapshot<List<Template>> snapshot) {
         List<Widget> listWidgets = [_buildTitle(context)];
 
-        listWidgets.addAll(
-          snapshot.data
-                  ?.map(
-                    (template) => TemplateTile(
-                      template: template,
-                    ),
-                  )
-                  ?.toList() ??
-              [],
-        );
+        if (snapshot.data.isEmpty)
+          listWidgets.add(_buildPlaceholder());
+        else
+          listWidgets.addAll(snapshot.data.map(
+            (template) => TemplateTile(
+              template: template,
+            ),
+          ));
 
         return ListView(children: listWidgets);
       },
@@ -60,6 +57,30 @@ class TemplatesSection extends StatelessWidget {
                 onPressed: onPressed,
               ),
             )
+          ],
+        ),
+      );
+
+  Widget _buildPlaceholder() => Container(
+        margin: EdgeInsets.all(16.0),
+        padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+        decoration: BoxDecoration(
+          color: secondary100Color,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(32.0),
+            topRight: Radius.circular(32.0),
+          ),
+        ),
+        child: Row(
+          children: <Widget>[
+            Text(
+              '🥶',
+              style: TextStyle(fontSize: 40.0),
+            ),
+            Container(
+              width: 16.0,
+            ),
+            Text('You have not created any Template yet.')
           ],
         ),
       );
