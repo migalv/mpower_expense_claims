@@ -122,7 +122,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               child: TemplatesSection(
                                 bottomSheetController: _bottomSheetController,
                                 scrollController: scrollController,
-                                onTap: () {
+                                onPressed: () {
                                   _pageController2.animateTo(
                                       MediaQuery.of(context).size.width,
                                       duration: Duration(milliseconds: 275),

@@ -157,8 +157,7 @@ class Repository {
     _setUpStream(EXPENSE_CLAIMS_COLLECTION, _expenseClaimsController);
     _setUpStream(INVOICES_COLLECTION, _invoicesController);
     _setUpStream(TEMPLATES_COLLECTION, _templatesController);
-    _listenToApproversChanges();
-    _listenToExpenseClaimsChanges();
+    _setUpStream(USERS_COLLECTION, _approversController);
     _loadLastSelected();
   }
 
@@ -184,6 +183,9 @@ class Repository {
         queries.add(_firestore
             .collection(collection)
             .where("availableTo", isEqualTo: null));
+        break;
+      case USERS_COLLECTION:
+        queries.add(_firestore.collection(collection).document(currentUserId));
         break;
       default:
         queries.add(_firestore.collection(collection));
@@ -238,6 +240,14 @@ class Repository {
                     .toList()
                     .cast<Template>();
                 break;
+              case USERS_COLLECTION:
+                auxList = snapshot.data[APPROVERS]
+                        ?.map((doc) =>
+                            User.fromJson(doc.data, id: doc.documentID))
+                        ?.toList()
+                        ?.cast<User>() ??
+                    <User>[];
+                break;
             }
             if (list.isEmpty)
               list = auxList;
@@ -250,33 +260,6 @@ class Repository {
       ),
     );
   }
-
-  void _listenToApproversChanges() => _streamSubscriptions.add(_firestore
-          .collection(USERS_COLLECTION)
-          .document(currentUserId)
-          .snapshots()
-          .listen((snapshot) {
-        Map approversMap = snapshot.data[APPROVERS];
-        List<User> approvers = [];
-        approversMap?.forEach((approverId, map) => approvers
-            .add(User.fromJson(map.cast<String, String>(), id: approverId)));
-        _approversController.add(approvers);
-      }));
-
-  void _listenToExpenseClaimsChanges() => _streamSubscriptions.add(
-        _firestore.collection(EXPENSE_CLAIMS_COLLECTION).snapshots().listen(
-          (snapshot) {
-            List<ExpenseClaim> expenseClaims = snapshot.documents
-                .map((doc) =>
-                    ExpenseClaim.fromJson(doc.data, id: doc.documentID))
-                .toList();
-
-            expenseClaims?.sort((a, b) => b.date.compareTo(a.date));
-
-            _expenseClaimsController.add(expenseClaims);
-          },
-        ),
-      );
 
   void _loadLastSelected() => _streamSubscriptions.add(_firestore
           .collection(
@@ -381,6 +364,7 @@ class Repository {
     _approversController.close();
     _invoicesController.close();
     _templatesController.close();
+
     _streamSubscriptions
         .forEach((streamSubscription) => streamSubscription.cancel());
   }

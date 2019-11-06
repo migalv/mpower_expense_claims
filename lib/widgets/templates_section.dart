@@ -4,17 +4,16 @@ import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/expense_template_model.dart';
 import 'package:expense_claims_app/widgets/template_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TemplatesSection extends StatelessWidget {
   final AnimationController bottomSheetController;
   final ScrollController scrollController;
-  final Function onTap;
+  final Function onPressed;
 
   const TemplatesSection({
     Key key,
     @required this.bottomSheetController,
-    @required this.onTap,
+    @required this.onPressed,
     this.scrollController,
   }) : super(key: key);
   @override
@@ -53,15 +52,12 @@ class TemplatesSection extends StatelessWidget {
                 style: Theme.of(context).textTheme.title,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(right: 24.0),
-              child: GestureDetector(
-                child: Icon(
-                  FontAwesomeIcons.plus,
-                  color: secondaryColor,
-                  size: 20.0,
-                ),
-                onTap: onTap,
+            Container(
+              margin: EdgeInsets.only(right: 12.0),
+              child: FlatButton(
+                child: Text('Continue'),
+                textColor: secondaryColor,
+                onPressed: onPressed,
               ),
             )
           ],
