@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:expense_claims_app/models/expense_model.dart';
-import 'package:expense_claims_app/models/form_template_model.dart';
+import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/foundation.dart';
 
@@ -11,6 +11,13 @@ class TemplatesSectionBloc {
   List<Template> _templates = [];
   int _expenseType = 0;
 
+  //
+  //  OUTPUT
+  Stream<List<Template>> get templates => _templatesController.stream;
+
+  // Subjects
+  final _templatesController = StreamController<List<Template>>();
+
   TemplatesSectionBloc({@required Stream<int> expenseTypeStream})
       : _expenseTypeStream = expenseTypeStream {
     _listenToTemplateChanges();
@@ -18,9 +25,9 @@ class TemplatesSectionBloc {
   }
 
   void _listenToTemplateChanges() {
-    repository.templates.listen((List<Template> list) {
+    _streamSubscriptions.add(repository.templates.listen((List<Template> list) {
       _updateTemplates(list);
-    });
+    }));
   }
 
   void _listenToExpenseTypeChanges() {
@@ -40,13 +47,6 @@ class TemplatesSectionBloc {
 
     _templatesController.add(_templates);
   }
-
-  //
-  //  OUTPUT
-  Stream<List<Template>> get templates => _templatesController.stream;
-
-  // Subjects
-  final _templatesController = StreamController<List<Template>>();
 
   void dispose() {
     _templatesController.close();

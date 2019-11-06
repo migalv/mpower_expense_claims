@@ -64,32 +64,43 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   Widget _buildBody() => Form(
         key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(8.0, 24.0, 8.0, 24.0),
-          shrinkWrap: true,
-          controller: widget._scrollController,
-          children: <Widget>[
-            _buildTitle(),
-            _buildCountry(),
-            _buildCategory(),
-            _buildCostCenterTile(),
-            _buildDate("Date", _expenseClaimBloc.expenseDate,
-                _expenseClaimBloc.selectExpenseDate),
-            _expenseClaimBloc.expenseType == ExpenseType.INVOICE
-                ? _buildDate("Due date", _expenseClaimBloc.selectedDueDate,
-                    _expenseClaimBloc.selectDueDate,
-                    lastDate: DateTime(2030))
-                : Container(),
-            _buildDescription(),
-            _buildCost(),
-            _buildApproverTile(),
-            _buildAttachmentsTile(),
-            _buildButtons(),
-          ],
-        ),
+        child: StreamBuilder<int>(
+            initialData: 0,
+            stream: _expenseClaimBloc.expenseTypeStream,
+            builder: (context, snapshot) {
+              if (snapshot.data == null) return Container();
+
+              ExpenseType expenseType = ExpenseType.values[snapshot.data];
+
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(8.0, 24.0, 8.0, 24.0),
+                shrinkWrap: true,
+                controller: widget._scrollController,
+                children: <Widget>[
+                  _buildTitle(expenseType),
+                  _buildCountry(),
+                  _buildCategory(),
+                  _buildCostCenterTile(),
+                  _buildDate("Date", _expenseClaimBloc.expenseDate,
+                      _expenseClaimBloc.selectExpenseDate),
+                  expenseType == ExpenseType.EXPENSE_CLAIM
+                      ? Container()
+                      : _buildDate(
+                          "Due date",
+                          _expenseClaimBloc.selectedDueDate,
+                          _expenseClaimBloc.selectDueDate,
+                          lastDate: DateTime(2030)),
+                  _buildDescription(),
+                  _buildCost(),
+                  _buildApproverTile(),
+                  _buildAttachmentsTile(),
+                  _buildButtons(expenseType),
+                ],
+              );
+            }),
       );
 
-  Widget _buildTitle() => Padding(
+  Widget _buildTitle(ExpenseType expenseType) => Padding(
         padding: const EdgeInsets.only(bottom: 24.0),
         child: Row(
           children: <Widget>[
@@ -105,7 +116,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
             ),
             Text(
               'New ' +
-                  (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
+                  (expenseType == ExpenseType.EXPENSE_CLAIM
                       ? "expense claim"
                       : "invoice"),
               style: Theme.of(context).textTheme.title,
@@ -605,7 +616,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         ),
       );
 
-  Widget _buildButtons() => Padding(
+  Widget _buildButtons(ExpenseType expenseType) => Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.0),
         child: Row(
           children: <Widget>[
@@ -634,8 +645,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                 color: secondaryLightColor,
                 child: Text(
                   'Create ' +
-                      (_expenseClaimBloc.expenseType ==
-                              ExpenseType.EXPENSE_CLAIM
+                      (expenseType == ExpenseType.EXPENSE_CLAIM
                           ? "Expense"
                           : "Invoice"),
                   style: TextStyle(color: Colors.white),

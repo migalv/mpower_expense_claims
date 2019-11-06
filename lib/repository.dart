@@ -8,7 +8,7 @@ import 'package:expense_claims_app/models/cost_center_groups_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
-import 'package:expense_claims_app/models/form_template_model.dart';
+import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
