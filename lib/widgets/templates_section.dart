@@ -4,6 +4,7 @@ import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/widgets/template_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TemplatesSection extends StatelessWidget {
   final AnimationController bottomSheetController;
@@ -39,7 +40,9 @@ class TemplatesSection extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle(BuildContext context) => Padding(
+  Widget _buildTitle(BuildContext context) => Container(
+        height: 48,
+        alignment: Alignment.topCenter,
         padding: const EdgeInsets.only(left: 24.0),
         child: Row(
           children: <Widget>[

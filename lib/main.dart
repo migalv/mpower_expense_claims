@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/splash_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
-import 'package:expense_claims_app/colors.dart' as prefix0;
 import 'package:expense_claims_app/pages/splash_page.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/material.dart';
@@ -84,6 +83,6 @@ ThemeData _buildTheme() {
       primaryColorDark: primaryDarkColor,
       accentColor: secondaryColor,
       accentIconTheme: base.iconTheme.copyWith(color: Colors.black54),
-      colorScheme:
-          base.colorScheme.copyWith(secondary: prefix0.secondaryColor));
+      colorScheme: base.colorScheme.copyWith(secondary: secondaryColor),
+      errorColor: errorColor);
 }

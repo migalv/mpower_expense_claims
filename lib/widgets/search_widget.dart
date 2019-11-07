@@ -1,4 +1,3 @@
-import 'package:expense_claims_app/colors.dart';
 import 'package:flutter/material.dart';
 
 class SearchWidget extends StatelessWidget {

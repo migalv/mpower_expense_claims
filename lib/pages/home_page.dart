@@ -105,9 +105,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           color: Theme.of(context).canvasColor,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black26,
-                              offset: Offset(0, -2),
-                              blurRadius: 6.0,
+                              color: Color(0x1affffff),
+                              offset: Offset(0, -4),
+                              blurRadius: 5.0,
                             )
                           ],
                           borderRadius: BorderRadius.only(
