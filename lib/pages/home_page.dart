@@ -102,10 +102,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               ScrollController scrollController) =>
                           Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).canvasColor,
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0x10000000),
+                              color: Colors.black26,
                               offset: Offset(0, -2),
                               blurRadius: 6.0,
                             )

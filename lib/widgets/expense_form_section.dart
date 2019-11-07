@@ -4,6 +4,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
+import 'package:expense_claims_app/colors.dart' as prefix0;
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/cost_center_groups_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
@@ -73,14 +74,12 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
               ExpenseType expenseType = ExpenseType.values[snapshot.data];
 
               return ListView(
-                padding: const EdgeInsets.fromLTRB(8.0, 24.0, 8.0, 24.0),
                 shrinkWrap: true,
                 controller: widget._scrollController,
                 children: <Widget>[
                   _buildTitle(expenseType),
                   _buildCountry(),
                   _buildCategory(),
-                  _buildCostCenterTile(),
                   _buildDate("Date", _expenseClaimBloc.expenseDate,
                       _expenseClaimBloc.selectExpenseDate),
                   expenseType == ExpenseType.EXPENSE_CLAIM
@@ -90,10 +89,11 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                           _expenseClaimBloc.selectedDueDate,
                           _expenseClaimBloc.selectDueDate,
                           lastDate: DateTime(2030)),
-                  _buildDescription(),
                   _buildCost(),
+                  _buildCostCenterTile(),
                   _buildApproverTile(),
                   _buildAttachmentsTile(),
+                  _buildDescription(),
                   _buildButtons(expenseType),
                 ],
               );
@@ -101,7 +101,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       );
 
   Widget _buildTitle(ExpenseType expenseType) => Padding(
-        padding: const EdgeInsets.only(bottom: 24.0),
+        padding: const EdgeInsets.only(bottom: 8.0),
         child: Row(
           children: <Widget>[
             GestureDetector(
@@ -127,50 +127,45 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   Widget _buildCountry() => FormField(
         validator: _expenseClaimBloc.countryValidator,
-        builder: (FormFieldState state) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _buildFieldLabel('Country'),
-              StreamBuilder<Country>(
+        builder: (FormFieldState state) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _buildFieldLabel('Country'),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: StreamBuilder<Country>(
                 stream: _expenseClaimBloc.selectedCountry,
-                builder: (context, selectedCountrySnapshot) {
-                  return Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Color(0xfff1f1f1),
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: DropdownButtonHideUnderline(
-                        child: StreamBuilder<List<Country>>(
-                            stream: repository.countries,
-                            initialData: <Country>[],
-                            builder: (context, countriesSnapshot) {
-                              return DropdownButton<Country>(
-                                value: selectedCountrySnapshot.data,
-                                items: countriesSnapshot.data
-                                    .where((country) => country.hidden == false)
-                                    .map((country) => DropdownMenuItem<Country>(
-                                          child: Text(country.name),
-                                          value: country,
-                                        ))
-                                    .toList(),
-                                onChanged: _expenseClaimBloc.selectCountry,
-                                isExpanded: true,
-                                hint: Text('Select the country of issue'),
-                              );
-                            }),
-                      ),
-                    ),
-                  );
-                },
+                builder: (context, selectedCountrySnapshot) => Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).bottomAppBarColor,
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: StreamBuilder<List<Country>>(
+                        stream: repository.countries,
+                        initialData: <Country>[],
+                        builder: (context, countriesSnapshot) {
+                          return DropdownButton<Country>(
+                            value: selectedCountrySnapshot.data,
+                            items: countriesSnapshot.data
+                                .where((country) => country.hidden == false)
+                                .map((country) => DropdownMenuItem<Country>(
+                                      child: Text(country.name),
+                                      value: country,
+                                    ))
+                                .toList(),
+                            onChanged: _expenseClaimBloc.selectCountry,
+                            isExpanded: true,
+                            hint: Text('Select the country of issue'),
+                          );
+                        }),
+                  ),
+                ),
               ),
-              _buildErrorFormLabel(state),
-            ],
-          ),
+            ),
+          ],
         ),
       );
 
@@ -179,28 +174,24 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       builder: (context, selectedCategorySnapshot) {
         return FormField<String>(
           validator: _expenseClaimBloc.categoryValidator,
-          builder: (FormFieldState<String> state) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                _buildFieldLabel('Category'),
-                StreamBuilder(
-                    stream: repository.categories,
-                    initialData: <Category>[],
-                    builder: (context, categoriesSnapshot) {
-                      return Container(
-                        height: 48.0,
-                        child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            children: _buildChipListItems(
-                                selectedCategorySnapshot?.data,
-                                categoriesSnapshot?.data ?? [])),
-                      );
-                    }),
-                _buildErrorFormLabel(state),
-              ],
-            ),
+          builder: (FormFieldState<String> state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _buildFieldLabel('Category'),
+              StreamBuilder(
+                  stream: repository.categories,
+                  initialData: <Category>[],
+                  builder: (context, categoriesSnapshot) {
+                    return Container(
+                      height: 48.0,
+                      child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: _buildChipListItems(
+                              selectedCategorySnapshot?.data,
+                              categoriesSnapshot?.data ?? [])),
+                    );
+                  }),
+            ],
           ),
         );
       });
@@ -209,33 +200,32 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       String selectedCategory, List<Category> categories) {
     List<Widget> list = [
       Container(
-        width: 16.0,
+        width: 24.0,
       ),
     ];
 
     list.addAll(categories
         .where((category) => category.hidden == false)
         .map((category) {
-      String selected = selectedCategory ?? '';
+      bool selected = category.id == (selectedCategory ?? '');
 
       return Padding(
-        padding: const EdgeInsets.only(right: 8.0),
+        padding: const EdgeInsets.only(right: 12.0),
         child: ActionChip(
           label: Text(
             category.name,
             style: Theme.of(context).textTheme.body2.copyWith(
-                color: category.id == selected ? Colors.white : Colors.black38),
+                color: selected ? Colors.black54 : Colors.white,
+                fontWeight: selected ? FontWeight.bold : FontWeight.normal),
           ),
           avatar: category.icon != null
               ? Icon(
                   category.icon,
                   size: 16.0,
-                  color:
-                      category.id == selected ? Colors.white : Colors.black26,
+                  color: selected ? Colors.black38 : Colors.white54,
                 )
               : null,
-          backgroundColor:
-              category.id == selected ? secondaryColor : Color(0xfff1f1f1),
+          backgroundColor: selected ? secondaryColor : formFieldBackgroundColor,
           onPressed: () {
             _expenseClaimBloc.selectCategory(category.id);
           },
@@ -245,71 +235,72 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       );
     }).toList());
 
+    list.add(Container(
+      width: 12.0,
+    ));
+
     return list;
   }
 
   Widget _buildDate(String label, ValueObservable<DateTime> stream,
           Function selectFunction,
           {DateTime lastDate}) =>
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: FormField(
-          validator: (date) => _expenseClaimBloc.dateValidator(stream),
-          builder: (FormFieldState state) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _buildFieldLabel(label),
-              GestureDetector(
-                onTap: () async {
-                  DateTime selectedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: lastDate ?? DateTime.now(),
-                  );
-                  selectFunction(selectedDate);
-                },
-                child: StreamBuilder<DateTime>(
-                    stream: stream,
-                    builder: (context, dateSnapshot) {
-                      return Container(
-                        height: 48.0,
-                        decoration: BoxDecoration(
-                          color: Color(0xfff1f1f1),
-                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                        ),
-                        width: double.infinity,
-                        alignment: Alignment.centerLeft,
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                dateSnapshot?.data != null
-                                    ? DateFormat('EEE d MMM, yyyy')
-                                        .format(dateSnapshot?.data)
-                                    : "Select a date",
-                                style: dateSnapshot?.data == null
-                                    ? Theme.of(context)
-                                        .textTheme
-                                        .subhead
-                                        .copyWith(color: Colors.black54)
-                                    : Theme.of(context).textTheme.subhead,
-                              ),
+      FormField(
+        validator: (date) => _expenseClaimBloc.dateValidator(stream),
+        builder: (FormFieldState state) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _buildFieldLabel(label),
+            GestureDetector(
+              onTap: () async {
+                DateTime selectedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(1900),
+                  lastDate: lastDate ?? DateTime.now(),
+                );
+                selectFunction(selectedDate);
+              },
+              child: StreamBuilder<DateTime>(
+                  stream: stream,
+                  builder: (context, dateSnapshot) {
+                    return Container(
+                      height: 48.0,
+                      decoration: BoxDecoration(
+                        color: formFieldBackgroundColor,
+                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                      ),
+                      width: double.infinity,
+                      alignment: Alignment.centerLeft,
+                      margin: EdgeInsets.symmetric(horizontal: 20),
+                      padding: EdgeInsets.symmetric(horizontal: 12.0),
+                      child: Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              dateSnapshot?.data != null
+                                  ? DateFormat('EEE d MMM, yyyy')
+                                      .format(dateSnapshot?.data)
+                                  : "Select a date",
+                              style: dateSnapshot?.data == null
+                                  ? Theme.of(context)
+                                      .textTheme
+                                      .subhead
+                                      .copyWith(color: Colors.black54)
+                                  : Theme.of(context).textTheme.subhead,
                             ),
-                            Icon(
-                              Icons.calendar_today,
-                              color: Colors.black38,
-                              size: 20.0,
-                            )
-                          ],
-                        ),
-                      );
-                    }),
-              ),
-              _buildErrorFormLabel(state),
-            ],
-          ),
+                          ),
+                          Icon(
+                            Icons.calendar_today,
+                            color: Colors.white54,
+                            size: 20.0,
+                          )
+                        ],
+                      ),
+                    );
+                  }),
+            ),
+          ],
         ),
       );
 
@@ -339,143 +330,158 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         ),
       );
 
-  Widget _buildCost() => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            _buildFieldLabel('Cost'),
-            StreamBuilder<String>(
-              stream: _expenseClaimBloc.selectedCurrency,
-              builder: (context, selectedCurrencySnapshot) => Container(
-                height: 72.0,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Expanded(
-                      child: TextFormField(
-                        controller: _grossController,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: <TextInputFormatter>[
-                          WhitelistingTextInputFormatter.digitsOnly,
+  Widget _buildCost() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          _buildFieldLabel('Cost'),
+          StreamBuilder<String>(
+            stream: _expenseClaimBloc.selectedCurrency,
+            builder: (context, selectedCurrencySnapshot) => Container(
+              padding: EdgeInsets.symmetric(horizontal: 24.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      controller: _grossController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: <TextInputFormatter>[
+                        WhitelistingTextInputFormatter.digitsOnly,
+                      ],
+                      decoration: InputDecoration(
+                        filled: true,
+                        hintText: 'Gross',
+                      ),
+                      validator: (value) => value == null || value == ""
+                          ? "Enter an amount"
+                          : null,
+                    ),
+                  ),
+                  Container(
+                    width: 16.0,
+                  ),
+                  Expanded(
+                    child: FormField(
+                      validator: _expenseClaimBloc.vatValidator,
+                      builder: (FormFieldState state) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          DropdownButtonHideUnderline(
+                            child: StreamBuilder<Country>(
+                              stream: _expenseClaimBloc.selectedCountry,
+                              builder: (context, selectedCountrySnapshot) =>
+                                  StreamBuilder(
+                                stream: _expenseClaimBloc.selectedVat,
+                                builder: (context, selectedVatSnapshot) =>
+                                    Container(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 12.0),
+                                  decoration: BoxDecoration(
+                                    color: formFieldBackgroundColor,
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(8.0)),
+                                  ),
+                                  width: double.infinity,
+                                  child: DropdownButton<double>(
+                                    hint: Text("VAT"),
+                                    value: selectedVatSnapshot?.data,
+                                    items: selectedCountrySnapshot
+                                            ?.data?.vatOptions
+                                            ?.map(
+                                              (vat) => DropdownMenuItem(
+                                                child:
+                                                    Text(vat.toString() + "%"),
+                                                value: vat,
+                                              ),
+                                            )
+                                            ?.toList() ??
+                                        [],
+                                    onChanged: _expenseClaimBloc.selectVat,
+                                    isExpanded: true,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
-                        decoration: InputDecoration(
-                          filled: true,
-                          hintText: 'Gross',
-                        ),
-                        validator: (value) => value == null || value == ""
-                            ? "Enter an amount"
-                            : null,
                       ),
                     ),
-                    Container(
-                      width: 16.0,
-                    ),
-                    Expanded(
-                      child: FormField(
-                        validator: _expenseClaimBloc.vatValidator,
-                        builder: (FormFieldState state) => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            DropdownButtonHideUnderline(
-                              child: StreamBuilder<Country>(
-                                  stream: _expenseClaimBloc.selectedCountry,
-                                  builder: (context, selectedCountrySnapshot) {
-                                    return StreamBuilder<Object>(
-                                        stream: _expenseClaimBloc.selectedVat,
-                                        builder:
-                                            (context, selectedVatSnapshot) {
-                                          return DropdownButton<double>(
-                                            hint: Text("VAT"),
-                                            value: selectedVatSnapshot?.data,
-                                            items: selectedCountrySnapshot
-                                                    ?.data?.vatOptions
-                                                    ?.map(
-                                                      (vat) => DropdownMenuItem(
-                                                        child: Text(
-                                                            vat.toString() +
-                                                                "%"),
-                                                        value: vat,
-                                                      ),
-                                                    )
-                                                    ?.toList() ??
-                                                [],
-                                            onChanged:
-                                                _expenseClaimBloc.selectVat,
-                                            isExpanded: true,
-                                          );
-                                        });
-                                  }),
+                  ),
+                  Container(
+                    width: 16.0,
+                  ),
+                  Expanded(
+                    child: FormField(
+                      validator: _expenseClaimBloc.currencyValidator,
+                      builder: (FormFieldState state) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          DropdownButtonHideUnderline(
+                            child: StreamBuilder<List<Currency>>(
+                              stream: repository.currencies,
+                              initialData: <Currency>[],
+                              builder: (context, currenciesSnapshot) =>
+                                  Container(
+                                padding: EdgeInsets.symmetric(horizontal: 12.0),
+                                decoration: BoxDecoration(
+                                  color: formFieldBackgroundColor,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8.0)),
+                                ),
+                                width: double.infinity,
+                                child: DropdownButton<String>(
+                                  hint: Text("Currency"),
+                                  value: selectedCurrencySnapshot?.data,
+                                  items: currenciesSnapshot.data
+                                      .where((currency) =>
+                                          currency.hidden == false)
+                                      .map(
+                                        (currency) => DropdownMenuItem(
+                                          child: Text(currency.iso),
+                                          value: currency.id,
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: _expenseClaimBloc.selectCurrency,
+                                  isExpanded: true,
+                                ),
+                              ),
                             ),
-                            _buildErrorFormLabel(state),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                    Container(
-                      width: 16.0,
-                    ),
-                    Expanded(
-                      child: FormField(
-                        validator: _expenseClaimBloc.currencyValidator,
-                        builder: (FormFieldState state) => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            DropdownButtonHideUnderline(
-                              child: StreamBuilder<List<Currency>>(
-                                  stream: repository.currencies,
-                                  initialData: <Currency>[],
-                                  builder: (context, currenciesSnapshot) {
-                                    return DropdownButton<String>(
-                                      hint: Text("Currency"),
-                                      value: selectedCurrencySnapshot?.data,
-                                      items: currenciesSnapshot.data
-                                          .where((currency) =>
-                                              currency.hidden == false)
-                                          .map(
-                                            (currency) => DropdownMenuItem(
-                                              child: Text(currency.iso),
-                                              value: currency.id,
-                                            ),
-                                          )
-                                          .toList(),
-                                      onChanged:
-                                          _expenseClaimBloc.selectCurrency,
-                                      isExpanded: true,
-                                    );
-                                  }),
-                            ),
-                            _buildErrorFormLabel(state),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       );
 
-  Widget _buildApproverTile() => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: FormField(
-          validator: _expenseClaimBloc.approvedByValidator,
-          builder: (FormFieldState state) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _buildFieldLabel("Approver"),
-              StreamBuilder(
-                stream: repository.approvers,
-                initialData: <User>[],
-                builder: (BuildContext context,
-                        AsyncSnapshot<List<User>> itemsSnapshot) =>
-                    DropdownButtonHideUnderline(
-                  child: StreamBuilder<String>(
-                    stream: _expenseClaimBloc.selectedApprover,
-                    builder: (context, selectedApproverSnapshot) =>
-                        DropdownButton<String>(
+  Widget _buildApproverTile() => FormField(
+        validator: _expenseClaimBloc.approvedByValidator,
+        builder: (FormFieldState state) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _buildFieldLabel("Approver"),
+            StreamBuilder(
+              stream: repository.approvers,
+              initialData: <User>[],
+              builder: (BuildContext context,
+                      AsyncSnapshot<List<User>> itemsSnapshot) =>
+                  DropdownButtonHideUnderline(
+                child: StreamBuilder<String>(
+                  stream: _expenseClaimBloc.selectedApprover,
+                  builder: (context, selectedApproverSnapshot) => Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20.0),
+                    padding: EdgeInsets.symmetric(horizontal: 12.0),
+                    decoration: BoxDecoration(
+                      color: formFieldBackgroundColor,
+                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    ),
+                    width: double.infinity,
+                    child: DropdownButton<String>(
                       hint: Text("Select who will approve your Expense"),
                       value: selectedApproverSnapshot?.data,
                       items: itemsSnapshot.data
@@ -488,31 +494,36 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                   ),
                 ),
               ),
-              _buildErrorFormLabel(state),
-            ],
-          ),
+            ),
+          ],
         ),
       );
 
-  Widget _buildCostCenterTile() => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: FormField(
-          validator: _expenseClaimBloc.costCentreValidator,
-          builder: (FormFieldState state) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _buildFieldLabel("Cost related to"),
-              StreamBuilder(
-                stream: repository.costCentresGroups,
-                initialData: <CostCentreGroup>[],
-                builder: (BuildContext context,
-                        AsyncSnapshot<List<CostCentreGroup>> itemsSnapshot) =>
-                    DropdownButtonHideUnderline(
-                  child: StreamBuilder<String>(
-                    stream: _expenseClaimBloc.selectedCostCentre,
-                    builder: (context, selectedCostCentreSnapshot) {
-                      return DropdownButton<String>(
-                        hint: Text("Select what is your cost related to"),
+  Widget _buildCostCenterTile() => FormField(
+        validator: _expenseClaimBloc.costCentreValidator,
+        builder: (FormFieldState state) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _buildFieldLabel("Cost related to"),
+            StreamBuilder(
+              stream: repository.costCentresGroups,
+              initialData: <CostCentreGroup>[],
+              builder: (BuildContext context,
+                      AsyncSnapshot<List<CostCentreGroup>> itemsSnapshot) =>
+                  DropdownButtonHideUnderline(
+                child: StreamBuilder<String>(
+                  stream: _expenseClaimBloc.selectedCostCentre,
+                  builder: (context, selectedCostCentreSnapshot) {
+                    return Container(
+                      margin: EdgeInsets.symmetric(horizontal: 20.0),
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).bottomAppBarColor,
+                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                      ),
+                      child: DropdownButton<String>(
+                        hint: Text("Select what your cost is related to"),
                         value: selectedCostCentreSnapshot?.data,
                         items: itemsSnapshot.data
                             .map((CostCentreGroup costCentre) =>
@@ -522,19 +533,18 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                             .toList(),
                         onChanged: _expenseClaimBloc.selectCostCentre,
                         isExpanded: true,
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
-              _buildErrorFormLabel(state),
-            ],
-          ),
+            ),
+          ],
         ),
       );
 
   Widget _buildFieldLabel(String label) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        padding: const EdgeInsets.fromLTRB(24.0, 24.0, 0.0, 8.0),
         child: Text(
           label,
           style: Theme.of(context).textTheme.subtitle,
@@ -552,12 +562,10 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
             builder: (FormFieldState state) => Column(
               children: <Widget>[
                 _buildAttachmentList(attachmentsSnapshot.data),
-                _buildErrorFormLabel(state),
-                _expenseClaimBloc.multipleAttachments
+                (_expenseClaimBloc.multipleAttachments ?? false)
                     ? _buildButton(
                         'ADD ATTACHMENTS', () => _selectAttachments())
                     : Container(),
-                SizedBox(height: 8.0),
               ],
             ),
           ),
@@ -658,17 +666,17 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         ),
       );
 
-  Widget _buildErrorFormLabel(FormFieldState state) => state.hasError
-      ? Column(
-          children: <Widget>[
-            SizedBox(height: 5.0),
-            AutoSizeText(
-              state.errorText,
-              style: TextStyle(color: primaryErrorColor, fontSize: 12.0),
-            ),
-          ],
-        )
-      : Container();
+  // Widget _buildErrorFormLabel(FormFieldState state) => state.hasError
+  //     ? Column(
+  //         children: <Widget>[
+  //           SizedBox(height: 5.0),
+  //           AutoSizeText(
+  //             state.errorText,
+  //             style: TextStyle(color: primaryErrorColor, fontSize: 12.0),
+  //           ),
+  //         ],
+  //       )
+  //     : Container();
 
   void _selectAttachments({String name}) async {
     showModalBottomSheet<void>(

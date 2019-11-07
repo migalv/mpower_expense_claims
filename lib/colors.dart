@@ -18,4 +18,7 @@ const primaryTextColor = const Color(0xFFFFFFFF);
 const secondaryTextColor = const Color(0xFFFFFFFF);
 const primaryErrorColor = const Color(0xFFCC0000);
 
+const backgroundColor = Color.fromARGB(255, 97, 97, 97);
+const formFieldBackgroundColor = Color.fromARGB(255, 66, 66, 66);
+
 const black60 = const Color(0x99000000);

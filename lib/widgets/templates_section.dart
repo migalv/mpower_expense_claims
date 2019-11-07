@@ -66,22 +66,30 @@ class TemplatesSection extends StatelessWidget {
         padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
         decoration: BoxDecoration(
           color: secondary100Color,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(32.0),
-            topRight: Radius.circular(32.0),
+          borderRadius: BorderRadius.all(
+            Radius.circular(16.0),
           ),
         ),
-        child: Row(
-          children: <Widget>[
-            Text(
-              '🥶',
-              style: TextStyle(fontSize: 40.0),
-            ),
-            Container(
-              width: 16.0,
-            ),
-            Text('You have not created any Template yet.')
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            children: <Widget>[
+              Container(
+                width: 4.0,
+              ),
+              Text(
+                "☹️",
+                style: TextStyle(fontSize: 24.0),
+              ),
+              Container(
+                width: 16.0,
+              ),
+              Text(
+                'You have not created any Template yet.',
+                style: TextStyle(color: Colors.black54),
+              )
+            ],
+          ),
         ),
       );
 }
