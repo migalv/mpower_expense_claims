@@ -46,7 +46,26 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
   @override
   Widget build(BuildContext context) {
-    EdgeInsets edgeInsets = MediaQuery.of(context).padding;
+    return WillPopScope(
+      onWillPop: _popSearch,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+        child: widget._expenseType == ExpenseType.EXPENSE_CLAIM
+            ? StreamBuilder<List<ExpenseClaim>>(
+                stream: repository.expenseClaims,
+                initialData: [],
+                builder: (context, snapshot) => _getType(snapshot),
+              )
+            : StreamBuilder<List<Invoice>>(
+                stream: repository.invoices,
+                initialData: [],
+                builder: (BuildContext context, AsyncSnapshot snapshot) =>
+                    _getType(snapshot)),
+      ),
+    );
+  }
+
+  Widget _getType(AsyncSnapshot snapshot) {
     List<Widget> list = <Widget>[
       Collapsible(
         isCollapsed: _isSearching,
@@ -81,40 +100,16 @@ class _ExpensesPageState extends State<ExpensesPage> {
       ),
     ];
 
-    return WillPopScope(
-      onWillPop: _popSearch,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
-        child: widget._expenseType == ExpenseType.EXPENSE_CLAIM
-            ? StreamBuilder<List<ExpenseClaim>>(
-                stream: repository.expenseClaims,
-                initialData: [],
-                builder: (context, snapshot) =>
-                    _finishBuild(list, snapshot, ExpenseType.EXPENSE_CLAIM),
-              )
-            : StreamBuilder<List<Invoice>>(
-                stream: repository.invoices,
-                initialData: [],
-                builder: (context, snapshot) =>
-                    _finishBuild(list, snapshot, ExpenseType.INVOICE),
-              ),
-      ),
-    );
-  }
-
-  Widget _finishBuild(
-      List<Widget> list, AsyncSnapshot snapshot, ExpenseType expenseType) {
     list.addAll(snapshot.data
         .map<Widget>(
           (expense) => Container(
             margin: EdgeInsets.only(bottom: 20.0),
             child: BlocProvider<ExpenseTileBloc>(
-              initBloc: (_, bloc) =>
-                  bloc ?? ExpenseTileBloc(expenseId: expense.id),
+              initBloc: (_, bloc) => bloc ?? ExpenseTileBloc(expense: expense),
               onDispose: (_, bloc) {
                 bloc.dispose();
               },
-              child: ExpenseTile(expenseType: expenseType),
+              child: ExpenseTile(),
             ),
           ),
         )

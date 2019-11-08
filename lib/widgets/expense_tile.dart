@@ -8,11 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class ExpenseTile extends StatefulWidget {
-  final ExpenseType _expenseType;
-
-  const ExpenseTile({@required ExpenseType expenseType})
-      : _expenseType = expenseType;
-
   @override
   State<StatefulWidget> createState() => _ExpenseTileState();
 }
@@ -28,6 +23,7 @@ class _ExpenseTileState extends State<ExpenseTile>
   Animation<double> _sizeAnimation, _rotateAnimation;
   bool _isExpanded = false;
   ExpenseTileBloc _expenseTileBloc;
+  Expense expense;
 
   @override
   initState() {
@@ -49,6 +45,7 @@ class _ExpenseTileState extends State<ExpenseTile>
     super.didChangeDependencies();
 
     _expenseTileBloc = Provider.of<ExpenseTileBloc>(context);
+    expense = _expenseTileBloc.expense;
   }
 
   @override
@@ -58,123 +55,112 @@ class _ExpenseTileState extends State<ExpenseTile>
   }
 
   @override
-  Widget build(BuildContext context) => StreamBuilder(
-      stream: widget._expenseType == ExpenseType.EXPENSE_CLAIM
-          ? _expenseTileBloc.expense
-          : _expenseTileBloc.invoice,
-      builder: (context, snapshot) {
-        Expense expense = snapshot.data;
-
-        if (expense == null) return Container();
-
-        return GestureDetector(
-          onTap: _toggleExpand,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.0),
-              color: Colors.white10,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10.0),
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Container(
-                        width: 16.0,
-                      ),
-                      _buildCategoryIcon(_expenseTileBloc.category),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Padding(
-                            padding:
-                                const EdgeInsets.only(left: 16.0, top: 16.0),
-                            child: Text(
-                              _expenseTileBloc.category.name,
-                              style: Theme.of(context).textTheme.title,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 16.0, top: 8.0, bottom: 16.0),
-                            child: Text(
-                              timeago.format(expense.date),
-                              style: Theme.of(context).textTheme.body1,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Expanded(
-                        child: Container(),
-                      ),
-                      Container(
-                        alignment: Alignment.centerRight,
-                        child: Chip(
-                          label: Text(
-                            '${expense.gross.toString()} ${_expenseTileBloc.currencySymbol ?? ''}',
-                            style: Theme.of(context).textTheme.subhead.copyWith(
-                                  color: secondaryColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: _toggleExpand,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            color: Colors.white10,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10.0),
+            child: Column(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Container(
+                      width: 16.0,
+                    ),
+                    _buildCategoryIcon(_expenseTileBloc.category),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+                          child: Text(
+                            _expenseTileBloc.category.name,
+                            style: Theme.of(context).textTheme.title,
                           ),
                         ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(left: 8.0, right: 12.0),
-                        alignment: Alignment.bottomRight,
-                        child: RotationTransition(
-                          turns: _rotateAnimation,
-                          child: Icon(
-                            Icons.keyboard_arrow_down,
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 16.0, top: 8.0, bottom: 16.0),
+                          child: Text(
+                            timeago.format(expense.date),
+                            style: Theme.of(context).textTheme.body1,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizeTransition(
-                    axisAlignment: 0.0,
-                    axis: Axis.vertical,
-                    sizeFactor: _sizeAnimation,
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(72.0, 0.0, 16.0, 16.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: <Widget>[
-                              Expanded(
-                                child: _buildSection(
-                                    'Approved by', expense.approvedByName),
+                      ],
+                    ),
+                    Expanded(
+                      child: Container(),
+                    ),
+                    Container(
+                      alignment: Alignment.centerRight,
+                      child: Chip(
+                        label: Text(
+                          '${expense.gross.toString()} ${_expenseTileBloc.currencySymbol ?? ''}',
+                          style: Theme.of(context).textTheme.subhead.copyWith(
+                                color: secondaryColor,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Expanded(
-                                child: _buildSection(
-                                    'Country', _expenseTileBloc.country),
-                              ),
-                            ],
-                          ),
-                          Container(height: 12.0),
-                          _buildSection('Description', expense.description),
-                          Container(height: 12.0),
-                          Row(
-                            children: <Widget>[
-                              Expanded(
-                                  child: _buildSection(
-                                      'Net cost', expense.net.toString())),
-                              Expanded(
-                                  child: _buildSection(
-                                      'VAT', '${expense.vat.toString()} %')),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
                     ),
+                    Container(
+                      margin: EdgeInsets.only(left: 8.0, right: 12.0),
+                      alignment: Alignment.bottomRight,
+                      child: RotationTransition(
+                        turns: _rotateAnimation,
+                        child: Icon(
+                          Icons.keyboard_arrow_down,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizeTransition(
+                  axisAlignment: 0.0,
+                  axis: Axis.vertical,
+                  sizeFactor: _sizeAnimation,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(72.0, 0.0, 16.0, 16.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: _buildSection(
+                                  'Approved by', expense.approvedByName),
+                            ),
+                            Expanded(
+                              child: _buildSection(
+                                  'Country', _expenseTileBloc.country),
+                            ),
+                          ],
+                        ),
+                        Container(height: 12.0),
+                        _buildSection('Description', expense.description),
+                        Container(height: 12.0),
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                                child: _buildSection(
+                                    'Net cost', expense.net.toString())),
+                            Expanded(
+                                child: _buildSection(
+                                    'VAT', '${expense.vat.toString()} %')),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        );
-      });
+        ),
+      );
 
   Widget _buildSection(String title, String desc) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
