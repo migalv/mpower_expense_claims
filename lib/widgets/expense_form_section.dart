@@ -291,7 +291,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       );
 
   Widget _buildDescription() => Container(
-        margin: EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 24.0),
+        margin: EdgeInsets.fromLTRB(24.0, 32.0, 24.0, 24.0),
         constraints: BoxConstraints(maxHeight: 120.0),
         child: Scrollbar(
           child: SingleChildScrollView(
