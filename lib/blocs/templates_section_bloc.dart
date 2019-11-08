@@ -42,9 +42,10 @@ class TemplatesSectionBloc {
 
   void _updateTemplates(List<Template> list) {
     _templates.clear();
-    _templates.addAll(list.where((template) =>
-        template.expenseType == ExpenseType.values[_expenseType]));
-
+    if (list != null) {
+      _templates.addAll(list.where((template) =>
+          template.expenseType == ExpenseType.values[_expenseType]));
+    }
     _templatesController.add(_templates);
   }
 

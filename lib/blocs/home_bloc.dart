@@ -10,16 +10,18 @@ class HomeBloc {
   Stream<int> get pageIndex => _pageIndexController.stream;
 
   // Subjects
-  final _pageIndexController = PublishSubject<int>();
+  final _pageIndexController = BehaviorSubject<int>();
+  final int lastPageIndex;
 
-  HomeBloc() {
-    repository.loadSettings();
+  HomeBloc({this.lastPageIndex = 0}) {
+    _pageIndexController.add(lastPageIndex);
   }
 
   //
   // INPUT
   void setPageIndex(int index) {
     _pageIndexController.add(index);
+    repository.updateLastSelectedPageIndex(index);
   }
 
   void dispose() {

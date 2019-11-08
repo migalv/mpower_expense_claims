@@ -1,10 +1,8 @@
 import 'dart:io';
 
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
-import 'package:expense_claims_app/colors.dart' as prefix0;
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/cost_center_groups_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
@@ -81,6 +79,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                   _buildTitle(expenseType),
                   _buildCountry(),
                   _buildCategory(),
+                  _buildDescription(),
                   _buildDate("Date", _expenseClaimBloc.expenseDate,
                       _expenseClaimBloc.selectExpenseDate),
                   expenseType == ExpenseType.EXPENSE_CLAIM
@@ -94,7 +93,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                   _buildCostCenterTile(),
                   _buildApproverTile(),
                   _buildAttachmentsTile(),
-                  _buildDescription(),
                   _buildButtons(expenseType),
                 ],
               );
@@ -291,7 +289,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       );
 
   Widget _buildDescription() => Container(
-        margin: EdgeInsets.fromLTRB(24.0, 32.0, 24.0, 24.0),
+        margin: EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 0.0),
         constraints: BoxConstraints(maxHeight: 120.0),
         child: Scrollbar(
           child: SingleChildScrollView(
@@ -528,7 +526,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       initialData: Map<String, File>(),
       builder: (context, attachmentsSnapshot) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
           child: FormField(
             validator: (_) => _expenseClaimBloc.attachmentsValidator(),
             builder: (FormFieldState state) => Column(
@@ -537,6 +535,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                 (_expenseClaimBloc.multipleAttachments ?? false)
                     ? _buildButton('ADD ATTACHMENTS', _selectAttachments)
                     : Container(),
+                utils.buildErrorFormLabel(state),
               ],
             ),
           ),

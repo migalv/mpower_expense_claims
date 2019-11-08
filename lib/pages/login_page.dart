@@ -145,7 +145,9 @@ class _LoginPageState extends State<LoginPage> {
             context,
             BlocProvider<HomeBloc>(
               child: HomePage(),
-              initBloc: (_, bloc) => bloc ?? HomeBloc(),
+              initBloc: (_, bloc) =>
+                  bloc ??
+                  HomeBloc(lastPageIndex: repository?.lastPageIndex?.value),
               onDispose: (_, bloc) => bloc?.dispose(),
             ),
           );
