@@ -1,17 +1,30 @@
 import 'dart:async';
 
 import 'package:expense_claims_app/models/category_model.dart';
+import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/repository.dart';
 
 class ExpenseTileBloc {
   final String _expenseId;
   Expense _expense;
 
-  Stream<Expense> get expense => repository.expenseClaims.transform(
+  Stream<ExpenseClaim> get expense => repository.expenseClaims.transform(
         StreamTransformer.fromHandlers(
-          handleData: (List<Expense> list, EventSink<Expense> eventSink) {
-            Expense expense =
+          handleData: (list, eventSink) {
+            var expense =
+                list?.singleWhere((expense) => expense.id == _expenseId);
+            _expense = expense;
+
+            eventSink.add(expense);
+          },
+        ),
+      );
+  Stream<Invoice> get invoice => repository.invoices.transform(
+        StreamTransformer.fromHandlers(
+          handleData: (list, eventSink) {
+            var expense =
                 list?.singleWhere((expense) => expense.id == _expenseId);
             _expense = expense;
 

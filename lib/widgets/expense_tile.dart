@@ -8,6 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class ExpenseTile extends StatefulWidget {
+  final ExpenseType _expenseType;
+
+  const ExpenseTile({@required ExpenseType expenseType})
+      : _expenseType = expenseType;
+
   @override
   State<StatefulWidget> createState() => _ExpenseTileState();
 }
@@ -53,8 +58,10 @@ class _ExpenseTileState extends State<ExpenseTile>
   }
 
   @override
-  Widget build(BuildContext context) => StreamBuilder<Expense>(
-      stream: _expenseTileBloc.expense,
+  Widget build(BuildContext context) => StreamBuilder(
+      stream: widget._expenseType == ExpenseType.EXPENSE_CLAIM
+          ? _expenseTileBloc.expense
+          : _expenseTileBloc.invoice,
       builder: (context, snapshot) {
         Expense expense = snapshot.data;
 

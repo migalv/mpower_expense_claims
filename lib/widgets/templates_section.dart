@@ -4,7 +4,6 @@ import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/widgets/template_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TemplatesSection extends StatelessWidget {
   final AnimationController bottomSheetController;

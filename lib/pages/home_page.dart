@@ -2,6 +2,7 @@ import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
+import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/expense_claims_page.dart';
 import 'package:expense_claims_app/widgets/expense_form_section.dart';
 import 'package:expense_claims_app/widgets/fab_add_to_close.dart';
@@ -86,12 +87,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     _pageChanged(index);
                   },
                   children: <Widget>[
-                    ExpenseClaimsPage(),
-                    Center(
-                      child: Container(
-                        child: Text('Empty Body 3'),
-                      ),
-                    )
+                    ExpensesPage(expenseType: ExpenseType.EXPENSE_CLAIM),
+                    ExpensesPage(expenseType: ExpenseType.INVOICE),
                   ],
                 ),
                 SizedBox.expand(
