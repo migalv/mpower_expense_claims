@@ -611,7 +611,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                         ? "expense"
                         : "invoice"),
               ),
-              onPressed: () => _validateAndUpload(),
+              onPressed: () => _validateAndUploadExpense(),
             ),
             Container(height: 16),
             Text('or'),
@@ -683,7 +683,80 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
     }
   }
 
-  void _validateAndUpload() {
+  Future _createNewTemplateForm() async {
+    bool confirmation = await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(
+              "Create template",
+              style: Theme.of(context).textTheme.title,
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  "How do you want to name your new template?",
+                  style: Theme.of(context).textTheme.subtitle,
+                ),
+                SizedBox(height: 8.0),
+                TextFormField(
+                  key: _templateFormKey,
+                  controller: _templateNameController,
+                  autofocus: true,
+                  keyboardType: TextInputType.text,
+                  validator: (templateName) => templateName.length < 3
+                      ? "Must be at least 3 characters long"
+                      : null,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (templateName) =>
+                      _validateAndUploadTemplate(),
+                  decoration: InputDecoration(
+                    filled: true,
+                    hintText: 'ex: Taxi Zambia...',
+                  ),
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  "Cancel",
+                  style: Theme.of(context).textTheme.button,
+                ),
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+              RaisedButton(
+                child: Text(
+                  "Create",
+                ),
+                onPressed: () => Navigator.of(context).pop(true),
+                color: secondaryColor,
+                textColor: black60,
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (confirmation) {
+      _validateAndUploadTemplate();
+      _validateAndUploadExpense();
+    }
+  }
+
+  void _validateAndUploadTemplate() {
+    if (_formKey.currentState.validate()) {
+      _expenseClaimBloc.uploadFormTemplate(
+          _descriptionController.text, _templateNameController.text);
+      utils.showSnackbar(
+        scaffoldKey: widget._scaffoldKey,
+        message: "Your template has been created successfully.",
+        duration: 2,
+      );
+    }
+  }
+
+  void _validateAndUploadExpense() {
     if (_formKey.currentState.validate()) {
       _expenseClaimBloc.uploadNewExpense(
         _descriptionController.text,
@@ -694,73 +767,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         message: "Your expense has been created successfully.",
       );
       widget._onBackPressed();
-    }
-  }
-
-  void _createNewTemplateForm() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(
-          "Create template",
-          style: Theme.of(context).textTheme.title,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text(
-              "How do you want to name your new template?",
-              style: Theme.of(context).textTheme.subtitle,
-            ),
-            SizedBox(height: 8.0),
-            TextFormField(
-              key: _templateFormKey,
-              controller: _templateNameController,
-              autofocus: true,
-              keyboardType: TextInputType.text,
-              validator: (templateName) => templateName.length < 3
-                  ? "Must be at least 3 characters long"
-                  : null,
-              textInputAction: TextInputAction.done,
-              onFieldSubmitted: (templateName) => _validateAndUploadTemplate(),
-              decoration: InputDecoration(
-                filled: true,
-                hintText: 'ex: Taxi Zambia...',
-              ),
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          FlatButton(
-            child: Text(
-              "Cancel",
-              style: Theme.of(context).textTheme.button,
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-          RaisedButton(
-            child: Text(
-              "Create",
-            ),
-            onPressed: _validateAndUploadTemplate,
-            color: secondaryColor,
-            textColor: black60,
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _validateAndUploadTemplate() {
-    if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadFormTemplate(
-          _descriptionController.text, _templateNameController.text);
-      Navigator.pop(context);
-      utils.showSnackbar(
-        scaffoldKey: widget._scaffoldKey,
-        message: "Your template has been created successfully.",
-        duration: 2,
-      );
     }
   }
 }
