@@ -70,7 +70,7 @@ class ExpenseFormSectionBloc {
     _streamSubscriptions.add(expenseTypeStream.listen(
       (expenseType) {
         _expenseType = ExpenseType.values[expenseType];
-
+        _attachments = Map();
         switch (_expenseType) {
           case ExpenseType.EXPENSE_CLAIM:
             _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;

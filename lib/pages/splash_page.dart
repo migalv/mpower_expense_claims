@@ -32,7 +32,7 @@ class SplashPage extends StatelessWidget {
                                     repository?.lastPageIndex?.value),
                         onDispose: (_, bloc) => bloc.dispose(),
                         child: HomePage(
-                          lastPageIndex: repository?.lastPageIndex?.value,
+                          lastPageIndex: repository?.lastPageIndex?.value ?? 0,
                         ),
                       ),
                       delay: 3);
