@@ -332,6 +332,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                       decoration: InputDecoration(
                         filled: true,
                         hintText: 'Gross',
+                        errorMaxLines: 2,
                       ),
                       validator: (value) =>
                           value == null || value == "" || value == '0,00'
