@@ -60,9 +60,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(body: _buildBody());
-
-  Widget _buildBody() => Form(
+  Widget build(BuildContext context) => Form(
         key: _formKey,
         child: StreamBuilder<int>(
             initialData: 0,
@@ -100,13 +98,13 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       );
 
   Widget _buildTitle(ExpenseType expenseType) => Container(
-        height: 48,
+        height: 56,
         alignment: Alignment.topCenter,
         child: Row(
           children: <Widget>[
             GestureDetector(
               child: Padding(
-                padding: EdgeInsets.only(left: 16.0, right: 16.0),
+                padding: EdgeInsets.all(16.0),
                 child: Icon(
                   FontAwesomeIcons.chevronLeft,
                   size: 20.0,
