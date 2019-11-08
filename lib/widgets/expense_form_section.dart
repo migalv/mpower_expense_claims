@@ -395,7 +395,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                             stream: repository.currencies,
                             initialData: <Currency>[],
                             builder: (context, currenciesSnapshot) => Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12.0),
                               decoration: BoxDecoration(
                                 color: formFieldBackgroundColor,
                                 borderRadius:
