@@ -144,8 +144,11 @@ class _LoginPageState extends State<LoginPage> {
           utils.pushReplacement(
             context,
             BlocProvider<HomeBloc>(
-              child: HomePage(),
-              initBloc: (_, bloc) => bloc ?? HomeBloc(),
+              child: HomePage(
+                  lastPageIndex: repository?.lastPageIndex?.value ?? 0),
+              initBloc: (_, bloc) =>
+                  bloc ??
+                  HomeBloc(lastPageIndex: repository?.lastPageIndex?.value),
               onDispose: (_, bloc) => bloc?.dispose(),
             ),
           );

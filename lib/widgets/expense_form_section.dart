@@ -60,9 +60,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(body: _buildBody());
-
-  Widget _buildBody() => Form(
+  Widget build(BuildContext context) => Form(
         key: _formKey,
         child: StreamBuilder<int>(
             initialData: 0,
@@ -79,6 +77,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                   _buildTitle(expenseType),
                   _buildCountry(),
                   _buildCategory(),
+                  _buildDescription(),
                   _buildDate("Date", _expenseClaimBloc.expenseDate,
                       _expenseClaimBloc.selectExpenseDate),
                   expenseType == ExpenseType.EXPENSE_CLAIM
@@ -92,7 +91,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                   _buildCostCenterTile(),
                   _buildApproverTile(),
                   _buildAttachmentsTile(),
-                  _buildDescription(),
                   _buildButtons(expenseType),
                 ],
               );
@@ -100,13 +98,13 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       );
 
   Widget _buildTitle(ExpenseType expenseType) => Container(
-        height: 48,
+        height: 56,
         alignment: Alignment.topCenter,
         child: Row(
           children: <Widget>[
             GestureDetector(
               child: Padding(
-                padding: EdgeInsets.only(left: 16.0, right: 16.0),
+                padding: EdgeInsets.all(16.0),
                 child: Icon(
                   FontAwesomeIcons.chevronLeft,
                   size: 20.0,
@@ -289,7 +287,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       );
 
   Widget _buildDescription() => Container(
-        margin: EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 24.0),
+        margin: EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 0.0),
         constraints: BoxConstraints(maxHeight: 120.0),
         child: Scrollbar(
           child: SingleChildScrollView(
@@ -334,6 +332,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                       decoration: InputDecoration(
                         filled: true,
                         hintText: 'Gross',
+                        errorMaxLines: 2,
                       ),
                       validator: (value) =>
                           value == null || value == "" || value == '0,00'
@@ -396,7 +395,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                             stream: repository.currencies,
                             initialData: <Currency>[],
                             builder: (context, currenciesSnapshot) => Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12.0),
                               decoration: BoxDecoration(
                                 color: formFieldBackgroundColor,
                                 borderRadius:
@@ -526,7 +524,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       initialData: Map<String, File>(),
       builder: (context, attachmentsSnapshot) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
           child: FormField(
             validator: (_) => _expenseClaimBloc.attachmentsValidator(),
             builder: (FormFieldState state) => Column(
@@ -535,6 +533,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                 (_expenseClaimBloc.multipleAttachments ?? false)
                     ? _buildButton('ADD ATTACHMENTS', _selectAttachments)
                     : Container(),
+                utils.buildErrorFormLabel(state),
               ],
             ),
           ),
@@ -610,7 +609,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                         ? "expense"
                         : "invoice"),
               ),
-              onPressed: () => _validateAndUpload(),
+              onPressed: () => _validateAndUploadExpense(),
             ),
             Container(height: 16),
             Text('or'),
@@ -682,7 +681,80 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
     }
   }
 
-  void _validateAndUpload() {
+  Future _createNewTemplateForm() async {
+    bool confirmation = await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(
+              "Create template",
+              style: Theme.of(context).textTheme.title,
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  "How do you want to name your new template?",
+                  style: Theme.of(context).textTheme.subtitle,
+                ),
+                SizedBox(height: 8.0),
+                TextFormField(
+                  key: _templateFormKey,
+                  controller: _templateNameController,
+                  autofocus: true,
+                  keyboardType: TextInputType.text,
+                  validator: (templateName) => templateName.length < 3
+                      ? "Must be at least 3 characters long"
+                      : null,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (templateName) =>
+                      _validateAndUploadTemplate(),
+                  decoration: InputDecoration(
+                    filled: true,
+                    hintText: 'ex: Taxi Zambia...',
+                  ),
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  "Cancel",
+                  style: Theme.of(context).textTheme.button,
+                ),
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+              RaisedButton(
+                child: Text(
+                  "Create",
+                ),
+                onPressed: () => Navigator.of(context).pop(true),
+                color: secondaryColor,
+                textColor: black60,
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (confirmation) {
+      _validateAndUploadTemplate();
+      _validateAndUploadExpense();
+    }
+  }
+
+  void _validateAndUploadTemplate() {
+    if (_formKey.currentState.validate()) {
+      _expenseClaimBloc.uploadFormTemplate(
+          _descriptionController.text, _templateNameController.text);
+      utils.showSnackbar(
+        scaffoldKey: widget._scaffoldKey,
+        message: "Your template has been created successfully.",
+        duration: 2,
+      );
+    }
+  }
+
+  void _validateAndUploadExpense() {
     if (_formKey.currentState.validate()) {
       _expenseClaimBloc.uploadNewExpense(
         _descriptionController.text,
@@ -693,73 +765,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         message: "Your expense has been created successfully.",
       );
       widget._onBackPressed();
-    }
-  }
-
-  void _createNewTemplateForm() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(
-          "Create template",
-          style: Theme.of(context).textTheme.title,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text(
-              "How do you want to name your new template?",
-              style: Theme.of(context).textTheme.subtitle,
-            ),
-            SizedBox(height: 8.0),
-            TextFormField(
-              key: _templateFormKey,
-              controller: _templateNameController,
-              autofocus: true,
-              keyboardType: TextInputType.text,
-              validator: (templateName) => templateName.length < 3
-                  ? "Must be at least 3 characters long"
-                  : null,
-              textInputAction: TextInputAction.done,
-              onFieldSubmitted: (templateName) => _validateAndUploadTemplate(),
-              decoration: InputDecoration(
-                filled: true,
-                hintText: 'ex: Taxi Zambia...',
-              ),
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          FlatButton(
-            child: Text(
-              "Cancel",
-              style: Theme.of(context).textTheme.button,
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-          RaisedButton(
-            child: Text(
-              "Create",
-            ),
-            onPressed: _validateAndUploadTemplate,
-            color: secondaryColor,
-            textColor: black60,
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _validateAndUploadTemplate() {
-    if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadFormTemplate(
-          _descriptionController.text, _templateNameController.text);
-      Navigator.pop(context);
-      utils.showSnackbar(
-        scaffoldKey: widget._scaffoldKey,
-        message: "Your template has been created successfully.",
-        duration: 2,
-      );
     }
   }
 }

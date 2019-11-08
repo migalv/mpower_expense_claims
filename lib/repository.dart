@@ -49,6 +49,7 @@ class Repository {
   ValueObservable<List<Template>> get templates => _templatesController.stream;
   ValueObservable<List<CostCentreGroup>> get costCentresGroups =>
       _costCentresGroupsController.stream;
+  ValueObservable<int> get lastPageIndex => _lastSelectedListController.stream;
 
   List<StreamSubscription> _streamSubscriptions = [];
 
@@ -59,6 +60,7 @@ class Repository {
   final _lastSelectedCountryController = BehaviorSubject<String>();
   final _lastSelectedCurrencyController = BehaviorSubject<String>();
   final _lastSelectedApproverController = BehaviorSubject<String>();
+  final _lastSelectedListController = BehaviorSubject<int>();
   final _expenseClaimsController = BehaviorSubject<List<ExpenseClaim>>();
   final _invoicesController = BehaviorSubject<List<Invoice>>();
   final _approversController = BehaviorSubject<List<User>>();
@@ -158,6 +160,14 @@ class Repository {
           .document(LAST_SELECTED_DOC)
           .setData({
         LAST_SELECTED_APPROVER: approverId,
+      }, merge: true);
+
+  void updateLastSelectedPageIndex(int pageIndex) => _firestore
+          .collection(
+              "$USERS_COLLECTION/$currentUserId/$EDITABLE_INFO_COLLECTION")
+          .document(LAST_SELECTED_DOC)
+          .setData({
+        LAST_SELECTED_LIST: pageIndex,
       }, merge: true);
 
   // LOAD
@@ -298,6 +308,10 @@ class Repository {
             (docSnapshot.data?.containsKey(LAST_SELECTED_APPROVER) ?? false)
                 ? docSnapshot.data[LAST_SELECTED_APPROVER]
                 : null);
+        _lastSelectedListController.add(
+            (docSnapshot.data?.containsKey(LAST_SELECTED_LIST) ?? false)
+                ? docSnapshot.data[LAST_SELECTED_LIST]
+                : null);
       }));
 
   // AUTH
@@ -383,6 +397,7 @@ class Repository {
     _approversController.close();
     _invoicesController.close();
     _templatesController.close();
+    _lastSelectedListController.close();
     _costCentresGroupsController.close();
 
     _streamSubscriptions
@@ -415,3 +430,4 @@ const String APPROVERS = "approvers";
 const String LAST_SELECTED_COUNTRY = "country";
 const String LAST_SELECTED_CURRENCY = "currency";
 const String LAST_SELECTED_APPROVER = "approver";
+const String LAST_SELECTED_LIST = "list_type";

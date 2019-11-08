@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_tile_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
@@ -56,111 +57,118 @@ class _ExpenseTileState extends State<ExpenseTile>
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: _toggleExpand,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10.0),
-            color: Colors.white10,
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10.0),
-            child: Column(
+    onTap: _toggleExpand,
+    child: Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10.0),
+        color: Colors.white10,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10.0),
+        child: Column(
+          children: <Widget>[
+            Row(
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Container(
-                      width: 16.0,
-                    ),
-                    _buildCategoryIcon(_expenseTileBloc.category),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(left: 16.0, top: 16.0),
-                          child: Text(
-                            _expenseTileBloc.category.name,
-                            style: Theme.of(context).textTheme.title,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 16.0, top: 8.0, bottom: 16.0),
-                          child: Text(
-                            timeago.format(expense.date),
-                            style: Theme.of(context).textTheme.body1,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                      child: Container(),
-                    ),
-                    Container(
-                      alignment: Alignment.centerRight,
-                      child: Chip(
-                        label: Text(
-                          '${expense.gross.toString()} ${_expenseTileBloc.currencySymbol ?? ''}',
-                          style: Theme.of(context).textTheme.subhead.copyWith(
-                                color: secondaryColor,
-                                fontWeight: FontWeight.bold,
-                              ),
+                _buildCategoryIcon(_expenseTileBloc.category),
+                Container(
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.3),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: AutoSizeText(
+                          _expenseTileBloc.category.name,
+                          maxLines: 1,
+                          style: Theme.of(context).textTheme.title,
                         ),
                       ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(left: 8.0, right: 12.0),
-                      alignment: Alignment.bottomRight,
-                      child: RotationTransition(
-                        turns: _rotateAnimation,
-                        child: Icon(
-                          Icons.keyboard_arrow_down,
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            top: 8.0, bottom: 16.0),
+                        child: Text(
+                          timeago.format(expense.date),
+                          style: Theme.of(context)
+                              .textTheme
+                              .body1
+                              .copyWith(fontSize: 12.0),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                SizeTransition(
-                  axisAlignment: 0.0,
-                  axis: Axis.vertical,
-                  sizeFactor: _sizeAnimation,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(72.0, 0.0, 16.0, 16.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: _buildSection(
-                                  'Approved by', expense.approvedByName),
-                            ),
-                            Expanded(
-                              child: _buildSection(
-                                  'Country', _expenseTileBloc.country),
-                            ),
-                          ],
-                        ),
-                        Container(height: 12.0),
-                        _buildSection('Description', expense.description),
-                        Container(height: 12.0),
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                                child: _buildSection(
-                                    'Net cost', expense.net.toString())),
-                            Expanded(
-                                child: _buildSection(
-                                    'VAT', '${expense.vat.toString()} %')),
-                          ],
-                        ),
-                      ],
+                Expanded(
+                  child: Container(),
+                ),
+                Container(
+                  alignment: Alignment.centerRight,
+                  child: Chip(
+                    label: Text(
+                      '${expense.gross.toString()} ${_expenseTileBloc.currencySymbol ?? ''}',
+                      style:
+                      Theme.of(context).textTheme.subhead.copyWith(
+                        color: secondaryColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14.0,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(left: 8.0, right: 12.0),
+                  alignment: Alignment.bottomRight,
+                  child: RotationTransition(
+                    turns: _rotateAnimation,
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
                     ),
                   ),
                 ),
               ],
             ),
-          ),
+            SizeTransition(
+              axisAlignment: 0.0,
+              axis: Axis.vertical,
+              sizeFactor: _sizeAnimation,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(72.0, 0.0, 16.0, 16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: _buildSection(
+                              'Approved by', expense.approvedByName),
+                        ),
+                        Expanded(
+                          child: _buildSection(
+                              'Country', _expenseTileBloc.country),
+                        ),
+                      ],
+                    ),
+                    Container(height: 12.0),
+                    _buildSection('Description', expense.description),
+                    Container(height: 12.0),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                            child: _buildSection(
+                                'Net cost', expense.net.toString())),
+                        Expanded(
+                            child: _buildSection(
+                                'VAT', '${expense.vat.toString()} %')),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _buildSection(String title, String desc) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,18 +190,21 @@ class _ExpenseTileState extends State<ExpenseTile>
         ],
       );
 
-  Widget _buildCategoryIcon(Category category) => Container(
-        width: 48.0,
-        height: 48.0,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: category.color ?? Colors.blue,
-            width: 2.0,
+  Widget _buildCategoryIcon(Category category) => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Container(
+          width: 48.0,
+          height: 48.0,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: category.color ?? Colors.blue,
+              width: 2.0,
+            ),
           ),
-        ),
-        child: Icon(
-          category.icon,
+          child: Icon(
+            category.icon,
+          ),
         ),
       );
 

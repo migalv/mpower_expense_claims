@@ -33,7 +33,7 @@ class TemplatesSectionBloc {
   void _listenToExpenseTypeChanges() {
     _streamSubscriptions.add(_expenseTypeStream.listen(
       (expenseType) {
-        _expenseType = expenseType;
+        _expenseType = expenseType ?? _expenseType;
 
         _updateTemplates(repository.templates.value);
       },
@@ -42,9 +42,9 @@ class TemplatesSectionBloc {
 
   void _updateTemplates(List<Template> list) {
     _templates.clear();
-    _templates.addAll(list.where((template) =>
-        template.expenseType == ExpenseType.values[_expenseType]));
-
+    _templates.addAll(list?.where((template) =>
+            template.expenseType == ExpenseType.values[_expenseType]) ??
+        []);
     _templatesController.add(_templates);
   }
 
