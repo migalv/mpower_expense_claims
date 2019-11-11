@@ -58,68 +58,78 @@ class _ExpenseTileState extends State<ExpenseTile>
             borderRadius: BorderRadius.circular(10.0),
             child: Column(
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    _buildCategoryIcon(
-                        repository.getCategoryWithId(widget.expense.category)),
-                    Container(
-                      constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.3),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16.0),
-                            child: AutoSizeText(
-                              repository
-                                      .getCategoryWithId(
-                                          widget.expense.category)
-                                      ?.name ??
-                                  "",
-                              maxLines: 1,
-                              style: Theme.of(context).textTheme.title,
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.only(top: 8.0, bottom: 16.0),
-                            child: Text(
-                              timeago.format(widget.expense.date),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .body1
-                                  .copyWith(fontSize: 12.0),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(child: Container()),
-                    Container(
-                      constraints: BoxConstraints(maxWidth: 86.0),
-                      alignment: Alignment.centerRight,
-                      child: Chip(
-                        label: AutoSizeText(
-                          '${widget.expense.gross ?? ''} ${repository.getCurrencyWithId(widget.expense.currency)?.symbol ?? ''}',
-                          style: Theme.of(context).textTheme.subhead.copyWith(
-                                color: secondaryColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14.0,
+                Container(
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width),
+                  child: Row(
+                    children: <Widget>[
+                      _buildCategoryIcon(repository
+                          .getCategoryWithId(widget.expense.category)),
+                      Container(
+                        constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.3),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16.0),
+                              child: AutoSizeText(
+                                repository
+                                    .getCategoryWithId(widget.expense.category)
+                                    .name,
+                                maxLines: 1,
+                                style: Theme.of(context).textTheme.title,
                               ),
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 8.0, bottom: 16.0),
+                              child: Text(
+                                timeago.format(widget.expense.date),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .body1
+                                    .copyWith(fontSize: 12.0),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(left: 4.0, right: 12.0),
-                      alignment: Alignment.bottomRight,
-                      child: RotationTransition(
-                        turns: _rotateAnimation,
-                        child: Icon(
-                          Icons.keyboard_arrow_down,
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Chip(
+                              label: FittedBox(
+                                child: AutoSizeText(
+                                  '${widget.expense.gross ?? ''} ${repository.getCurrencyWithId(widget.expense.currency)?.symbol ?? ''}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subhead
+                                      .copyWith(
+                                        color: secondaryColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14.0,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                      Container(
+                        margin: EdgeInsets.only(left: 4.0, right: 12.0),
+                        alignment: Alignment.center,
+                        child: RotationTransition(
+                          turns: _rotateAnimation,
+                          child: Icon(
+                            Icons.keyboard_arrow_down,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 SizeTransition(
                   axisAlignment: 0.0,
