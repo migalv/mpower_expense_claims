@@ -145,6 +145,7 @@ class _ExpenseTileState extends State<ExpenseTile>
                               child: _buildSection(
                                   'Approved by', widget.expense.approvedByName),
                             ),
+                            SizedBox(width: 8.0),
                             Expanded(
                               child: _buildSection(
                                   'Country',
