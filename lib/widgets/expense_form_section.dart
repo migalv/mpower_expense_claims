@@ -262,10 +262,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                                     .format(dateSnapshot?.data)
                                 : "Select a date",
                             style: dateSnapshot?.data == null
-                                ? Theme.of(context)
-                                    .textTheme
-                                    .subhead
-                                    .copyWith(color: Colors.black54)
+                                ? Theme.of(context).textTheme.subhead
                                 : Theme.of(context).textTheme.subhead,
                           ),
                         ),
@@ -547,13 +544,13 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         contentPadding: EdgeInsets.all(0.0),
         leading: ClipRRect(
             borderRadius: BorderRadius.circular(4.0),
-            child: attachment == null
-                ? Icon(
-                    MdiIcons.tag,
-                    color: Colors.black26,
-                  )
-                : Container(
-                    height: 40.0, width: 48.0, child: Image.file(attachment))),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: attachment == null
+                  ? Icon(MdiIcons.tag)
+                  : Container(
+                      height: 40.0, width: 48.0, child: Image.file(attachment)),
+            )),
         title: Text(
           name,
           style: Theme.of(context).textTheme.body1,
@@ -633,10 +630,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                 padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
                 child: Text(
                   'Select source',
-                  style: TextStyle(
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black54),
+                  style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w500),
                 ),
               ),
             ],
