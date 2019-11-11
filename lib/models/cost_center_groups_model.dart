@@ -12,4 +12,11 @@ class CostCentreGroup {
   String toString() {
     return "Cost center: {\n\tid: $id, \n\tname: $name\n}";
   }
+
+  @override
+  bool operator ==(costCentreGroup) =>
+      costCentreGroup is CostCentreGroup && costCentreGroup.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

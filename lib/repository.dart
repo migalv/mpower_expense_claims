@@ -217,63 +217,74 @@ class Repository {
       (query) => _streamSubscriptions.add(
         query.snapshots().listen(
           (snapshot) {
+            List onlineList = [];
             switch (collection) {
               case COUNTRIES_COLLECTION:
-                list = snapshot.documents
+                onlineList = snapshot.documents
                     .map(
                         (doc) => Country.fromJson(doc.data, id: doc.documentID))
                     .toList()
                     .cast<Country>();
                 break;
               case CURRENCIES_COLLECTION:
-                list = snapshot.documents
+                onlineList = snapshot.documents
                     .map((doc) =>
                         Currency.fromJson(doc.data, id: doc.documentID))
                     .toList()
                     .cast<Currency>();
                 break;
               case CATEGORIES_COLLECTION:
-                list = snapshot.documents
+                onlineList = snapshot.documents
                     .map((doc) =>
                         Category.fromJson(doc.data, id: doc.documentID))
                     .toList()
                     .cast<Category>();
                 break;
               case EXPENSE_CLAIMS_COLLECTION:
-                list = snapshot.documents
+                onlineList = snapshot.documents
                     .map((doc) =>
                         ExpenseClaim.fromJson(doc.data, id: doc.documentID))
                     .toList()
                     .cast<ExpenseClaim>();
                 break;
               case INVOICES_COLLECTION:
-                list = snapshot.documents
+                onlineList = snapshot.documents
                     .map(
                         (doc) => Invoice.fromJson(doc.data, id: doc.documentID))
                     .toList()
                     .cast<Invoice>();
                 break;
               case TEMPLATES_COLLECTION:
-                list = snapshot.documents
+                onlineList = snapshot.documents
                     .map((doc) =>
                         Template.fromJson(doc.data, id: doc.documentID))
                     .toList()
                     .cast<Template>();
                 break;
               case USERS_COLLECTION:
-                list = <User>[];
+                onlineList = <User>[];
                 Map approvers = snapshot.data[APPROVERS];
                 approvers.forEach((id, map) {
-                  list.add(User.fromJson(map.cast<String, dynamic>(), id: id));
+                  onlineList
+                      .add(User.fromJson(map.cast<String, dynamic>(), id: id));
                 });
                 break;
               case COST_CENTRES_GROUPS_COLLECTION:
-                list = snapshot.documents
+                onlineList = snapshot.documents
                     .map((doc) =>
                         CostCentreGroup.fromJson(doc.data, id: doc.documentID))
                     .toList()
                     .cast<CostCentreGroup>();
                 break;
+            }
+
+            if (list.isEmpty)
+              list = onlineList;
+            else {
+              onlineList.forEach((onlineEle) {
+                list.removeWhere((ele) => ele.id == onlineEle.id);
+                list.add(onlineEle);
+              });
             }
 
             streamController.add(list);
