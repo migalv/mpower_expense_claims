@@ -29,6 +29,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   HomeBloc _homeBloc;
   Tween<Offset> _tween = Tween(begin: Offset(0, 1), end: Offset(0, 0));
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  ExpenseFormSectionBloc _expenseFormBloc;
 
   @override
   void initState() {
@@ -56,6 +57,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.didChangeDependencies();
 
     _homeBloc = Provider.of<HomeBloc>(context);
+    _expenseFormBloc =
+        ExpenseFormSectionBloc(expenseTypeStream: _homeBloc.pageIndex);
   }
 
   @override
@@ -140,13 +143,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             child: TemplatesSection(
                               bottomSheetController: _bottomSheetController,
                               scrollController: scrollController,
+                              expenseFormBloc: _expenseFormBloc,
+                              pageController: _pageController2,
                               onPressed: () {
                                 _pageController2.animateTo(
                                     MediaQuery.of(context).size.width,
                                     duration: Duration(milliseconds: 275),
                                     curve: Curves.easeIn);
+                                _expenseFormBloc.setTemplate(null);
                               },
-                              // TODO: Set the template to null
                             ),
                             initBloc: (_, bloc) => TemplatesSectionBloc(
                                 expenseTypeStream: _homeBloc.pageIndex),
@@ -162,10 +167,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               },
                               scaffoldKey: _scaffoldKey,
                             ),
-                            initBloc: (_, bloc) =>
-                                bloc ??
-                                ExpenseFormSectionBloc(
-                                    expenseTypeStream: _homeBloc.pageIndex),
+                            initBloc: (_, bloc) => bloc ?? _expenseFormBloc,
                             onDispose: (_, bloc) => bloc.dispose(),
                           ),
                         ],

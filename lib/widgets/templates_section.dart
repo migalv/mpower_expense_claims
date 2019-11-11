@@ -1,4 +1,5 @@
 import 'package:expense_claims_app/bloc_provider.dart';
+import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
@@ -9,12 +10,16 @@ class TemplatesSection extends StatelessWidget {
   final AnimationController bottomSheetController;
   final ScrollController scrollController;
   final Function onPressed;
+  final ExpenseFormSectionBloc expenseFormBloc;
+  final PageController pageController;
 
   const TemplatesSection({
     Key key,
     @required this.bottomSheetController,
     @required this.onPressed,
     this.scrollController,
+    @required this.expenseFormBloc,
+    @required this.pageController,
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -31,6 +36,8 @@ class TemplatesSection extends StatelessWidget {
           listWidgets.addAll(snapshot.data.map(
             (template) => TemplateTile(
               template: template,
+              expenseFormBloc: expenseFormBloc,
+              pageController: pageController,
             ),
           ));
 

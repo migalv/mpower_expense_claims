@@ -7,6 +7,7 @@ import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/repository.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
 
@@ -43,19 +44,17 @@ class ExpenseFormSectionBloc {
   List<StreamSubscription> _streamSubscriptions = [];
   Map<String, File> _attachments = Map();
   ExpenseType _expenseType;
+  TextEditingController descriptionController = TextEditingController();
 
-  final Template _template;
   final Stream<int> expenseTypeStream;
 
   // Flags
   bool _multipleAttachments;
   bool get multipleAttachments => _multipleAttachments;
 
-  ExpenseFormSectionBloc({Stream<int> expenseTypeStream, Template template})
-      : this.expenseTypeStream = expenseTypeStream,
-        _template = template {
+  ExpenseFormSectionBloc({Stream<int> expenseTypeStream})
+      : this.expenseTypeStream = expenseTypeStream {
     _listenToExpenseTypeChanges();
-    if (_template != null) _buildFormFromTemplate();
     if (repository?.lastSelectedCountry?.value != null)
       selectCountry(
           repository.getCountryWithId(repository.lastSelectedCountry.value));
@@ -113,6 +112,27 @@ class ExpenseFormSectionBloc {
       _selectedDueDateController.add(dueDate);
   void selectVat(double vat) => _selectedVatController.add(vat);
 
+  void setTemplate(Template template) {
+    if (template != null) {
+      selectCategory(template.category);
+      selectCountry(repository.getCountryWithId(template.country));
+      selectVat(template.vat);
+      selectCurrency(template.currency);
+      selectApprover(template.approvedBy);
+      selectCostCentre(template.costCentreGroup);
+      descriptionController.text = template.description;
+    } else {
+      if (repository?.lastSelectedCountry?.value != null)
+        selectCountry(
+            repository.getCountryWithId(repository.lastSelectedCountry.value));
+      if (repository?.lastSelectedCurrency?.value != null)
+        selectCurrency(repository.lastSelectedCurrency.value);
+      if (repository?.lastSelectedApprover?.value != null)
+        selectApprover(repository.lastSelectedApprover.value);
+      selectExpenseDate(DateTime.now());
+    }
+  }
+
   // ATTACHMENTS
   void addAttachment(String name, File attachment) {
     if (name != null && _attachments.containsKey(name)) {
@@ -140,10 +160,7 @@ class ExpenseFormSectionBloc {
   }
 
   // UPLOAD DATA
-  void uploadNewExpense(String description, String stringGross) {
-    if (description == null ||
-        stringGross == null ||
-        selectedApprover.value == null) return;
+  void uploadNewExpense(String stringGross) {
     double gross = double.tryParse(stringGross.replaceAll(',', '.'));
     double net;
     double vat = selectedVat.value;
@@ -155,7 +172,7 @@ class ExpenseFormSectionBloc {
         country: selectedCountry.value.id,
         category: selectedCategory.value,
         date: expenseDate.value,
-        description: description,
+        description: descriptionController?.text ?? "",
         currency: selectedCurrency.value,
         gross: gross,
         net: net,
@@ -174,7 +191,7 @@ class ExpenseFormSectionBloc {
         category: selectedCategory.value,
         date: expenseDate.value,
         dueDate: selectedDueDate.value,
-        description: description,
+        description: descriptionController?.text ?? "",
         currency: selectedCurrency.value,
         gross: gross,
         net: net,
@@ -192,7 +209,7 @@ class ExpenseFormSectionBloc {
     repository.uploadNewExpense(expense, _attachments);
   }
 
-  void uploadFormTemplate(String description, String templateName) async {
+  void uploadFormTemplate(String templateName) async {
     if (templateName == null) return;
     Template template;
 
@@ -202,7 +219,7 @@ class ExpenseFormSectionBloc {
       category: selectedCategory.value,
       country: selectedCountry.value.id,
       currency: selectedCurrency.value,
-      description: description,
+      description: descriptionController?.text ?? "",
       expenseType: _expenseType,
       name: templateName,
       costCentreGroup: selectedCostCentre.value,
@@ -247,14 +264,6 @@ class ExpenseFormSectionBloc {
 
   String costCentreValidator(String value) =>
       selectedCostCentre.value == null ? "Select an option" : null;
-
-  void _buildFormFromTemplate() {
-    selectCategory(_template.category);
-    selectCountry(repository.getCountryWithId(_template.country));
-    selectVat(_template.vat);
-    selectCurrency(_template.currency);
-    selectApprover(_template.approvedBy);
-  }
 
   void dispose() {
     _selectedCountryController.close();

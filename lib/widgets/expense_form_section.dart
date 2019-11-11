@@ -44,7 +44,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
   ExpenseFormSectionBloc _expenseClaimBloc;
 
   // Text Controllers
-  final _descriptionController = TextEditingController();
   final _templateNameController = TextEditingController();
   final _grossController =
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
@@ -294,7 +293,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
             scrollDirection: Axis.vertical,
             reverse: true,
             child: TextFormField(
-              controller: _descriptionController,
+              controller: _expenseClaimBloc.descriptionController,
               maxLines: null,
               autocorrect: true,
               keyboardType: TextInputType.text,
@@ -744,8 +743,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   void _validateAndUploadTemplate() {
     if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadFormTemplate(
-          _descriptionController.text, _templateNameController.text);
+      _expenseClaimBloc.uploadFormTemplate(_templateNameController.text);
       utils.showSnackbar(
         scaffoldKey: widget._scaffoldKey,
         message: "Your template has been created successfully.",
@@ -756,10 +754,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   void _validateAndUploadExpense() {
     if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadNewExpense(
-        _descriptionController.text,
-        _grossController.text,
-      );
+      _expenseClaimBloc.uploadNewExpense(_grossController.text);
       utils.showSnackbar(
         scaffoldKey: widget._scaffoldKey,
         message: "Your expense has been created successfully.",
