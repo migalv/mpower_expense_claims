@@ -19,22 +19,23 @@ class Invoice extends Expense {
     String createdBy,
     String costCentreGroup,
     List<String> availableTo,
+    List<Map<String, String>> attachments,
   }) : super(
-          id: id,
-          approvedBy: approvedBy,
-          country: country,
-          category: category,
-          currency: currency,
-          date: date,
-          description: description,
-          gross: gross,
-          net: net,
-          vat: vat,
-          createdBy: createdBy,
-          costCentreGroup: costCentreGroup,
-          availableTo: availableTo,
-          approvedByName: approvedByName,
-        );
+            id: id,
+            approvedBy: approvedBy,
+            country: country,
+            category: category,
+            currency: currency,
+            date: date,
+            description: description,
+            gross: gross,
+            net: net,
+            vat: vat,
+            createdBy: createdBy,
+            costCentreGroup: costCentreGroup,
+            availableTo: availableTo,
+            approvedByName: approvedByName,
+            attachments: attachments);
 
   Invoice.fromJson(final Map<String, dynamic> json, {String id})
       : this.dueDate = json.containsKey(Expense.DUE_DATE_KEY)

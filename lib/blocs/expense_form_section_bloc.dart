@@ -166,9 +166,14 @@ class ExpenseFormSectionBloc {
     double vat = selectedVat.value;
     if (net == null && vat != null) net = gross - (gross * vat) / 100;
     Expense expense;
+    List<Map<String, String>> attachmentsList = List<Map<String, String>>();
+
+    _attachments.forEach((name, file) =>
+        attachmentsList.add({"name": name, "file_path": file.path}));
 
     if (_expenseType == ExpenseType.EXPENSE_CLAIM) {
       expense = ExpenseClaim(
+        attachments: attachmentsList,
         country: selectedCountry.value.id,
         category: selectedCategory.value,
         date: expenseDate.value,
@@ -187,6 +192,7 @@ class ExpenseFormSectionBloc {
       );
     } else if (_expenseType == ExpenseType.INVOICE) {
       expense = Invoice(
+        attachments: attachmentsList,
         country: selectedCountry.value.id,
         category: selectedCategory.value,
         date: expenseDate.value,
