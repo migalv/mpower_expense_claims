@@ -25,9 +25,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   PageController _pageController;
   PageController _pageController2;
-  AnimationController _navBarController, _bottomSheetController;
+  AnimationController _navBarController, _bottomSheetController, _fabController;
   HomeBloc _homeBloc;
-  Tween<Offset> _tween = Tween(begin: Offset(0, 1), end: Offset(0, 0));
+  Tween<Offset> _tween = Tween(begin: Offset(0, 2), end: Offset(0, 0));
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -39,6 +39,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         duration: Duration(milliseconds: 275),
         value: widget.lastPageIndex.toDouble());
     _bottomSheetController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+    _fabController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
 
     _pageController = PageController(
@@ -63,6 +65,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _homeBloc.dispose();
     _navBarController.dispose();
     _bottomSheetController.dispose();
+    _fabController.dispose();
 
     super.dispose();
   }
@@ -138,7 +141,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         children: <Widget>[
                           BlocProvider<TemplatesSectionBloc>(
                             child: TemplatesSection(
-                              bottomSheetController: _bottomSheetController,
                               scrollController: scrollController,
                               onPressed: () {
                                 _pageController2.animateTo(
@@ -160,6 +162,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     curve: Curves.easeIn);
                               },
                               scaffoldKey: _scaffoldKey,
+                              onDonePressed: () {
+                                if (_fabController.isDismissed) {
+                                  _fabController.forward();
+                                } else {
+                                  _fabController.reverse();
+                                }
+
+                                if (_bottomSheetController.isDismissed)
+                                  _bottomSheetController.forward();
+                                else if (_bottomSheetController.isCompleted)
+                                  _bottomSheetController.reverse();
+                              },
                             ),
                             initBloc: (_, bloc) =>
                                 bloc ??
@@ -178,6 +192,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,
           floatingActionButton: FabAddToClose(
+            controller: _fabController,
             onPressed: () {
               if (_bottomSheetController.isDismissed)
                 _bottomSheetController.forward();

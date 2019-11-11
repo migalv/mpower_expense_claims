@@ -24,15 +24,17 @@ import 'package:rxdart/rxdart.dart';
 
 class ExpenseFormSection extends StatefulWidget {
   final ScrollController _scrollController;
-  final Function _onBackPressed;
+  final Function _onBackPressed, _onDonePressed;
   final GlobalKey<ScaffoldState> _scaffoldKey;
 
   ExpenseFormSection({
     @required ScrollController scrollController,
     @required Function onBackPressed,
+    @required Function onDonePressed,
     @required GlobalKey<ScaffoldState> scaffoldKey,
   })  : _scrollController = scrollController,
         _onBackPressed = onBackPressed,
+        _onDonePressed = onDonePressed,
         _scaffoldKey = scaffoldKey;
 
   @override
@@ -266,7 +268,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                                 ? Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54)
+                                    .copyWith(color: Colors.white54)
                                 : Theme.of(context).textTheme.subhead,
                           ),
                         ),
@@ -764,7 +766,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         scaffoldKey: widget._scaffoldKey,
         message: "Your expense has been created successfully.",
       );
-      widget._onBackPressed();
+      widget._onDonePressed();
     }
   }
 }
