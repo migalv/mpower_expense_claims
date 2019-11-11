@@ -175,7 +175,10 @@ class _ExpenseTileState extends State<ExpenseTile>
         children: <Widget>[
           Text(
             title,
-            style: Theme.of(context).textTheme.body2,
+            style: Theme.of(context)
+                .textTheme
+                .body2
+                .copyWith(color: secondaryColor),
           ),
           Container(
             height: 4.0,
