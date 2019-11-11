@@ -1,15 +1,18 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:expense_claims_app/bloc_provider.dart';
-import 'package:expense_claims_app/blocs/expense_tile_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class ExpenseTile extends StatefulWidget {
+  final Expense expense;
+
+  const ExpenseTile({Key key, this.expense}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _ExpenseTileState();
 }
@@ -17,15 +20,10 @@ class ExpenseTile extends StatefulWidget {
 class _ExpenseTileState extends State<ExpenseTile>
     with SingleTickerProviderStateMixin {
   AnimationController _controller;
-  final Animatable<double> _sizeTween = Tween<double>(
-    begin: 0.0,
-    end: 1.0,
-  ),
+  final Animatable<double> _sizeTween = Tween<double>(begin: 0.0, end: 1.0),
       _rotationTween = Tween<double>(begin: 0.0, end: 0.5);
   Animation<double> _sizeAnimation, _rotateAnimation;
   bool _isExpanded = false;
-  ExpenseTileBloc _expenseTileBloc;
-  Expense expense;
 
   @override
   initState() {
@@ -40,14 +38,6 @@ class _ExpenseTileState extends State<ExpenseTile>
         CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
     _rotateAnimation = _rotationTween.animate(
         CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    _expenseTileBloc = Provider.of<ExpenseTileBloc>(context);
-    expense = _expenseTileBloc.expense;
   }
 
   @override
@@ -70,7 +60,8 @@ class _ExpenseTileState extends State<ExpenseTile>
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    _buildCategoryIcon(_expenseTileBloc.category),
+                    _buildCategoryIcon(
+                        repository.getCategoryWithId(widget.expense.category)),
                     Container(
                       constraints: BoxConstraints(
                           maxWidth: MediaQuery.of(context).size.width * 0.3),
@@ -80,7 +71,11 @@ class _ExpenseTileState extends State<ExpenseTile>
                           Padding(
                             padding: const EdgeInsets.only(top: 16.0),
                             child: AutoSizeText(
-                              _expenseTileBloc.category.name,
+                              repository
+                                      .getCategoryWithId(
+                                          widget.expense.category)
+                                      ?.name ??
+                                  "",
                               maxLines: 1,
                               style: Theme.of(context).textTheme.title,
                             ),
@@ -89,7 +84,7 @@ class _ExpenseTileState extends State<ExpenseTile>
                             padding:
                                 const EdgeInsets.only(top: 8.0, bottom: 16.0),
                             child: Text(
-                              timeago.format(expense.date),
+                              timeago.format(widget.expense.date),
                               style: Theme.of(context)
                                   .textTheme
                                   .body1
@@ -105,7 +100,7 @@ class _ExpenseTileState extends State<ExpenseTile>
                       alignment: Alignment.centerRight,
                       child: Chip(
                         label: AutoSizeText(
-                          '${_expenseTileBloc.expense.gross ?? ''} ${_expenseTileBloc.currencySymbol ?? ''}',
+                          '${widget.expense.gross ?? ''} ${repository.getCurrencyWithId(widget.expense.currency)?.symbol ?? ''}',
                           style: Theme.of(context).textTheme.subhead.copyWith(
                                 color: secondaryColor,
                                 fontWeight: FontWeight.bold,
@@ -138,25 +133,31 @@ class _ExpenseTileState extends State<ExpenseTile>
                           children: <Widget>[
                             Expanded(
                               child: _buildSection(
-                                  'Approved by', expense.approvedByName),
+                                  'Approved by', widget.expense.approvedByName),
                             ),
                             Expanded(
                               child: _buildSection(
-                                  'Country', _expenseTileBloc.country),
+                                  'Country',
+                                  repository
+                                          .getCountryWithId(
+                                              widget.expense.country)
+                                          ?.name ??
+                                      ""),
                             ),
                           ],
                         ),
                         Container(height: 12.0),
-                        _buildSection('Description', expense.description),
+                        _buildSection(
+                            'Description', widget.expense.description),
                         Container(height: 12.0),
                         Row(
                           children: <Widget>[
                             Expanded(
                                 child: _buildSection(
-                                    'Net cost', expense.net.toString())),
+                                    'Net cost', widget.expense.net.toString())),
                             Expanded(
-                                child: _buildSection(
-                                    'VAT', '${expense.vat.toString()} %')),
+                                child: _buildSection('VAT',
+                                    '${widget.expense.vat.toString()} %')),
                           ],
                         ),
                       ],
