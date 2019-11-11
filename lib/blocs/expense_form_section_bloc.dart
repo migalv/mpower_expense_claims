@@ -52,7 +52,7 @@ class ExpenseFormSectionBloc {
   bool get multipleAttachments => _multipleAttachments;
 
   ExpenseFormSectionBloc({Stream<int> expenseTypeStream, Template template})
-      : expenseTypeStream = expenseTypeStream,
+      : this.expenseTypeStream = expenseTypeStream,
         _template = template {
     _listenToExpenseTypeChanges();
     if (_template != null) _buildFormFromTemplate();
@@ -69,8 +69,7 @@ class ExpenseFormSectionBloc {
   void _listenToExpenseTypeChanges() {
     _streamSubscriptions.add(expenseTypeStream.listen(
       (expenseType) {
-        _expenseType =
-            ExpenseType.values[expenseType ?? ExpenseType.EXPENSE_CLAIM.index];
+        _expenseType = ExpenseType.values[expenseType ?? 0];
         _attachments = Map();
         switch (_expenseType) {
           case ExpenseType.EXPENSE_CLAIM:

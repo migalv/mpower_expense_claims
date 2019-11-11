@@ -148,7 +148,8 @@ class _LoginPageState extends State<LoginPage> {
                   lastPageIndex: repository?.lastPageIndex?.value ?? 0),
               initBloc: (_, bloc) =>
                   bloc ??
-                  HomeBloc(lastPageIndex: repository?.lastPageIndex?.value),
+                  HomeBloc(
+                      lastPageIndex: repository?.lastPageIndex?.value ?? 0),
               onDispose: (_, bloc) => bloc?.dispose(),
             ),
           );

@@ -14,7 +14,7 @@ class HomeBloc {
   final int lastPageIndex;
 
   HomeBloc({this.lastPageIndex = 0}) {
-    _pageIndexController.add(lastPageIndex);
+    _pageIndexController.add(lastPageIndex ?? 0);
   }
 
   //

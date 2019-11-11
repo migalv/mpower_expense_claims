@@ -46,8 +46,8 @@ class ExpensesBloc {
         _stream = repository.expenseClaims.transform(_filterStreamTransformer);
         break;
       case ExpenseType.INVOICE:
-        _filterStreamTransformer = FilterStreamTransformer<List<ExpenseClaim>,
-            List<Invoice>>.broadcast(
+        _filterStreamTransformer =
+            FilterStreamTransformer<List<Invoice>, List<Invoice>>.broadcast(
           collection: INVOICES_COLLECTION,
           sortingBy: SortOptions.CREATED_AT,
         );

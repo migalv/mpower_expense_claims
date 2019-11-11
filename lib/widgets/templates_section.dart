@@ -34,7 +34,11 @@ class TemplatesSection extends StatelessWidget {
             ),
           ));
 
-        return ListView(children: listWidgets);
+        return ListView(
+          controller: scrollController,
+          children: listWidgets,
+          shrinkWrap: true,
+        );
       },
     );
   }
