@@ -146,6 +146,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     duration: Duration(milliseconds: 275),
                                     curve: Curves.easeIn);
                               },
+                              // TODO: Set the template to null
                             ),
                             initBloc: (_, bloc) => TemplatesSectionBloc(
                                 expenseTypeStream: _homeBloc.pageIndex),

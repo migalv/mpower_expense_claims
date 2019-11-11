@@ -19,7 +19,7 @@ class TemplateTile extends StatelessWidget {
         template.description,
         style: Theme.of(context).textTheme.subtitle,
       ),
-      onTap: () async {},
+      onTap: () async {}, // TODO: Set the template to the form
     );
   }
 }
