@@ -78,11 +78,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 ThemeData _buildTheme() {
   final ThemeData base = ThemeData.dark();
   return base.copyWith(
-      primaryColor: primaryColor,
-      primaryColorLight: primaryLightColor,
-      primaryColorDark: primaryDarkColor,
-      accentColor: secondaryColor,
-      accentIconTheme: base.iconTheme.copyWith(color: Colors.black54),
-      colorScheme: base.colorScheme.copyWith(secondary: secondaryColor),
-      errorColor: errorColor);
+    primaryColor: primaryColor,
+    primaryColorLight: primaryLightColor,
+    primaryColorDark: primaryDarkColor,
+    accentColor: secondaryColor,
+    accentIconTheme: base.iconTheme.copyWith(color: Colors.black54),
+    colorScheme: base.colorScheme.copyWith(secondary: secondaryColor),
+    errorColor: errorColor,
+    cursorColor: secondaryColor,
+  );
 }
