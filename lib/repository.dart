@@ -390,6 +390,12 @@ class Repository {
     return true;
   }
 
+  Future logOut() async {
+    _currentUserId = null;
+    _currentUser = null;
+    await _auth.signOut();
+  }
+
   void dispose() {
     _categoriesController.close();
     _currenciesController.close();

@@ -1,6 +1,10 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expenses_bloc.dart';
+import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/pages/login_page.dart';
+import 'package:expense_claims_app/repository.dart';
+import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/search_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -49,13 +53,24 @@ class _ExpensesPageState extends State<ExpensesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Container(
+            Align(
               alignment: Alignment.centerRight,
-              child: IconButton(
-                icon: Icon(
-                  Icons.settings,
+              child: PopupMenuButton(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Icon(
+                    Icons.settings,
+                  ),
                 ),
-                onPressed: () {},
+                onSelected: (value) {
+                  if (value == "logout") _logOut();
+                },
+                itemBuilder: (_) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'logout',
+                    child: Text('Logout'),
+                  ),
+                ],
               ),
             ),
             Text(
@@ -82,12 +97,12 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
     list.addAll(snapshot.data
         .map<Widget>((expense) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Container(
                 margin: EdgeInsets.only(bottom: 20.0),
                 child: ExpenseTile(expense: expense),
               ),
-        ))
+            ))
         .toList());
 
     list.add(Container(
@@ -95,6 +110,18 @@ class _ExpensesPageState extends State<ExpensesPage> {
     ));
 
     return ListView(shrinkWrap: true, children: list);
+  }
+
+  void _logOut() {
+    repository.logOut();
+    utils.pushReplacement(
+      context,
+      BlocProvider<LoginBloc>(
+        initBloc: (_, bloc) => bloc ?? LoginBloc(),
+        onDispose: (_, bloc) => bloc.dispose(),
+        child: LoginPage(),
+      ),
+    );
   }
 
   void _closeSearchBar() {
