@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
+import 'package:expense_claims_app/colors.dart' as prefix0;
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/cost_center_groups_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
@@ -124,7 +125,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         builder: (context, selectedCountrySnapshot) => FormField(
           validator: _expenseClaimBloc.countryValidator,
           builder: (FormFieldState state) => Container(
-            margin: EdgeInsets.symmetric(horizontal: 24.0),
+            margin: EdgeInsets.fromLTRB(24, 8, 24, 0),
             child: CustomFormField(
               child: DropdownButtonHideUnderline(
                 child: StreamBuilder<List<Country>>(
@@ -283,7 +284,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       );
 
   Widget _buildDescription() => Container(
-        margin: EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 0.0),
+        margin: EdgeInsets.fromLTRB(24.0, 32.0, 24.0, 8.0),
         constraints: BoxConstraints(maxHeight: 120.0),
         child: Scrollbar(
           child: SingleChildScrollView(
@@ -509,10 +510,12 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       );
 
   Widget _buildFieldLabel(String label) => Padding(
-        padding: const EdgeInsets.fromLTRB(24.0, 24.0, 0.0, 8.0),
+        padding: const EdgeInsets.fromLTRB(24.0, 32.0, 0.0, 8.0),
         child: Text(
           label,
-          style: Theme.of(context).textTheme.subtitle,
+          style: Theme.of(context).textTheme.subhead.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
       );
 
@@ -520,41 +523,57 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       stream: _expenseClaimBloc.attachments,
       initialData: Map<String, File>(),
       builder: (context, attachmentsSnapshot) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
-          child: FormField(
-            validator: (_) => _expenseClaimBloc.attachmentsValidator(),
-            builder: (FormFieldState state) => Column(
-              children: <Widget>[
-                _buildAttachmentList(attachmentsSnapshot.data),
-                (_expenseClaimBloc.multipleAttachments ?? false)
-                    ? _buildButton('ADD ATTACHMENTS', _selectAttachments)
-                    : Container(),
-                utils.buildErrorFormLabel(state),
-              ],
-            ),
+        return FormField(
+          validator: (_) => _expenseClaimBloc.attachmentsValidator(),
+          builder: (FormFieldState state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _buildFieldLabel('Attachments'),
+              _buildAttachmentList(attachmentsSnapshot.data),
+              (_expenseClaimBloc.multipleAttachments ?? false)
+                  ? Padding(
+                      padding: const EdgeInsets.only(right: 24, bottom: 32),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          OutlineButton(
+                              borderSide:
+                                  BorderSide(width: 0.5, color: Colors.white54),
+                              highlightedBorderColor: secondaryColor,
+                              child: Text('Add attachments'),
+                              onPressed: () => _selectAttachments()),
+                        ],
+                      ),
+                    )
+                  : Container(),
+              utils.buildErrorFormLabel(state),
+            ],
           ),
         );
       });
 
   Widget _buildAttachmentList(Map<String, File> attachments) {
-    List<Widget> list = [Container(height: 4.0)];
+    List<Widget> list = [];
 
     attachments.forEach((String name, File attachment) {
       list.add(ListTile(
-        contentPadding: EdgeInsets.all(0.0),
         leading: ClipRRect(
             borderRadius: BorderRadius.circular(4.0),
             child: Padding(
               padding: const EdgeInsets.only(left: 16.0),
               child: attachment == null
-                  ? Icon(MdiIcons.tag)
+                  ? Icon(
+                      name == 'Invoice'
+                          ? FontAwesomeIcons.fileInvoiceDollar
+                          : Icons.attachment,
+                      size: 20,
+                      color: Colors.white54,
+                    )
                   : Container(
                       height: 40.0, width: 48.0, child: Image.file(attachment)),
             )),
         title: Text(
           name,
-          style: Theme.of(context).textTheme.body1,
         ),
         trailing: IconButton(
           icon: Icon(attachment == null ? MdiIcons.imagePlus : Icons.delete),
@@ -572,22 +591,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       children: list,
     );
   }
-
-  Widget _buildButton(String label, Function onPressed) => Padding(
-        padding: const EdgeInsets.only(top: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            OutlineButton(
-                padding: EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 12.0),
-                borderSide: BorderSide(width: 0.5, color: Color(0xFFCCCCCC)),
-                highlightColor: Colors.grey.withAlpha(10),
-                splashColor: Color(0xFFEEEEEE),
-                child: Text(label),
-                onPressed: () => onPressed()),
-          ],
-        ),
-      );
 
   Widget _buildButtons(ExpenseType expenseType) => Container(
         margin: EdgeInsets.fromLTRB(24, 0, 24, 48),
