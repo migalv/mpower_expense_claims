@@ -25,9 +25,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   PageController _pageController;
   PageController _pageController2;
-  AnimationController _navBarController, _bottomSheetController;
+  AnimationController _navBarController, _bottomSheetController, _fabController;
   HomeBloc _homeBloc;
-  Tween<Offset> _tween = Tween(begin: Offset(0, 1), end: Offset(0, 0));
+  Tween<Offset> _tween = Tween(begin: Offset(0, 2), end: Offset(0, 0));
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   ExpenseFormSectionBloc _expenseFormBloc;
 
@@ -37,6 +37,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     _bottomSheetController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+    _fabController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+
+    _pageController = PageController(
+      initialPage: widget.lastPageIndex,
+      keepPage: true,
+    );
+    _pageController2 = PageController(
+      initialPage: widget.lastPageIndex,
+      keepPage: true,
+    );
   }
 
   @override
@@ -44,18 +55,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.didChangeDependencies();
 
     _homeBloc = Provider.of<HomeBloc>(context);
+
     _expenseFormBloc =
         ExpenseFormSectionBloc(expenseTypeStream: _homeBloc.pageIndex);
+
     if (_pageController == null)
       _pageController = PageController(
         initialPage: _homeBloc.pageIndex.value,
         keepPage: true,
       );
+
     if (_pageController2 == null)
       _pageController2 = PageController(
         initialPage: _homeBloc.pageIndex.value,
         keepPage: true,
       );
+
     if (_navBarController == null)
       _navBarController = AnimationController(
           vsync: this,
@@ -68,6 +83,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _homeBloc.dispose();
     _navBarController.dispose();
     _bottomSheetController.dispose();
+    _fabController.dispose();
 
     super.dispose();
   }
@@ -143,7 +159,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         children: <Widget>[
                           BlocProvider<TemplatesSectionBloc>(
                             child: TemplatesSection(
-                              bottomSheetController: _bottomSheetController,
                               scrollController: scrollController,
                               expenseFormBloc: _expenseFormBloc,
                               pageController: _pageController2,
@@ -168,6 +183,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     curve: Curves.easeIn);
                               },
                               scaffoldKey: _scaffoldKey,
+                              onDonePressed: () {
+                                if (_fabController.isDismissed) {
+                                  _fabController.forward();
+                                } else {
+                                  _fabController.reverse();
+                                }
+
+                                if (_bottomSheetController.isDismissed)
+                                  _bottomSheetController.forward();
+                                else if (_bottomSheetController.isCompleted)
+                                  _bottomSheetController.reverse();
+                              },
                             ),
                             initBloc: (_, bloc) => bloc ?? _expenseFormBloc,
                             onDispose: (_, bloc) => bloc.dispose(),
@@ -183,6 +210,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,
           floatingActionButton: FabAddToClose(
+            controller: _fabController,
             onPressed: () {
               if (_bottomSheetController.isDismissed)
                 _bottomSheetController.forward();

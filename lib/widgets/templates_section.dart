@@ -7,7 +7,6 @@ import 'package:expense_claims_app/widgets/template_tile.dart';
 import 'package:flutter/material.dart';
 
 class TemplatesSection extends StatelessWidget {
-  final AnimationController bottomSheetController;
   final ScrollController scrollController;
   final Function onPressed;
   final ExpenseFormSectionBloc expenseFormBloc;
@@ -15,7 +14,6 @@ class TemplatesSection extends StatelessWidget {
 
   const TemplatesSection({
     Key key,
-    @required this.bottomSheetController,
     @required this.onPressed,
     this.scrollController,
     @required this.expenseFormBloc,
