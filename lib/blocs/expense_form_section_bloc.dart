@@ -121,6 +121,16 @@ class ExpenseFormSectionBloc {
       selectApprover(template.approvedBy);
       selectCostCentre(template.costCentreGroup);
       descriptionController.text = template.description;
+    } else {
+      selectCategory(null);
+      selectCountry(
+          repository.getCountryWithId(repository.lastSelectedCountry.value));
+      selectVat(null);
+      selectCurrency(repository.lastSelectedCurrency.value);
+      selectApprover(repository.lastSelectedApprover.value);
+      selectCostCentre(null);
+      descriptionController.text = "";
+      selectExpenseDate(DateTime.now());
     }
   }
 

@@ -3,18 +3,21 @@ import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/widgets/template_tile.dart';
+import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:flutter/material.dart';
 
 class TemplatesSection extends StatelessWidget {
   final ScrollController scrollController;
   final Function onPressed;
   final PageController pageController;
+  final ExpenseFormSectionBloc expenseFormBloc;
 
   const TemplatesSection({
     Key key,
     @required this.onPressed,
     this.scrollController,
     @required this.pageController,
+    @required this.expenseFormBloc,
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -32,6 +35,7 @@ class TemplatesSection extends StatelessWidget {
             (template) => TemplateTile(
               template: template,
               pageController: pageController,
+              expenseFormBloc: expenseFormBloc,
             ),
           ));
 

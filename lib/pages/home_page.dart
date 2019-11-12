@@ -29,6 +29,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   HomeBloc _homeBloc;
   Tween<Offset> _tween = Tween(begin: Offset(0, 2), end: Offset(0, 0));
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  ExpenseFormSectionBloc _expenseFormBloc;
 
   @override
   void initState() {
@@ -45,6 +46,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.didChangeDependencies();
 
     _homeBloc = Provider.of<HomeBloc>(context);
+
+    _expenseFormBloc =
+        ExpenseFormSectionBloc(expenseTypeStream: _homeBloc.pageIndex);
 
     if (_pageController == null)
       _pageController = PageController(
@@ -148,11 +152,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             child: TemplatesSection(
                               scrollController: scrollController,
                               pageController: _bottomSheetPageController,
+                              expenseFormBloc: _expenseFormBloc,
                               onPressed: () {
                                 _bottomSheetPageController.animateTo(
                                     MediaQuery.of(context).size.width,
                                     duration: Duration(milliseconds: 275),
                                     curve: Curves.easeIn);
+                                _expenseFormBloc.setTemplate(null);
                               },
                             ),
                             initBloc: (_, bloc) => TemplatesSectionBloc(
@@ -178,10 +184,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     curve: Curves.easeIn);
                               },
                             ),
-                            initBloc: (_, bloc) =>
-                                bloc ??
-                                ExpenseFormSectionBloc(
-                                    expenseTypeStream: _homeBloc.pageIndex),
+                            initBloc: (_, bloc) => bloc ?? _expenseFormBloc,
                             onDispose: (_, bloc) => bloc.dispose(),
                           ),
                         ],
