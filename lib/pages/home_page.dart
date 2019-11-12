@@ -35,21 +35,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    _navBarController = AnimationController(
-        vsync: this,
-        duration: Duration(milliseconds: 275),
-        value: widget.lastPageIndex.toDouble());
     _bottomSheetController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
-
-    _pageController = PageController(
-      initialPage: widget.lastPageIndex,
-      keepPage: true,
-    );
-    _pageController2 = PageController(
-      initialPage: widget.lastPageIndex,
-      keepPage: true,
-    );
   }
 
   @override
@@ -59,6 +46,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _homeBloc = Provider.of<HomeBloc>(context);
     _expenseFormBloc =
         ExpenseFormSectionBloc(expenseTypeStream: _homeBloc.pageIndex);
+    if (_pageController == null)
+      _pageController = PageController(
+        initialPage: _homeBloc.pageIndex.value,
+        keepPage: true,
+      );
+    if (_pageController2 == null)
+      _pageController2 = PageController(
+        initialPage: _homeBloc.pageIndex.value,
+        keepPage: true,
+      );
+    if (_navBarController == null)
+      _navBarController = AnimationController(
+          vsync: this,
+          duration: Duration(milliseconds: 275),
+          value: _homeBloc.pageIndex.value.toDouble());
   }
 
   @override
