@@ -489,6 +489,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                         hint: Text("Select what your cost is related to"),
                         value: selectedCostCentreSnapshot?.data,
                         items: itemsSnapshot.data
+                            .where((costCentre) => costCentre.hidden == false)
                             .map((CostCentreGroup costCentre) =>
                                 DropdownMenuItem(
                                     child: Text(costCentre.name),

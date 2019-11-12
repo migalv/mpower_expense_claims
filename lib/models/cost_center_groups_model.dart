@@ -1,12 +1,14 @@
 class CostCentreGroup {
   final String id;
   final String name;
+  final bool hidden;
 
-  CostCentreGroup(this.id, this.name);
+  CostCentreGroup(this.id, this.name, this.hidden);
 
   CostCentreGroup.fromJson(Map<String, dynamic> json, {String id})
       : this.id = id,
-        this.name = json['name'];
+        this.name = json['name'],
+        this.hidden = json['hidden'];
 
   @override
   String toString() {
