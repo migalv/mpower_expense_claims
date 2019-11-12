@@ -347,6 +347,8 @@ class Repository {
 
     if (authResult != null) {
       _currentUserId = authResult.user.uid;
+      await initUser(_currentUserId);
+      if (_currentUser.locked) return AuthState.LOCKED;
       return AuthState.SUCCESS;
     }
     return AuthState.ERROR;

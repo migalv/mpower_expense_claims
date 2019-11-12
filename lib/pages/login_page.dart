@@ -116,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
           FlatButton(
             child: Text(
               'Forgot password?',
-              style: TextStyle(color: Colors.black38, fontSize: 10.0),
+              style: TextStyle(fontSize: 10.0),
             ),
             onPressed: () => _showForgotPasswordDialog(),
           ),
@@ -128,7 +128,13 @@ class _LoginPageState extends State<LoginPage> {
                     ? CircularProgressIndicator()
                     : FlatButton(
                         onPressed: () => _signIn(),
-                        child: Text('Log in'),
+                        child: Text(
+                          'Log in',
+                          style: Theme.of(context)
+                              .textTheme
+                              .button
+                              .copyWith(color: secondaryColor),
+                        ),
                       );
               }),
         ],
@@ -152,6 +158,13 @@ class _LoginPageState extends State<LoginPage> {
                       lastPageIndex: repository?.lastPageIndex?.value ?? 0),
               onDispose: (_, bloc) => bloc?.dispose(),
             ),
+          );
+          break;
+        case AuthState.LOCKED:
+          utils.showSnackbar(
+            scaffoldKey: _scaffoldKey,
+            message: "This user has been blocked from loging in.",
+            duration: 2,
           );
           break;
         case AuthState.ERROR:
