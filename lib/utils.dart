@@ -79,6 +79,7 @@ class Utils {
           ),
           child: Icon(
             category.icon,
+            size: 16,
           ),
         ),
       );

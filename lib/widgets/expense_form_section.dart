@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
@@ -360,8 +361,8 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                                             ?.data?.vatOptions
                                             ?.map(
                                               (vat) => DropdownMenuItem(
-                                                child:
-                                                    Text(vat.toString() + "%"),
+                                                child: AutoSizeText(
+                                                    vat.toString() + "%"),
                                                 value: vat,
                                               ),
                                             )

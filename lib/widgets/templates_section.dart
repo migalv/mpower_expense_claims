@@ -59,7 +59,7 @@ class TemplatesSection extends StatelessWidget {
             Container(
               margin: EdgeInsets.only(right: 12.0),
               child: FlatButton(
-                child: Text('Continue'),
+                child: Text('Skip'),
                 textColor: secondaryColor,
                 onPressed: onPressed,
               ),

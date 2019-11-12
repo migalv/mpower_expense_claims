@@ -37,11 +37,11 @@ class Category {
     "Travel": FontAwesomeIcons.suitcase,
     "Communication": FontAwesomeIcons.satelliteDish,
     "Import": FontAwesomeIcons.ship,
-    "Food": Icons.fastfood,
+    "Food": FontAwesomeIcons.utensils,
     "Marketing": FontAwesomeIcons.bullhorn,
     "Office supplies": FontAwesomeIcons.pencilRuler,
     "Entertainment": FontAwesomeIcons.theaterMasks,
-    "Other": Icons.attach_money,
+    "Other": FontAwesomeIcons.coins,
   };
 
   static const String NAME_KEY = "name";
