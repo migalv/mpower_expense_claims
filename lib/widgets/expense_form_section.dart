@@ -101,15 +101,10 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         alignment: Alignment.topCenter,
         child: Row(
           children: <Widget>[
-            GestureDetector(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Icon(
-                  FontAwesomeIcons.chevronLeft,
-                  size: 20.0,
-                ),
-              ),
-              onTap: widget._onBackPressed,
+            IconButton(
+              icon: Icon(FontAwesomeIcons.chevronLeft),
+              iconSize: 20.0,
+              onPressed: widget._onBackPressed,
             ),
             Text(
               'New ' +
