@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
-import 'package:expense_claims_app/colors.dart' as prefix0;
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/cost_center_groups_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';

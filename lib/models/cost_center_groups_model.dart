@@ -8,7 +8,7 @@ class CostCentreGroup {
   CostCentreGroup.fromJson(Map<String, dynamic> json, {String id})
       : this.id = id,
         this.name = json['name'],
-        this.hidden = json['hidden'];
+        this.hidden = json['hidden'] ?? false;
 
   @override
   String toString() {
