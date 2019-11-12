@@ -1,8 +1,8 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/colors.dart';
-import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/repository.dart';
+import 'package:expense_claims_app/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -63,7 +63,7 @@ class _ExpenseTileState extends State<ExpenseTile>
                       maxWidth: MediaQuery.of(context).size.width),
                   child: Row(
                     children: <Widget>[
-                      _buildCategoryIcon(repository
+                      utils.buildCategoryIcon(repository
                           .getCategoryWithId(widget.expense.category)),
                       Container(
                         constraints: BoxConstraints(
@@ -202,24 +202,6 @@ class _ExpenseTileState extends State<ExpenseTile>
                 .copyWith(fontWeight: FontWeight.normal),
           ),
         ],
-      );
-
-  Widget _buildCategoryIcon(Category category) => Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Container(
-          width: 48.0,
-          height: 48.0,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: category.color ?? Colors.blue,
-              width: 2.0,
-            ),
-          ),
-          child: Icon(
-            category.icon,
-          ),
-        ),
       );
 
   //

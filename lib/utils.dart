@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/colors.dart';
+import 'package:expense_claims_app/models/category_model.dart';
 import 'package:flutter/material.dart';
 
 class Utils {
@@ -65,6 +66,24 @@ class Utils {
                 ],
               )
             : Container(),
+      );
+
+  Widget buildCategoryIcon(Category category) => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Container(
+          width: 48.0,
+          height: 48.0,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: category.color ?? Colors.blue,
+              width: 2.0,
+            ),
+          ),
+          child: Icon(
+            category.icon,
+          ),
+        ),
       );
 }
 
