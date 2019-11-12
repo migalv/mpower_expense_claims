@@ -1,6 +1,10 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expenses_bloc.dart';
+import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/pages/login_page.dart';
+import 'package:expense_claims_app/repository.dart';
+import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/search_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -35,44 +39,55 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
-      child: StreamBuilder<List<Expense>>(
-          stream: _expensesBloc.expenses,
-          initialData: [],
-          builder: (BuildContext context, AsyncSnapshot snapshot) =>
-              _getType(snapshot)),
-    );
+    return StreamBuilder<List<Expense>>(
+        stream: _expensesBloc.expenses,
+        initialData: [],
+        builder: (BuildContext context, AsyncSnapshot snapshot) =>
+            _getType(snapshot));
   }
 
   Widget _getType(AsyncSnapshot snapshot) {
     List<Widget> list = <Widget>[
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            alignment: Alignment.centerRight,
-            child: IconButton(
-              icon: Icon(
-                Icons.settings,
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Align(
+              alignment: Alignment.centerRight,
+              child: PopupMenuButton(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Icon(
+                    Icons.settings,
+                  ),
+                ),
+                onSelected: (value) {
+                  if (value == "logout") _logOut();
+                },
+                itemBuilder: (_) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'logout',
+                    child: Text('Logout'),
+                  ),
+                ],
               ),
-              onPressed: () {},
             ),
-          ),
-          Text(
-            widget._expenseType == ExpenseType.EXPENSE_CLAIM
-                ? "Expense claims"
-                : "Invoices",
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              fontSize: 30.0,
-              fontWeight: FontWeight.w500,
+            Text(
+              widget._expenseType == ExpenseType.EXPENSE_CLAIM
+                  ? "Expense claims"
+                  : "Invoices",
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                fontSize: 30.0,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       Padding(
-        padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+        padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
         child: SearchWidget(
           _searchTextController,
           onClearField: _closeSearchBar,
@@ -81,9 +96,12 @@ class _ExpensesPageState extends State<ExpensesPage> {
     ];
 
     list.addAll(snapshot.data
-        .map<Widget>((expense) => Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              child: ExpenseTile(expense: expense),
+        .map<Widget>((expense) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Container(
+                margin: EdgeInsets.only(bottom: 20.0),
+                child: ExpenseTile(expense: expense),
+              ),
             ))
         .toList());
 
@@ -92,6 +110,18 @@ class _ExpensesPageState extends State<ExpensesPage> {
     ));
 
     return ListView(shrinkWrap: true, children: list);
+  }
+
+  void _logOut() {
+    repository.logOut();
+    utils.pushReplacement(
+      context,
+      BlocProvider<LoginBloc>(
+        initBloc: (_, bloc) => bloc ?? LoginBloc(),
+        onDispose: (_, bloc) => bloc.dispose(),
+        child: LoginPage(),
+      ),
+    );
   }
 
   void _closeSearchBar() {

@@ -152,7 +152,8 @@ class ExpenseFormSectionBloc {
 
   // UPLOAD DATA
   void uploadNewExpense(String stringGross) {
-    double gross = double.tryParse(stringGross.replaceAll(',', '.'));
+    String parsedString = stringGross.replaceAll('.', '').replaceAll(',', '.');
+    double gross = double.tryParse(parsedString);
     double net;
     double vat = selectedVat.value;
     if (net == null && vat != null && gross != null)
