@@ -29,15 +29,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   HomeBloc _homeBloc;
   Tween<Offset> _tween = Tween(begin: Offset(0, 2), end: Offset(0, 0));
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  ExpenseFormSectionBloc _expenseFormBloc;
 
   @override
   void initState() {
     super.initState();
 
-    _navBarController = AnimationController(
-        vsync: this,
-        duration: Duration(milliseconds: 275),
-        value: widget.lastPageIndex.toDouble());
     _bottomSheetController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     _fabController =
@@ -58,6 +55,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.didChangeDependencies();
 
     _homeBloc = Provider.of<HomeBloc>(context);
+
+    _expenseFormBloc =
+        ExpenseFormSectionBloc(expenseTypeStream: _homeBloc.pageIndex);
+
+    if (_pageController == null)
+      _pageController = PageController(
+        initialPage: _homeBloc.pageIndex.value,
+        keepPage: true,
+      );
+
+    if (_pageController2 == null)
+      _pageController2 = PageController(
+        initialPage: _homeBloc.pageIndex.value,
+        keepPage: true,
+      );
+
+    if (_navBarController == null)
+      _navBarController = AnimationController(
+          vsync: this,
+          duration: Duration(milliseconds: 275),
+          value: _homeBloc.pageIndex.value.toDouble());
   }
 
   @override
@@ -142,11 +160,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           BlocProvider<TemplatesSectionBloc>(
                             child: TemplatesSection(
                               scrollController: scrollController,
+                              expenseFormBloc: _expenseFormBloc,
+                              pageController: _pageController2,
                               onPressed: () {
                                 _pageController2.animateTo(
                                     MediaQuery.of(context).size.width,
                                     duration: Duration(milliseconds: 275),
                                     curve: Curves.easeIn);
+                                _expenseFormBloc.setTemplate(null);
                               },
                             ),
                             initBloc: (_, bloc) => TemplatesSectionBloc(
@@ -175,10 +196,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   _bottomSheetController.reverse();
                               },
                             ),
-                            initBloc: (_, bloc) =>
-                                bloc ??
-                                ExpenseFormSectionBloc(
-                                    expenseTypeStream: _homeBloc.pageIndex),
+                            initBloc: (_, bloc) => bloc ?? _expenseFormBloc,
                             onDispose: (_, bloc) => bloc.dispose(),
                           ),
                         ],

@@ -1,5 +1,4 @@
 import 'package:expense_claims_app/bloc_provider.dart';
-import 'package:expense_claims_app/blocs/expense_tile_bloc.dart';
 import 'package:expense_claims_app/blocs/expenses_bloc.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
@@ -82,18 +81,10 @@ class _ExpensesPageState extends State<ExpensesPage> {
     ];
 
     list.addAll(snapshot.data
-        .map<Widget>(
-          (expense) => Container(
-            margin: EdgeInsets.only(bottom: 20.0),
-            child: BlocProvider<ExpenseTileBloc>(
-              initBloc: (_, bloc) => bloc ?? ExpenseTileBloc(expense: expense),
-              onDispose: (_, bloc) {
-                bloc.dispose();
-              },
-              child: ExpenseTile(),
-            ),
-          ),
-        )
+        .map<Widget>((expense) => Container(
+              margin: EdgeInsets.only(bottom: 20.0),
+              child: ExpenseTile(expense: expense),
+            ))
         .toList());
 
     list.add(Container(

@@ -40,6 +40,7 @@ class TemplatesSectionBloc {
     ));
   }
 
+  // TODO: REVIEW THE NEED OF THIS FUNCTION => repository.templates.transform
   void _updateTemplates(List<Template> list) {
     _templates.clear();
     _templates.addAll(list?.where((template) =>

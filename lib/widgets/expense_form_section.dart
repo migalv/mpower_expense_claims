@@ -46,7 +46,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
   ExpenseFormSectionBloc _expenseClaimBloc;
 
   // Text Controllers
-  final _descriptionController = TextEditingController();
   final _templateNameController = TextEditingController();
   final _grossController =
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
@@ -296,7 +295,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
             scrollDirection: Axis.vertical,
             reverse: true,
             child: TextFormField(
-              controller: _descriptionController,
+              controller: _expenseClaimBloc.descriptionController,
               maxLines: null,
               autocorrect: true,
               keyboardType: TextInputType.text,
@@ -550,13 +549,13 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         contentPadding: EdgeInsets.all(0.0),
         leading: ClipRRect(
             borderRadius: BorderRadius.circular(4.0),
-            child: attachment == null
-                ? Icon(
-                    MdiIcons.tag,
-                    color: Colors.black26,
-                  )
-                : Container(
-                    height: 40.0, width: 48.0, child: Image.file(attachment))),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: attachment == null
+                  ? Icon(MdiIcons.tag)
+                  : Container(
+                      height: 40.0, width: 48.0, child: Image.file(attachment)),
+            )),
         title: Text(
           name,
           style: Theme.of(context).textTheme.body1,
@@ -636,10 +635,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                 padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
                 child: Text(
                   'Select source',
-                  style: TextStyle(
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black54),
+                  style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w500),
                 ),
               ),
             ],
@@ -746,8 +742,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   void _validateAndUploadTemplate() {
     if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadFormTemplate(
-          _descriptionController.text, _templateNameController.text);
+      _expenseClaimBloc.uploadFormTemplate(_templateNameController.text);
       utils.showSnackbar(
         scaffoldKey: widget._scaffoldKey,
         message: "Your template has been created successfully.",
@@ -758,10 +753,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   void _validateAndUploadExpense() {
     if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadNewExpense(
-        _descriptionController.text,
-        _grossController.text,
-      );
+      _expenseClaimBloc.uploadNewExpense(_grossController.text);
       utils.showSnackbar(
         scaffoldKey: widget._scaffoldKey,
         message: "Your expense has been created successfully.",

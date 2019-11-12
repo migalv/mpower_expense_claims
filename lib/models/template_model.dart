@@ -54,6 +54,12 @@ class Template {
       };
 
   @override
+  bool operator ==(template) => template is Template && template.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
   String toString() {
     return "Expense Template: {\n\t id: $id,\n\t name:$name\n}";
   }
