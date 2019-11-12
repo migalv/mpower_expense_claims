@@ -174,7 +174,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 await _playAnimation(_bottomSheetController);
 
                                 _bottomSheetPageController.animateTo(0,
-                                    duration: Duration(milliseconds: 0),
+                                    duration: Duration(milliseconds: 1),
                                     curve: Curves.easeIn);
                               },
                             ),
