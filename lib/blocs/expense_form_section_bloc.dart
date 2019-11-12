@@ -52,7 +52,7 @@ class ExpenseFormSectionBloc {
   bool _multipleAttachments;
   bool get multipleAttachments => _multipleAttachments;
 
-  ExpenseFormSectionBloc({Stream<int> expenseTypeStream})
+  ExpenseFormSectionBloc({@required Stream<int> expenseTypeStream})
       : this.expenseTypeStream = expenseTypeStream {
     _listenToExpenseTypeChanges();
     if (repository?.lastSelectedCountry?.value != null)
@@ -121,15 +121,6 @@ class ExpenseFormSectionBloc {
       selectApprover(template.approvedBy);
       selectCostCentre(template.costCentreGroup);
       descriptionController.text = template.description;
-    } else {
-      if (repository?.lastSelectedCountry?.value != null)
-        selectCountry(
-            repository.getCountryWithId(repository.lastSelectedCountry.value));
-      if (repository?.lastSelectedCurrency?.value != null)
-        selectCurrency(repository.lastSelectedCurrency.value);
-      if (repository?.lastSelectedApprover?.value != null)
-        selectApprover(repository.lastSelectedApprover.value);
-      selectExpenseDate(DateTime.now());
     }
   }
 

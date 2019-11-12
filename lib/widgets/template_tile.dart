@@ -6,14 +6,10 @@ import 'package:flutter/material.dart';
 
 class TemplateTile extends StatelessWidget {
   final Template template;
-  final ExpenseFormSectionBloc expenseFormBloc;
   final PageController pageController;
 
   const TemplateTile(
-      {Key key,
-      @required this.template,
-      @required this.expenseFormBloc,
-      @required this.pageController})
+      {Key key, @required this.template, @required this.pageController})
       : super(key: key);
 
   @override

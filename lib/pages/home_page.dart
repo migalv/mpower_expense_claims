@@ -24,12 +24,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   PageController _pageController;
-  PageController _pageController2;
+  PageController _bottomSheetPageController;
   AnimationController _navBarController, _bottomSheetController, _fabController;
   HomeBloc _homeBloc;
   Tween<Offset> _tween = Tween(begin: Offset(0, 2), end: Offset(0, 0));
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  ExpenseFormSectionBloc _expenseFormBloc;
 
   @override
   void initState() {
@@ -47,18 +46,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     _homeBloc = Provider.of<HomeBloc>(context);
 
-    _expenseFormBloc =
-        ExpenseFormSectionBloc(expenseTypeStream: _homeBloc.pageIndex);
-
     if (_pageController == null)
       _pageController = PageController(
         initialPage: _homeBloc.pageIndex.value,
         keepPage: true,
       );
 
-    if (_pageController2 == null)
-      _pageController2 = PageController(
-        initialPage: _homeBloc.pageIndex.value,
+    if (_bottomSheetPageController == null)
+      _bottomSheetPageController = PageController(
+        initialPage: 0,
         keepPage: true,
       );
 
@@ -145,20 +141,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                       ),
                       child: PageView(
-                        controller: _pageController2,
+                        controller: _bottomSheetPageController,
                         physics: NeverScrollableScrollPhysics(),
                         children: <Widget>[
                           BlocProvider<TemplatesSectionBloc>(
                             child: TemplatesSection(
                               scrollController: scrollController,
-                              expenseFormBloc: _expenseFormBloc,
-                              pageController: _pageController2,
+                              pageController: _bottomSheetPageController,
                               onPressed: () {
-                                _pageController2.animateTo(
+                                _bottomSheetPageController.animateTo(
                                     MediaQuery.of(context).size.width,
                                     duration: Duration(milliseconds: 275),
                                     curve: Curves.easeIn);
-                                _expenseFormBloc.setTemplate(null);
                               },
                             ),
                             initBloc: (_, bloc) => TemplatesSectionBloc(
@@ -169,25 +163,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             child: ExpenseFormSection(
                               scrollController: scrollController,
                               onBackPressed: () {
-                                _pageController2.animateTo(0,
+                                _bottomSheetPageController.animateTo(0,
                                     duration: Duration(milliseconds: 275),
                                     curve: Curves.easeIn);
                               },
                               scaffoldKey: _scaffoldKey,
-                              onDonePressed: () {
-                                if (_fabController.isDismissed) {
-                                  _fabController.forward();
-                                } else {
-                                  _fabController.reverse();
-                                }
+                              onDonePressed: () async {
+                                _playAnimation(_fabController);
 
-                                if (_bottomSheetController.isDismissed)
-                                  _bottomSheetController.forward();
-                                else if (_bottomSheetController.isCompleted)
-                                  _bottomSheetController.reverse();
+                                await _playAnimation(_bottomSheetController);
+
+                                _bottomSheetPageController.animateTo(0,
+                                    duration: Duration(milliseconds: 0),
+                                    curve: Curves.easeIn);
                               },
                             ),
-                            initBloc: (_, bloc) => bloc ?? _expenseFormBloc,
+                            initBloc: (_, bloc) =>
+                                bloc ??
+                                ExpenseFormSectionBloc(
+                                    expenseTypeStream: _homeBloc.pageIndex),
                             onDispose: (_, bloc) => bloc.dispose(),
                           ),
                         ],
@@ -203,10 +197,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           floatingActionButton: FabAddToClose(
             controller: _fabController,
             onPressed: () {
-              if (_bottomSheetController.isDismissed)
-                _bottomSheetController.forward();
-              else if (_bottomSheetController.isCompleted)
-                _bottomSheetController.reverse();
+              _playAnimation(_bottomSheetController);
             },
           ),
         ),
@@ -221,4 +212,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       _navBarController.forward();
     }
   }
+
+  TickerFuture _playAnimation(AnimationController controller) =>
+      controller.isDismissed ? controller.forward() : controller.reverse();
 }
