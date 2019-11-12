@@ -39,15 +39,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     _fabController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
-
-    _pageController = PageController(
-      initialPage: widget.lastPageIndex,
-      keepPage: true,
-    );
-    _pageController2 = PageController(
-      initialPage: widget.lastPageIndex,
-      keepPage: true,
-    );
   }
 
   @override

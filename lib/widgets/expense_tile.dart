@@ -189,7 +189,7 @@ class _ExpenseTileState extends State<ExpenseTile>
             style: Theme.of(context)
                 .textTheme
                 .body2
-                .copyWith(color: secondaryColor),
+                .copyWith(fontWeight: FontWeight.bold),
           ),
           Container(
             height: 4.0,

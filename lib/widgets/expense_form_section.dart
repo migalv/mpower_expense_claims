@@ -513,10 +513,12 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       );
 
   Widget _buildFieldLabel(String label) => Padding(
-        padding: const EdgeInsets.fromLTRB(24.0, 24.0, 0.0, 8.0),
+        padding: const EdgeInsets.fromLTRB(24.0, 40.0, 0.0, 8.0),
         child: Text(
           label,
-          style: Theme.of(context).textTheme.subtitle,
+          style: Theme.of(context).textTheme.subhead.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
       );
 
