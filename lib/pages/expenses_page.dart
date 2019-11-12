@@ -35,44 +35,44 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
-      child: StreamBuilder<List<Expense>>(
-          stream: _expensesBloc.expenses,
-          initialData: [],
-          builder: (BuildContext context, AsyncSnapshot snapshot) =>
-              _getType(snapshot)),
-    );
+    return StreamBuilder<List<Expense>>(
+        stream: _expensesBloc.expenses,
+        initialData: [],
+        builder: (BuildContext context, AsyncSnapshot snapshot) =>
+            _getType(snapshot));
   }
 
   Widget _getType(AsyncSnapshot snapshot) {
     List<Widget> list = <Widget>[
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            alignment: Alignment.centerRight,
-            child: IconButton(
-              icon: Icon(
-                Icons.settings,
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: Icon(
+                  Icons.settings,
+                ),
+                onPressed: () {},
               ),
-              onPressed: () {},
             ),
-          ),
-          Text(
-            widget._expenseType == ExpenseType.EXPENSE_CLAIM
-                ? "Expense claims"
-                : "Invoices",
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              fontSize: 30.0,
-              fontWeight: FontWeight.w500,
+            Text(
+              widget._expenseType == ExpenseType.EXPENSE_CLAIM
+                  ? "Expense claims"
+                  : "Invoices",
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                fontSize: 30.0,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       Padding(
-        padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+        padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
         child: SearchWidget(
           _searchTextController,
           onClearField: _closeSearchBar,
@@ -81,10 +81,13 @@ class _ExpensesPageState extends State<ExpensesPage> {
     ];
 
     list.addAll(snapshot.data
-        .map<Widget>((expense) => Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              child: ExpenseTile(expense: expense),
-            ))
+        .map<Widget>((expense) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Container(
+                margin: EdgeInsets.only(bottom: 20.0),
+                child: ExpenseTile(expense: expense),
+              ),
+        ))
         .toList());
 
     list.add(Container(
