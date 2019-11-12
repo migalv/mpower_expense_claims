@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Category {
   final String id;
@@ -8,7 +8,6 @@ class Category {
   final bool hidden;
   final String eg;
   final IconData icon;
-  final Color color;
 
   Category({
     this.id,
@@ -16,7 +15,6 @@ class Category {
     this.hidden = false,
     this.eg,
     this.icon,
-    this.color,
   });
 
   Category.fromJson(Map<String, dynamic> json, {String id})
@@ -26,9 +24,6 @@ class Category {
         this.eg = json[EXAMPLE_KEY],
         this.icon = categoryIcons.containsKey(json[NAME_KEY])
             ? categoryIcons[json[NAME_KEY]]
-            : null,
-        this.color = categoryColors.containsKey(json[NAME_KEY])
-            ? categoryColors[json[NAME_KEY]]
             : null;
 
   @override
@@ -38,19 +33,15 @@ class Category {
   int get hashCode => id.hashCode;
 
   static const Map<String, IconData> categoryIcons = {
-    "Transport": Icons.directions_car,
-    "Travel": Icons.card_travel,
+    "Transport": FontAwesomeIcons.car,
+    "Travel": FontAwesomeIcons.suitcase,
+    "Communication": FontAwesomeIcons.satelliteDish,
+    "Import": FontAwesomeIcons.ship,
     "Food": Icons.fastfood,
-    "Marketing": MdiIcons.lightbulb,
+    "Marketing": FontAwesomeIcons.bullhorn,
+    "Office supplies": FontAwesomeIcons.pencilRuler,
+    "Entertainment": FontAwesomeIcons.theaterMasks,
     "Other": Icons.attach_money,
-  };
-
-  static const Map<String, Color> categoryColors = {
-    "Transport": Colors.amber,
-    "Travel": Colors.brown,
-    "Food": Colors.red,
-    "Marketing": Colors.purpleAccent,
-    "Other": Colors.black26,
   };
 
   static const String NAME_KEY = "name";

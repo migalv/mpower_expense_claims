@@ -74,11 +74,8 @@ class Utils {
           width: 48.0,
           height: 48.0,
           decoration: BoxDecoration(
+            color: Colors.white30,
             shape: BoxShape.circle,
-            border: Border.all(
-              color: category.color ?? Colors.blue,
-              width: 2.0,
-            ),
           ),
           child: Icon(
             category.icon,
