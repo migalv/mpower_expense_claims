@@ -41,7 +41,7 @@ class Category {
     "Marketing": FontAwesomeIcons.bullhorn,
     "Office supplies": FontAwesomeIcons.pencilRuler,
     "Entertainment": FontAwesomeIcons.theaterMasks,
-    "Other": FontAwesomeIcons.coins,
+    "Other": FontAwesomeIcons.moneyBillWave,
   };
 
   static const String NAME_KEY = "name";

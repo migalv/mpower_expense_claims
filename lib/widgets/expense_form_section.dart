@@ -105,16 +105,20 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         child: Row(
           children: <Widget>[
             IconButton(
-              icon: Icon(FontAwesomeIcons.chevronLeft),
-              iconSize: 20.0,
+              padding: EdgeInsets.only(left: 16),
+              icon: Icon(FontAwesomeIcons.arrowLeft),
+              iconSize: 16.0,
               onPressed: widget._onBackPressed,
             ),
-            Text(
-              'New ' +
-                  (expenseType == ExpenseType.EXPENSE_CLAIM
-                      ? "expense claim"
-                      : "invoice"),
-              style: Theme.of(context).textTheme.title,
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Text(
+                'New ' +
+                    (expenseType == ExpenseType.EXPENSE_CLAIM
+                        ? "expense claim"
+                        : "invoice"),
+                style: Theme.of(context).textTheme.title,
+              ),
             ),
           ],
         ),
@@ -205,7 +209,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
           avatar: category.icon != null
               ? Icon(
                   category.icon,
-                  size: 16.0,
+                  size: 14.0,
                   color: selected ? Colors.black38 : Colors.white54,
                 )
               : null,

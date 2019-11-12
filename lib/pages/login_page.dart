@@ -125,7 +125,11 @@ class _LoginPageState extends State<LoginPage> {
               initialData: AuthState.IDLE,
               builder: (context, snapshot) {
                 return snapshot.data == AuthState.LOADING
-                    ? CircularProgressIndicator()
+                    ? Container(
+                        width: 24.0,
+                        height: 24.0,
+                        child: CircularProgressIndicator(),
+                      )
                     : FlatButton(
                         onPressed: () => _signIn(),
                         child: Text(

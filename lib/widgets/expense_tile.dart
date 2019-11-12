@@ -63,59 +63,58 @@ class _ExpenseTileState extends State<ExpenseTile>
                       maxWidth: MediaQuery.of(context).size.width),
                   child: Row(
                     children: <Widget>[
-                      utils.buildCategoryIcon(repository
-                          .getCategoryWithId(widget.expense.category)),
-                      Container(
-                        constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.3),
+                      utils.buildCategoryIcon(
+                        repository.getCategoryWithId(widget.expense.category),
+                      ),
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Padding(
-                              padding: const EdgeInsets.only(top: 16.0),
-                              child: AutoSizeText(
-                                repository
-                                    .getCategoryWithId(widget.expense.category)
-                                    .name,
-                                maxLines: 1,
+                              padding: EdgeInsets.only(top: 16.0),
+                              child: Text(
+                                widget.expense.description,
+                                overflow: TextOverflow.fade,
                                 style: Theme.of(context).textTheme.title,
                               ),
                             ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 8.0, bottom: 16.0),
-                              child: Text(
-                                timeago.format(widget.expense.date),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .body1
-                                    .copyWith(fontSize: 12.0),
-                              ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(top: 8.0),
+                                    child: Text(
+                                      timeago.format(widget.expense.date),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .body1
+                                          .copyWith(fontSize: 12.0),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(right: 8, bottom: 16),
+                                  child: Chip(
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    backgroundColor: Colors.white24,
+                                    label: Text(
+                                      '${widget.expense.gross ?? ''} ${repository.getCurrencyWithId(widget.expense.currency)?.symbol ?? ''}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .subhead
+                                          .copyWith(
+                                            color: secondaryColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14.0,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Chip(
-                              label: FittedBox(
-                                child: AutoSizeText(
-                                  '${widget.expense.gross ?? ''} ${repository.getCurrencyWithId(widget.expense.currency)?.symbol ?? ''}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subhead
-                                      .copyWith(
-                                        color: secondaryColor,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14.0,
-                                      ),
-                                ),
-                              ),
-                            ),
-                          ),
                         ),
                       ),
                       Container(
@@ -157,9 +156,6 @@ class _ExpenseTileState extends State<ExpenseTile>
                             ),
                           ],
                         ),
-                        Container(height: 12.0),
-                        _buildSection(
-                            'Description', widget.expense.description),
                         Container(height: 12.0),
                         Row(
                           children: <Widget>[
