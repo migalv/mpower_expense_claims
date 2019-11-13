@@ -364,6 +364,7 @@ class Repository {
       _currentUserId = authResult.user.uid;
       await initUser(_currentUserId);
       if (_currentUser.locked) return AuthState.LOCKED;
+      loadSettings();
       return AuthState.SUCCESS;
     }
     return AuthState.ERROR;
@@ -410,19 +411,6 @@ class Repository {
   Future logOut() async {
     _currentUserId = null;
     _currentUser = null;
-
-    _categoriesController.add([]);
-    _currenciesController.add([]);
-    _countriesController.add([]);
-    _lastSelectedCountryController.add(null);
-    _lastSelectedCurrencyController.add(null);
-    _lastSelectedApproverController.add(null);
-    _expenseClaimsController.add([]);
-    _approversController.add([]);
-    _invoicesController.add([]);
-    _templatesController.add([]);
-    _lastSelectedListController.add(null);
-    _costCentresGroupsController.add([]);
 
     await _auth.signOut();
   }
