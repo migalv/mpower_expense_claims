@@ -174,7 +174,8 @@ class _LoginPageState extends State<LoginPage> {
         case AuthState.ERROR:
           utils.showSnackbar(
             scaffoldKey: _scaffoldKey,
-            color: errorColor,
+            backgroundColor: errorColor,
+            textColor: Colors.black87,
             message: "Incorrect email or password. Try again.",
             duration: 2,
           );

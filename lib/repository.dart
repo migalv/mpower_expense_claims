@@ -51,8 +51,6 @@ class Repository {
       _costCentresGroupsController.stream;
   ValueObservable<int> get lastPageIndex => _lastSelectedListController.stream;
 
-  List<StreamSubscription> _streamSubscriptions = [];
-
   // CONTROLLERS
   final _countriesController = BehaviorSubject<List<Country>>();
   final _currenciesController = BehaviorSubject<List<Currency>>();
@@ -232,50 +230,48 @@ class Repository {
     }
 
     queries.forEach(
-      (query) => _streamSubscriptions.add(
-        query.snapshots().listen(
-          (snapshot) {
-            // It's only one document
-            if (snapshot is DocumentSnapshot) {
-              final onlineElement = _initializeFromJson(collection, snapshot);
-              if (collection == USERS_COLLECTION) {
-                list.clear();
-                list.addAll(onlineElement);
-              } else {
-                list.removeWhere((ele) => ele.id == onlineElement.id);
-                list.add(onlineElement);
-              }
-              // It's multiple documents
-            } else if (snapshot is QuerySnapshot)
-              snapshot.documentChanges.forEach((DocumentChange documentChange) {
-                final onlineElement =
-                    _initializeFromJson(collection, documentChange.document);
-                switch (documentChange.type) {
-                  case DocumentChangeType.added:
-                    if (collection == USERS_COLLECTION)
-                      list.addAll(onlineElement);
-                    else
-                      list.add(onlineElement);
-                    break;
-                  case DocumentChangeType.modified:
-                    if (collection == USERS_COLLECTION) {
-                      list.clear();
-                      list.addAll(onlineElement);
-                    }
-                    list.removeWhere((ele) => ele.id == onlineElement.id);
+      (query) => query.snapshots().listen(
+        (snapshot) {
+          // It's only one document
+          if (snapshot is DocumentSnapshot) {
+            final onlineElement = _initializeFromJson(collection, snapshot);
+            if (collection == USERS_COLLECTION) {
+              list.clear();
+              list.addAll(onlineElement);
+            } else {
+              list.removeWhere((ele) => ele.id == onlineElement.id);
+              list.add(onlineElement);
+            }
+            // It's multiple documents
+          } else if (snapshot is QuerySnapshot)
+            snapshot.documentChanges.forEach((DocumentChange documentChange) {
+              final onlineElement =
+                  _initializeFromJson(collection, documentChange.document);
+              switch (documentChange.type) {
+                case DocumentChangeType.added:
+                  if (collection == USERS_COLLECTION)
+                    list.addAll(onlineElement);
+                  else
                     list.add(onlineElement);
-                    break;
-                  case DocumentChangeType.removed:
-                    if (collection == USERS_COLLECTION) {
-                      list.clear();
-                    }
-                    list.removeWhere((ele) => ele.id == onlineElement.id);
-                    break;
-                }
-              });
-            streamController.add(list);
-          },
-        ),
+                  break;
+                case DocumentChangeType.modified:
+                  if (collection == USERS_COLLECTION) {
+                    list.clear();
+                    list.addAll(onlineElement);
+                  }
+                  list.removeWhere((ele) => ele.id == onlineElement.id);
+                  list.add(onlineElement);
+                  break;
+                case DocumentChangeType.removed:
+                  if (collection == USERS_COLLECTION) {
+                    list.clear();
+                  }
+                  list.removeWhere((ele) => ele.id == onlineElement.id);
+                  break;
+              }
+            });
+          streamController.add(list);
+        },
       ),
     );
   }
@@ -308,7 +304,7 @@ class Repository {
     }
   }
 
-  void _loadLastSelected() => _streamSubscriptions.add(_firestore
+  void _loadLastSelected() => _firestore
           .collection(
               "$USERS_COLLECTION/$currentUserId/$EDITABLE_INFO_COLLECTION")
           .document(LAST_SELECTED_DOC)
@@ -330,7 +326,7 @@ class Repository {
             (docSnapshot.data?.containsKey(LAST_SELECTED_LIST) ?? false)
                 ? docSnapshot.data[LAST_SELECTED_LIST]
                 : null);
-      }));
+      });
 
   // AUTH
   Future<String> signUp(
@@ -356,8 +352,13 @@ class Repository {
 
   Future<String> signIn(
       {@required String email, @required String password}) async {
-    AuthResult authResult = await _auth.signInWithEmailAndPassword(
-        email: email, password: password);
+    AuthResult authResult;
+    try {
+      authResult = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
+    } catch (e) {
+      print(e.message);
+    }
 
     if (authResult != null) {
       _currentUserId = authResult.user.uid;
@@ -409,6 +410,20 @@ class Repository {
   Future logOut() async {
     _currentUserId = null;
     _currentUser = null;
+
+    _categoriesController.add([]);
+    _currenciesController.add([]);
+    _countriesController.add([]);
+    _lastSelectedCountryController.add(null);
+    _lastSelectedCurrencyController.add(null);
+    _lastSelectedApproverController.add(null);
+    _expenseClaimsController.add([]);
+    _approversController.add([]);
+    _invoicesController.add([]);
+    _templatesController.add([]);
+    _lastSelectedListController.add(null);
+    _costCentresGroupsController.add([]);
+
     await _auth.signOut();
   }
 
@@ -425,9 +440,6 @@ class Repository {
     _templatesController.close();
     _lastSelectedListController.close();
     _costCentresGroupsController.close();
-
-    _streamSubscriptions
-        .forEach((streamSubscription) => streamSubscription.cancel());
   }
 }
 
@@ -457,3 +469,5 @@ const String LAST_SELECTED_COUNTRY = "country";
 const String LAST_SELECTED_CURRENCY = "currency";
 const String LAST_SELECTED_APPROVER = "approver";
 const String LAST_SELECTED_LIST = "list_type";
+
+enum authProblems { UserNotFound, PasswordNotValid, NetworkError }

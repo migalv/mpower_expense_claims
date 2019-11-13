@@ -16,7 +16,7 @@ final secondaryDarkColor = Colors.amber.shade900;
 // Text colors
 const primaryTextColor = const Color(0xFFFFFFFF);
 const secondaryTextColor = const Color(0xFFFFFFFF);
-const errorColor = const Color(0xFFCF6679);
+const errorColor = const Color(0xFFAF0303);
 
 const backgroundColor = Color.fromARGB(255, 97, 97, 97);
 const formFieldBackgroundColor = Color.fromARGB(255, 66, 66, 66);

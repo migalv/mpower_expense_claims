@@ -29,23 +29,27 @@ class Utils {
     SnackBarAction action,
     int duration = 5,
     bool postFrame = true,
-    Color color,
+    Color backgroundColor,
+    Color textColor,
   }) {
     if (postFrame)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showSnackBar(scaffoldKey, message, duration, action,
-            backgroundColor: color);
+            backgroundColor: backgroundColor, textColor: textColor);
       });
     else
       _showSnackBar(scaffoldKey, message, duration, action,
-          backgroundColor: color);
+          backgroundColor: backgroundColor, textColor: textColor);
   }
 
   void _showSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String message,
       int duration, SnackBarAction action,
-      {Color backgroundColor}) {
+      {Color backgroundColor, Color textColor}) {
     scaffoldKey.currentState?.showSnackBar(SnackBar(
-      content: Text(message),
+      content: Text(
+        message,
+        style: TextStyle(color: textColor),
+      ),
       backgroundColor: backgroundColor,
       duration: Duration(seconds: duration),
       action: action,
