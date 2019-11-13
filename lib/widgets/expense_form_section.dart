@@ -201,13 +201,16 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                 color: selected ? Colors.black54 : Colors.white,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal),
           ),
-          avatar: category.icon != null
-              ? Icon(
-                  category.icon,
-                  size: 16.0,
-                  color: selected ? Colors.black38 : Colors.white54,
-                )
-              : null,
+          avatar: Padding(
+            padding: const EdgeInsets.only(bottom: 2.0, left: 4.0),
+            child: category.icon != null
+                ? Icon(
+                    category.icon,
+                    size: 16.0,
+                    color: selected ? Colors.black38 : Colors.white54,
+                  )
+                : null,
+          ),
           backgroundColor: selected ? secondaryColor : formFieldBackgroundColor,
           onPressed: () {
             _expenseClaimBloc.selectCategory(category.id);
