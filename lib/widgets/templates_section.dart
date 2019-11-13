@@ -90,7 +90,7 @@ class TemplatesSection extends StatelessWidget {
               ),
               Text(
                 "☹️",
-                style: TextStyle(fontSize: 24.0),
+                style: TextStyle(fontSize: 24.0, color: Colors.black54),
               ),
               Container(
                 width: 16.0,
