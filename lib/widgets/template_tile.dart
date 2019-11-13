@@ -1,3 +1,4 @@
+import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/repository.dart';
@@ -7,14 +8,17 @@ import 'package:flutter/material.dart';
 class TemplateTile extends StatelessWidget {
   final Template template;
   final PageController pageController;
-  final ExpenseFormSectionBloc expenseFormBloc;
 
-  const TemplateTile(
-      {Key key, @required this.template, @required this.expenseFormBloc, @required this.pageController})
-      : super(key: key);
+  const TemplateTile({
+    Key key,
+    @required this.template,
+    @required this.pageController,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    ExpenseFormSectionBloc bloc = Provider.of<ExpenseFormSectionBloc>(context);
+
     return Container(
       margin: EdgeInsets.fromLTRB(24, 16, 24, 0),
       decoration: BoxDecoration(
@@ -23,7 +27,7 @@ class TemplateTile extends StatelessWidget {
       ),
       child: GestureDetector(
         onTap: () {
-          expenseFormBloc.setTemplate(template);
+          bloc.setTemplate(template);
           pageController.animateTo(MediaQuery.of(context).size.width,
               duration: Duration(milliseconds: 275), curve: Curves.easeIn);
         },

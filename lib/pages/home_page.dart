@@ -144,29 +144,30 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           topRight: Radius.circular(32.0),
                         ),
                       ),
-                      child: PageView(
-                        controller: _bottomSheetPageController,
-                        physics: NeverScrollableScrollPhysics(),
-                        children: <Widget>[
-                          BlocProvider<TemplatesSectionBloc>(
-                            child: TemplatesSection(
-                              scrollController: scrollController,
-                              pageController: _bottomSheetPageController,
-                              expenseFormBloc: _expenseFormBloc,
-                              onPressed: () {
-                                _bottomSheetPageController.animateTo(
-                                    MediaQuery.of(context).size.width,
-                                    duration: Duration(milliseconds: 275),
-                                    curve: Curves.easeIn);
-                                _expenseFormBloc.setTemplate(null);
-                              },
+                      child: BlocProvider<ExpenseFormSectionBloc>(
+                        initBloc: (_, bloc) => bloc ?? _expenseFormBloc,
+                        onDispose: (_, bloc) => bloc.dispose(),
+                        child: PageView(
+                          controller: _bottomSheetPageController,
+                          physics: NeverScrollableScrollPhysics(),
+                          children: <Widget>[
+                            BlocProvider<TemplatesSectionBloc>(
+                              child: TemplatesSection(
+                                scrollController: scrollController,
+                                pageController: _bottomSheetPageController,
+                                onPressed: () {
+                                  _bottomSheetPageController.animateTo(
+                                      MediaQuery.of(context).size.width,
+                                      duration: Duration(milliseconds: 275),
+                                      curve: Curves.easeIn);
+                                  _expenseFormBloc.setTemplate(null);
+                                },
+                              ),
+                              initBloc: (_, bloc) => TemplatesSectionBloc(
+                                  expenseTypeStream: _homeBloc.pageIndex),
+                              onDispose: (_, bloc) => bloc.dispose(),
                             ),
-                            initBloc: (_, bloc) => TemplatesSectionBloc(
-                                expenseTypeStream: _homeBloc.pageIndex),
-                            onDispose: (_, bloc) => bloc.dispose(),
-                          ),
-                          BlocProvider<ExpenseFormSectionBloc>(
-                            child: ExpenseFormSection(
+                            ExpenseFormSection(
                               scrollController: scrollController,
                               onBackPressed: () {
                                 _bottomSheetPageController.animateTo(0,
@@ -184,10 +185,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     curve: Curves.easeIn);
                               },
                             ),
-                            initBloc: (_, bloc) => bloc ?? _expenseFormBloc,
-                            onDispose: (_, bloc) => bloc.dispose(),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

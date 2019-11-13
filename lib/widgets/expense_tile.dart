@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/repository.dart';
