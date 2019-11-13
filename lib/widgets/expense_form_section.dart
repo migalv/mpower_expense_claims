@@ -708,7 +708,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                       : null,
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (templateName) =>
-                      _validateAndUploadTemplate(),
+                      Navigator.of(context).pop(true),
                   decoration: InputDecoration(
                     filled: true,
                     hintText: 'ex: Taxi Zambia...',
