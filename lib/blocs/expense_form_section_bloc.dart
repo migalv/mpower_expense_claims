@@ -225,7 +225,7 @@ class ExpenseFormSectionBloc {
 
     template = Template(
       approvedBy: selectedApprover.value,
-      availableTo: [repository.currentUserId],
+      availableTo: {'uid': repository.currentUserId},
       category: selectedCategory.value,
       country: selectedCountry.value.id,
       currency: selectedCurrency.value,
