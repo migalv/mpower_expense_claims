@@ -36,7 +36,7 @@ class Template {
         this.currency = json[CURRENCY_KEY],
         this.vat = json[VAT_KEY]?.toDouble() ?? 0.0,
         this.approvedBy = json[APPROVED_BY_KEY],
-        this.availableTo = json[AVAILABLE_TO_KEY]?.cast<String>(),
+        this.availableTo = json[AVAILABLE_TO_KEY]["uid"]?.cast<String>(),
         this.costCentreGroup = json[COST_CENTRE_GROUP_KEY],
         this.expenseType = ExpenseType.values[json[EXPENSE_TYPE]];
 
