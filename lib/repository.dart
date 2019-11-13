@@ -203,10 +203,10 @@ class Repository {
       case TEMPLATES_COLLECTION:
         queries.add(_firestore
             .collection(collection)
-            .where("availableTo", arrayContains: currentUserId));
+            .where("availableTo.uid", arrayContains: currentUserId));
         queries.add(_firestore
             .collection(collection)
-            .where("availableTo", isEqualTo: null));
+            .where("availableTo.all", isEqualTo: true));
         list = List<Template>();
         break;
       case USERS_COLLECTION:
