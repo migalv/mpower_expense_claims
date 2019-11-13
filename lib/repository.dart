@@ -192,11 +192,13 @@ class Repository {
         queries.add(_firestore
             .collection(collection)
             .where("availableTo", arrayContains: currentUserId));
+        list = List<ExpenseClaim>();
         break;
       case INVOICES_COLLECTION:
         queries.add(_firestore
             .collection(collection)
             .where("availableTo", arrayContains: currentUserId));
+        list = List<Invoice>();
         break;
       case TEMPLATES_COLLECTION:
         queries.add(_firestore
@@ -205,93 +207,105 @@ class Repository {
         queries.add(_firestore
             .collection(collection)
             .where("availableTo", isEqualTo: null));
+        list = List<Template>();
         break;
       case USERS_COLLECTION:
-        queries.add(_firestore.collection(collection).document(currentUserId));
+        queries.add(_firestore.collection(collection).document(_currentUserId));
+        list = List<User>();
         break;
-      default:
+      case COUNTRIES_COLLECTION:
         queries.add(_firestore.collection(collection));
+        list = List<Country>();
+        break;
+      case CURRENCIES_COLLECTION:
+        queries.add(_firestore.collection(collection));
+        list = List<Currency>();
+        break;
+      case CATEGORIES_COLLECTION:
+        queries.add(_firestore.collection(collection));
+        list = List<Category>();
+        break;
+      case COST_CENTRES_GROUPS_COLLECTION:
+        queries.add(_firestore.collection(collection));
+        list = List<CostCentreGroup>();
+        break;
     }
 
     queries.forEach(
       (query) => _streamSubscriptions.add(
         query.snapshots().listen(
           (snapshot) {
-            List onlineList = [];
-            switch (collection) {
-              case COUNTRIES_COLLECTION:
-                onlineList = snapshot.documents
-                    .map(
-                        (doc) => Country.fromJson(doc.data, id: doc.documentID))
-                    .toList()
-                    .cast<Country>();
-                break;
-              case CURRENCIES_COLLECTION:
-                onlineList = snapshot.documents
-                    .map((doc) =>
-                        Currency.fromJson(doc.data, id: doc.documentID))
-                    .toList()
-                    .cast<Currency>();
-                break;
-              case CATEGORIES_COLLECTION:
-                onlineList = snapshot.documents
-                    .map((doc) =>
-                        Category.fromJson(doc.data, id: doc.documentID))
-                    .toList()
-                    .cast<Category>();
-                break;
-              case EXPENSE_CLAIMS_COLLECTION:
-                onlineList = snapshot.documents
-                    .map((doc) =>
-                        ExpenseClaim.fromJson(doc.data, id: doc.documentID))
-                    .toList()
-                    .cast<ExpenseClaim>();
-                break;
-              case INVOICES_COLLECTION:
-                onlineList = snapshot.documents
-                    .map(
-                        (doc) => Invoice.fromJson(doc.data, id: doc.documentID))
-                    .toList()
-                    .cast<Invoice>();
-                break;
-              case TEMPLATES_COLLECTION:
-                onlineList = snapshot.documents
-                    .map((doc) =>
-                        Template.fromJson(doc.data, id: doc.documentID))
-                    .toList()
-                    .cast<Template>();
-                break;
-              case USERS_COLLECTION:
-                onlineList = <User>[];
-                Map approvers = snapshot.data[APPROVERS];
-                approvers.forEach((id, map) {
-                  onlineList
-                      .add(User.fromJson(map.cast<String, dynamic>(), id: id));
-                });
-                break;
-              case COST_CENTRES_GROUPS_COLLECTION:
-                onlineList = snapshot.documents
-                    .map((doc) =>
-                        CostCentreGroup.fromJson(doc.data, id: doc.documentID))
-                    .toList()
-                    .cast<CostCentreGroup>();
-                break;
-            }
-
-            if (list.isEmpty)
-              list = onlineList;
-            else {
-              onlineList.forEach((onlineEle) {
-                list.removeWhere((ele) => ele.id == onlineEle.id);
-                list.add(onlineEle);
+            // It's only one document
+            if (snapshot is DocumentSnapshot) {
+              final onlineElement = _initializeFromJson(collection, snapshot);
+              if (collection == USERS_COLLECTION) {
+                list.clear();
+                list.addAll(onlineElement);
+              } else {
+                list.removeWhere((ele) => ele.id == onlineElement.id);
+                list.add(onlineElement);
+              }
+              // It's multiple documents
+            } else if (snapshot is QuerySnapshot)
+              snapshot.documentChanges.forEach((DocumentChange documentChange) {
+                final onlineElement =
+                    _initializeFromJson(collection, documentChange.document);
+                switch (documentChange.type) {
+                  case DocumentChangeType.added:
+                    if (collection == USERS_COLLECTION)
+                      list.addAll(onlineElement);
+                    else
+                      list.add(onlineElement);
+                    break;
+                  case DocumentChangeType.modified:
+                    if (collection == USERS_COLLECTION) {
+                      list.clear();
+                      list.addAll(onlineElement);
+                    }
+                    list.removeWhere((ele) => ele.id == onlineElement.id);
+                    list.add(onlineElement);
+                    break;
+                  case DocumentChangeType.removed:
+                    if (collection == USERS_COLLECTION) {
+                      list.clear();
+                    }
+                    list.removeWhere((ele) => ele.id == onlineElement.id);
+                    break;
+                }
               });
-            }
-
             streamController.add(list);
           },
         ),
       ),
     );
+  }
+
+  dynamic _initializeFromJson(String collection, DocumentSnapshot docSnapshot) {
+    switch (collection) {
+      case COUNTRIES_COLLECTION:
+        return Country.fromJson(docSnapshot.data, id: docSnapshot.documentID);
+      case CURRENCIES_COLLECTION:
+        return Currency.fromJson(docSnapshot.data, id: docSnapshot.documentID);
+      case CATEGORIES_COLLECTION:
+        return Category.fromJson(docSnapshot.data, id: docSnapshot.documentID);
+      case EXPENSE_CLAIMS_COLLECTION:
+        return ExpenseClaim.fromJson(docSnapshot.data,
+            id: docSnapshot.documentID);
+      case INVOICES_COLLECTION:
+        return Invoice.fromJson(docSnapshot.data, id: docSnapshot.documentID);
+      case TEMPLATES_COLLECTION:
+        return Template.fromJson(docSnapshot.data, id: docSnapshot.documentID);
+      case USERS_COLLECTION:
+        Map approversMap = docSnapshot.data[APPROVERS];
+        List<User> approvers = <User>[];
+        approversMap.forEach((id, map) {
+          approvers.add(User.fromJson(map.cast<String, dynamic>(), id: id));
+        });
+        return approvers;
+      case COST_CENTRES_GROUPS_COLLECTION:
+        return CostCentreGroup.fromJson(docSnapshot.data,
+            id: docSnapshot.documentID);
+    }
   }
 
   void _loadLastSelected() => _streamSubscriptions.add(_firestore

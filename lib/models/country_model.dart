@@ -24,9 +24,10 @@ class Country {
         this.hidden = json.containsKey(HIDDEN_KEY) ? json[HIDDEN_KEY] : false,
         this.currencies = json[CURRENCIES_KEY],
         this.vatOptions = json[VAT_OPTIONS_KEY]
-            .map((vat) => vat.toDouble())
-            .toList()
-            .cast<double>();
+                ?.map((vat) => vat.toDouble())
+                ?.toList()
+                ?.cast<double>() ??
+            [];
   @override
   String toString() {
     return "Country {\n\tid: $id,\n\t$NAME_KEY: $name,\n\t$ISO_KEY: $iso,\n\t$HIDDEN_KEY: $hidden,\n\t$CURRENCIES_KEY: $currencies,\n\t$VAT_OPTIONS_KEY: $vatOptions,\n}";

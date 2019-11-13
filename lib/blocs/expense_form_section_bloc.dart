@@ -88,6 +88,7 @@ class ExpenseFormSectionBloc {
 
   // SELECTS
   void selectCountry(Country country) {
+    _selectedVatController.add(null);
     repository.updateLastSelectedCountry(country.id);
     _selectedCountryController.add(country);
   }
@@ -121,6 +122,16 @@ class ExpenseFormSectionBloc {
       selectApprover(template.approvedBy);
       selectCostCentre(template.costCentreGroup);
       descriptionController.text = template.description;
+    } else {
+      selectCategory(null);
+      selectCountry(
+          repository.getCountryWithId(repository.lastSelectedCountry.value));
+      selectVat(null);
+      selectCurrency(repository.lastSelectedCurrency.value);
+      selectApprover(repository.lastSelectedApprover.value);
+      selectCostCentre(null);
+      descriptionController.text = "";
+      selectExpenseDate(DateTime.now());
     }
   }
 
@@ -214,7 +225,7 @@ class ExpenseFormSectionBloc {
 
     template = Template(
       approvedBy: selectedApprover.value,
-      availableTo: [repository.currentUserId],
+      // availableTo: [repository.currentUserId],
       category: selectedCategory.value,
       country: selectedCountry.value.id,
       currency: selectedCurrency.value,
