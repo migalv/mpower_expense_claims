@@ -63,6 +63,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle.dark.copyWith(
+        statusBarColor: Colors.white, // Color for Android
+        statusBarBrightness:
+            Brightness.dark, // Dark == white status bar -- for IOS.
+      ),
+    );
+
     return MaterialApp(
       title: 'Expense Claims App',
       home: BlocProvider<SplashBloc>(
