@@ -26,6 +26,7 @@ class TemplateTile extends StatelessWidget {
         color: Colors.white10,
       ),
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () {
           bloc.setTemplate(template);
           pageController.animateTo(MediaQuery.of(context).size.width,
