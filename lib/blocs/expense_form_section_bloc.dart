@@ -115,12 +115,30 @@ class ExpenseFormSectionBloc {
 
   void setTemplate(Template template) {
     if (template != null) {
-      selectCategory(template.category);
-      selectCountry(repository.getCountryWithId(template.country));
-      selectVat(template.vat);
-      selectCurrency(template.currency);
-      selectApprover(template.approvedBy);
+      // Category
+      if (template.category != null) selectCategory(template.category);
+
+      // Country
+      if (template.country != null)
+        selectCountry(repository.getCountryWithId(template.country));
+      else if (repository?.lastSelectedCountry?.value != null)
+        selectCountry(
+            repository.getCountryWithId(repository.lastSelectedCountry.value));
+
+      // Currency
+      if (template.currency != null)
+        selectCurrency(template.currency);
+      else if (repository?.lastSelectedCurrency?.value != null)
+        selectCurrency(repository.lastSelectedCurrency.value);
+
+      // Approver
+      if (template.approvedBy != null)
+        selectApprover(template.approvedBy);
+      else if (repository?.lastSelectedApprover?.value != null)
+        selectApprover(repository.lastSelectedApprover.value);
+
       selectCostCentre(template.costCentreGroup);
+      selectVat(template.vat);
       descriptionController.text = template.description;
     } else {
       selectCategory(null);

@@ -73,41 +73,46 @@ class _ExpenseTileState extends State<ExpenseTile>
                               padding: EdgeInsets.only(top: 16.0),
                               child: Text(
                                 widget.expense.description,
-                                overflow: TextOverflow.fade,
+                                overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.title,
+                                maxLines: 1,
                               ),
                             ),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Expanded(
-                                  child: Padding(
-                                    padding: EdgeInsets.only(top: 8.0),
-                                    child: Text(
-                                      timeago.format(widget.expense.date),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .body1
-                                          .copyWith(fontSize: 12.0),
-                                    ),
+                                Padding(
+                                  padding: EdgeInsets.only(top: 14.0),
+                                  child: Text(
+                                    timeago.format(widget.expense.date),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .body1
+                                        .copyWith(fontSize: 12.0),
                                   ),
                                 ),
-                                Container(
-                                  margin: EdgeInsets.only(right: 8, bottom: 16),
-                                  child: Chip(
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    backgroundColor: Colors.white24,
-                                    label: Text(
-                                      '${widget.expense.gross ?? ''} ${repository.getCurrencyWithId(widget.expense.currency)?.symbol ?? ''}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .subhead
-                                          .copyWith(
-                                            color: secondaryColor,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14.0,
-                                          ),
+                                Expanded(
+                                  child: Container(
+                                    height: 32.0,
+                                    margin: EdgeInsets.fromLTRB(
+                                        8.0, 6.0, 8.0, 12.0),
+                                    child: FittedBox(
+                                      child: Chip(
+                                        materialTapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        backgroundColor: Colors.white24,
+                                        label: Text(
+                                          '${widget.expense.gross ?? ''} ${repository.getCurrencyWithId(widget.expense.currency)?.symbol ?? ''}',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .subhead
+                                              .copyWith(
+                                                color: secondaryColor,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14.0,
+                                              ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -164,6 +169,14 @@ class _ExpenseTileState extends State<ExpenseTile>
                             Expanded(
                                 child: _buildSection('VAT',
                                     '${widget.expense.vat.toString()} %')),
+                          ],
+                        ),
+                        Container(height: 12.0),
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                                child: _buildSection(
+                                    'Description', widget.expense.description)),
                           ],
                         ),
                       ],
