@@ -65,7 +65,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Colors.white, // Color for Android
         statusBarBrightness:
             Brightness.dark, // Dark == white status bar -- for IOS.
       ),
