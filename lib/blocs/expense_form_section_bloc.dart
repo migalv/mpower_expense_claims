@@ -190,8 +190,7 @@ class ExpenseFormSectionBloc {
     Expense expense;
     List<Map<String, String>> attachmentsList = List<Map<String, String>>();
 
-    _attachments.forEach((name, file) =>
-        attachmentsList.add({"name": name, "file_path": file.path}));
+    _attachments.forEach((name, file) => attachmentsList.add({"name": name}));
 
     if (_expenseType == ExpenseType.EXPENSE_CLAIM) {
       expense = ExpenseClaim(
