@@ -80,7 +80,8 @@ class Repository {
   }
 
   // UPLOAD
-  void uploadNewExpense(Expense expense, Map<String, File> attachments) {
+  Future uploadNewExpense(
+      Expense expense, Map<String, File> attachments) async {
     String collection;
     DocumentReference docRef;
 
@@ -92,8 +93,13 @@ class Repository {
         collection = INVOICES_COLLECTION;
     }
     docRef = _firestore.collection(collection).document();
+
+    expense.attachments.forEach((attachment) => attachment["storage_path"] =
+        "uploads/$collection/${docRef.documentID}/${attachment["name"]}.jpg");
+
     docRef.setData(expense.toJson());
-    _uploadAttachments(docRef.documentID, attachments);
+
+    _uploadAttachments(docRef.documentID, attachments, collection);
   }
 
   Future uploadNewTemplate(Template template) async {
@@ -104,26 +110,27 @@ class Repository {
   }
 
   Future _uploadAttachments(
-      String expenseId, Map<String, File> attachments) async {
-    if (attachments == null || attachments.isEmpty) return;
+      String expenseId, Map<String, File> attachments, collection) async {
+    if (attachments == null || attachments.isEmpty) return null;
 
     List keys = attachments.keys.toList();
     List values = attachments.values.toList();
 
     for (int i = 0; i < attachments?.length ?? 0; i++)
-      await _uploadAttachment(
+      _uploadAttachment(
         expenseId,
         keys[i],
         values[i],
+        collection,
       );
   }
 
-  Future<String> _uploadAttachment(
-      String expenseId, String attachmentName, File file) async {
+  Future<String> _uploadAttachment(String expenseId, String attachmentName,
+      File file, String collection) async {
     if (expenseId != null && !expenseId.startsWith('https://')) {
       StorageReference ref = FirebaseStorage.instance
           .ref()
-          .child('uploads/$expenseId')
+          .child('uploads/$collection/$expenseId')
           .child('$attachmentName.jpg');
 
       StorageUploadTask storageUploadTask = ref.putFile(file);
