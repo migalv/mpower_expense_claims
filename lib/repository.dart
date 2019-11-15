@@ -92,14 +92,20 @@ class Repository {
       case Invoice:
         collection = INVOICES_COLLECTION;
     }
+    // Upload the expense
     docRef = _firestore.collection(collection).document();
-
-    expense.attachments.forEach((attachment) => attachment["storage_path"] =
-        "uploads/$collection/${docRef.documentID}/${attachment["name"]}.jpg");
-
     docRef.setData(expense.toJson());
 
-    _uploadAttachments(docRef.documentID, attachments, collection);
+    Map<String, String> downloadUrls =
+        await _uploadAttachments(docRef.documentID, attachments, collection);
+
+    expense.attachments.forEach((attachment) {
+      String downloadUrl = downloadUrls[attachment["name"]];
+      attachment["url"] = downloadUrl;
+    });
+
+    // Upload the download urls of the attachments
+    docRef.setData(expense.toJson(), merge: true);
   }
 
   Future uploadNewTemplate(Template template) async {
@@ -109,20 +115,23 @@ class Repository {
         .setData(template.toJson());
   }
 
-  Future _uploadAttachments(
+  Future<Map<String, String>> _uploadAttachments(
       String expenseId, Map<String, File> attachments, collection) async {
     if (attachments == null || attachments.isEmpty) return null;
 
     List keys = attachments.keys.toList();
     List values = attachments.values.toList();
+    Map<String, String> downloadUrls = Map();
 
     for (int i = 0; i < attachments?.length ?? 0; i++)
-      _uploadAttachment(
+      downloadUrls[keys[i]] = await _uploadAttachment(
         expenseId,
         keys[i],
         values[i],
         collection,
       );
+
+    return downloadUrls;
   }
 
   Future<String> _uploadAttachment(String expenseId, String attachmentName,
