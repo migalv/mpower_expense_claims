@@ -74,7 +74,7 @@ class ExpenseFormSectionBloc {
           case ExpenseType.EXPENSE_CLAIM:
             _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
             _attachmentsController.add(_attachments);
-            _multipleAttachments = false;
+            _multipleAttachments = true;
             break;
           case ExpenseType.INVOICE:
             _attachments[ATTACHMENTS_INVOICE_NAME] = null;
