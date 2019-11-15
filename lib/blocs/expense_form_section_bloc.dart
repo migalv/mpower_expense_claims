@@ -115,9 +115,7 @@ class ExpenseFormSectionBloc {
 
   void setTemplate(Template template) {
     if (template != null) {
-      // Category
-      if (template.category != null) selectCategory(template.category);
-
+      selectCategory(template.category);
       // Country
       if (template.country != null)
         selectCountry(repository.getCountryWithId(template.country));

@@ -764,6 +764,13 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         message: "Your expense has been created successfully.",
       );
       widget._onDonePressed();
-    }
+    } else
+      utils.showSnackbar(
+        scaffoldKey: widget._scaffoldKey,
+        message: "Error. Some information might be incomplete.",
+        duration: 2,
+        backgroundColor: errorColor,
+        textColor: Colors.white,
+      );
   }
 }
