@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/pages/attachments_page.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
 import 'package:flutter/cupertino.dart';
@@ -179,6 +181,10 @@ class _ExpenseTileState extends State<ExpenseTile>
                                     'Description', widget.expense.description)),
                           ],
                         ),
+                        widget.expense.attachments.isNotEmpty
+                            ? Container(height: 12.0)
+                            : Container(),
+                        _buildAttachmentsRow(),
                       ],
                     ),
                   ),
@@ -211,6 +217,85 @@ class _ExpenseTileState extends State<ExpenseTile>
           ),
         ],
       );
+
+  Widget _buildAttachmentsRow() {
+    String previewAttachmentUrl = widget.expense.attachments.first["url"];
+    int numAttachments = widget.expense.attachments.length;
+    if (previewAttachmentUrl == null) return Container();
+    return Row(
+      children: <Widget>[
+        Text(
+          "Attachments",
+          style: Theme.of(context)
+              .textTheme
+              .body2
+              .copyWith(fontWeight: FontWeight.bold),
+        ),
+        SizedBox(width: 16.0),
+        CachedNetworkImage(
+          imageUrl: previewAttachmentUrl,
+          imageBuilder: (context, imageProvider) => GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    AttachmentsPage(attachments: widget.expense.attachments),
+              ),
+            ),
+            child: Stack(
+              children: <Widget>[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image(
+                    image: imageProvider,
+                    height: 48.0,
+                  ),
+                ),
+                numAttachments > 1
+                    ? Positioned(
+                        right: 2.0,
+                        top: 2.0,
+                        child: Container(
+                          padding: EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: secondaryColor,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          constraints: BoxConstraints(
+                            minWidth: 12,
+                            minHeight: 12,
+                          ),
+                          child: Text(
+                            numAttachments.toString(),
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontSize: 8,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                    : Container(),
+              ],
+            ),
+          ),
+          placeholder: (context, url) =>
+              Center(child: CircularProgressIndicator()),
+          errorWidget: (context, url, error) => Tooltip(
+            message: "Could not find attachments",
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.error),
+                SizedBox(width: 4.0),
+                Text("Not found"),
+              ],
+            ),
+          ),
+        ),
+        Expanded(child: Container()),
+      ],
+    );
+  }
 
   //
   // METHODS
