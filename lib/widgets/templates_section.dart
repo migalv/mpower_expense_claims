@@ -20,21 +20,23 @@ class TemplatesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TemplatesSectionBloc bloc = Provider.of<TemplatesSectionBloc>(context);
+
     return StreamBuilder<List<Template>>(
       stream: bloc.templates,
-      initialData: [],
       builder: (BuildContext context, AsyncSnapshot<List<Template>> snapshot) {
-        List<Widget> listWidgets = [_buildTitle(context)];
+        List<Widget> listWidgets = [_buildTitle(context, bloc)];
 
-        if (snapshot.data.isEmpty)
+        if (snapshot == null || snapshot.data == null || snapshot.data.isEmpty)
           listWidgets.add(_buildPlaceholder());
         else
-          listWidgets.addAll(snapshot.data.map(
-            (template) => TemplateTile(
-              template: template,
-              pageController: pageController,
+          listWidgets.addAll(
+            snapshot.data.map(
+              (template) => TemplateTile(
+                template: template,
+                pageController: pageController,
+              ),
             ),
-          ));
+          );
 
         return ListView(
           controller: scrollController,
@@ -45,7 +47,8 @@ class TemplatesSection extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle(BuildContext context) => Container(
+  Widget _buildTitle(BuildContext context, TemplatesSectionBloc bloc) =>
+      Container(
         height: 48,
         alignment: Alignment.topCenter,
         padding: const EdgeInsets.only(left: 24.0),
@@ -57,14 +60,20 @@ class TemplatesSection extends StatelessWidget {
                 style: Theme.of(context).textTheme.title,
               ),
             ),
-            Container(
-              margin: EdgeInsets.only(right: 12.0),
-              child: FlatButton(
-                child: Text('Skip'),
-                textColor: secondaryColor,
-                onPressed: onPressed,
+            StreamBuilder<List<Template>>(
+              stream: bloc.selectedTemplates,
+              initialData: [],
+              builder: (context, snapshot) => Container(
+                margin: EdgeInsets.only(right: 12.0),
+                child: FlatButton(
+                  child: Text(snapshot.data.length == 1 ? 'Delete' : 'Skip'),
+                  textColor: secondaryColor,
+                  onPressed: snapshot.data.length == 1
+                      ? bloc.deleteSelectedTemplates
+                      : onPressed,
+                ),
               ),
-            )
+            ),
           ],
         ),
       );

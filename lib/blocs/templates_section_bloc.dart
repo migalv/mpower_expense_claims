@@ -4,19 +4,23 @@ import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rxdart/subjects.dart';
 
 class TemplatesSectionBloc {
   final Stream<int> _expenseTypeStream;
   List<StreamSubscription> _streamSubscriptions = [];
-  List<Template> _templates = [];
+  List<Template> _templates = [], _selectedTemplates = [];
   int _expenseType = 0;
 
   //
   //  OUTPUT
   Stream<List<Template>> get templates => _templatesController.stream;
+  Stream<List<Template>> get selectedTemplates =>
+      _selectedTemplatesController.stream;
 
   // Subjects
-  final _templatesController = StreamController<List<Template>>();
+  final _templatesController = BehaviorSubject<List<Template>>();
+  final _selectedTemplatesController = BehaviorSubject<List<Template>>();
 
   TemplatesSectionBloc({@required Stream<int> expenseTypeStream})
       : _expenseTypeStream = expenseTypeStream {
@@ -49,8 +53,23 @@ class TemplatesSectionBloc {
     _templatesController.add(_templates);
   }
 
+  void addTemplate(Template template) {
+    _selectedTemplates.add(template);
+    _selectedTemplatesController.add(_selectedTemplates);
+  }
+
+  void removeTemplate(Template template) {
+    _selectedTemplates.remove(template);
+    _selectedTemplatesController.add(_selectedTemplates);
+  }
+
+  void deleteSelectedTemplates() {
+    repository.deleteTemplates(_selectedTemplates);
+  }
+
   void dispose() {
     _templatesController.close();
+    _selectedTemplatesController.close();
 
     _streamSubscriptions.forEach((s) => s.cancel());
   }

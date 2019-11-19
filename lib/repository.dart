@@ -422,6 +422,14 @@ class Repository {
     await _auth.signOut();
   }
 
+  void deleteTemplates(List<Template> templates) {
+    WriteBatch batch = _firestore.batch();
+    for (Template template in templates) {
+      batch.delete(_firestore.document('$TEMPLATES_COLLECTION/${template.id}'));
+    }
+    batch.commit();
+  }
+
   void dispose() {
     _categoriesController.close();
     _currenciesController.close();
