@@ -1,6 +1,6 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
-import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
+import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
@@ -20,8 +20,6 @@ class TemplateTile extends StatelessWidget {
   Widget build(BuildContext context) {
     ExpenseFormSectionBloc expenseFormSectionBloc =
         Provider.of<ExpenseFormSectionBloc>(context);
-    TemplatesSectionBloc templatesSectionBloc =
-        Provider.of<TemplatesSectionBloc>(context);
 
     return Container(
       margin: EdgeInsets.fromLTRB(24, 16, 24, 0),
@@ -31,18 +29,19 @@ class TemplateTile extends StatelessWidget {
       ),
       child: StreamBuilder<List<Template>>(
         initialData: [],
-        stream: templatesSectionBloc.selectedTemplates,
+        stream: repository.selectedTemplates,
         builder: (context, snapshot) {
           List<Template> selectedTemplates = snapshot.data;
+          bool selected = selectedTemplates.contains(template);
 
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
               // Selection mode OFF
               if (selectedTemplates.isNotEmpty) {
-                selectedTemplates.contains(template)
-                    ? templatesSectionBloc.removeTemplate(template)
-                    : templatesSectionBloc.addTemplate(template);
+                selected
+                    ? repository.deselectTemplate(template)
+                    : repository.selectTemplate(template);
               } else {
                 expenseFormSectionBloc.setTemplate(template);
                 pageController.animateTo(MediaQuery.of(context).size.width,
@@ -53,7 +52,7 @@ class TemplateTile extends StatelessWidget {
             onLongPress: () {
               // Selection mode ON
               if (selectedTemplates.isEmpty) {
-                templatesSectionBloc.addTemplate(template);
+                repository.selectTemplate(template);
               }
             },
             child: ClipRRect(
@@ -64,7 +63,7 @@ class TemplateTile extends StatelessWidget {
                     children: <Widget>[
                       utils.buildCategoryIcon(
                           repository.getCategoryWithId(template.category)),
-                      Flexible(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
@@ -90,6 +89,29 @@ class TemplateTile extends StatelessWidget {
                           ],
                         ),
                       ),
+                      selectedTemplates.isNotEmpty
+                          ? Container(
+                              margin: EdgeInsets.only(right: 16),
+                              child: CircleAvatar(
+                                backgroundColor:
+                                    selected ? secondaryColor : Colors.white10,
+                                child: selected
+                                    ? Icon(
+                                        Icons.check,
+                                        size: 16,
+                                      )
+                                    : Container(),
+                              ),
+                              width: 24.0,
+                              height: 24.0,
+                              padding: EdgeInsets.all(2.0),
+                              decoration: BoxDecoration(
+                                color:
+                                    selected ? backgroundColor : Colors.white10,
+                                shape: BoxShape.circle,
+                              ),
+                            )
+                          : Container(),
                     ],
                   ),
                 ],

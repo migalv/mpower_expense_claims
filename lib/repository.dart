@@ -24,6 +24,7 @@ class Repository {
   String get currentUserId => _currentUserId;
   User _currentUser;
   User get currentUser => _currentUser;
+  List<Template> _selectedTemplates = [];
 
   //
   // DATA SOURCES
@@ -50,6 +51,8 @@ class Repository {
   ValueObservable<List<CostCentreGroup>> get costCentresGroups =>
       _costCentresGroupsController.stream;
   ValueObservable<int> get lastPageIndex => _lastSelectedListController.stream;
+  ValueObservable<List<Template>> get selectedTemplates =>
+      _selectedTemplatesController.stream;
 
   // CONTROLLERS
   final _countriesController = BehaviorSubject<List<Country>>();
@@ -64,6 +67,7 @@ class Repository {
   final _approversController = BehaviorSubject<List<User>>();
   final _costCentresGroupsController = BehaviorSubject<List<CostCentreGroup>>();
   final _templatesController = BehaviorSubject<List<Template>>();
+  final _selectedTemplatesController = BehaviorSubject<List<Template>>();
 
   void init() {
     _countriesController.add([]);
@@ -422,9 +426,19 @@ class Repository {
     await _auth.signOut();
   }
 
-  void deleteTemplates(List<Template> templates) {
+  void selectTemplate(Template template) {
+    _selectedTemplates.add(template);
+    _selectedTemplatesController.add(_selectedTemplates);
+  }
+
+  void deselectTemplate(Template template) {
+    _selectedTemplates.remove(template);
+    _selectedTemplatesController.add(_selectedTemplates);
+  }
+
+  void deleteTemplates() {
     WriteBatch batch = _firestore.batch();
-    for (Template template in templates) {
+    for (Template template in _selectedTemplates ?? []) {
       batch.delete(_firestore.document('$TEMPLATES_COLLECTION/${template.id}'));
     }
     batch.commit();
@@ -443,6 +457,7 @@ class Repository {
     _templatesController.close();
     _lastSelectedListController.close();
     _costCentresGroupsController.close();
+    _selectedTemplatesController.close();
   }
 }
 

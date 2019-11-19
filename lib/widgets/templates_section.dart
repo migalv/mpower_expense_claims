@@ -2,6 +2,7 @@ import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
+import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/widgets/template_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -61,15 +62,15 @@ class TemplatesSection extends StatelessWidget {
               ),
             ),
             StreamBuilder<List<Template>>(
-              stream: bloc.selectedTemplates,
+              stream: repository.selectedTemplates,
               initialData: [],
               builder: (context, snapshot) => Container(
                 margin: EdgeInsets.only(right: 12.0),
                 child: FlatButton(
-                  child: Text(snapshot.data.length == 1 ? 'Delete' : 'Skip'),
+                  child: Text(snapshot.data.length >= 1 ? 'Delete' : 'Skip'),
                   textColor: secondaryColor,
-                  onPressed: snapshot.data.length == 1
-                      ? bloc.deleteSelectedTemplates
+                  onPressed: snapshot.data.length >= 1
+                      ? repository.deleteTemplates
                       : onPressed,
                 ),
               ),
