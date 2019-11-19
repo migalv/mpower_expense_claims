@@ -17,6 +17,7 @@ abstract class Expense {
   final String costCentreGroup;
   final List<String> availableTo;
   List<Map<String, String>> attachments;
+  final int createdAt;
 
   Expense({
     this.id,
@@ -34,6 +35,7 @@ abstract class Expense {
     this.costCentreGroup,
     this.availableTo,
     this.attachments,
+    this.createdAt
   });
 
   Expense.fromJson(Map<String, dynamic> json, {String id})
@@ -52,7 +54,8 @@ abstract class Expense {
         this.approvedByName = json[APPROVED_BY_NAME_KEY],
         this.createdBy = json[CREATED_BY_KEY],
         this.costCentreGroup = json[COST_CENTRE_GROUP],
-        this.availableTo = json[AVAILABLE_TO].cast<String>() {
+        this.availableTo = json[AVAILABLE_TO].cast<String>()
+        this.createdAt = json[CREATED_AT_KEY] {
     if (json.containsKey('attachments') &&
         json['attachments'] != null &&
         json['attachments'].isNotEmpty) {
@@ -80,6 +83,7 @@ abstract class Expense {
         COST_CENTRE_GROUP: this.costCentreGroup,
         AVAILABLE_TO: this.availableTo,
         ATTACHMENTS_KEY: attachments,
+        CREATED_AT_KEY: this.createdAt
       };
 
   @override
@@ -113,6 +117,7 @@ abstract class Expense {
   static const String COST_CENTRE_GROUP = "cost_centre_group";
   static const String APPROVED_BY_NAME_KEY = "approved_by_name";
   static const String ATTACHMENTS_KEY = "attachments";
+  static const String CREATED_AT_KEY = "created_at";
 }
 
 enum ExpenseType {

@@ -17,6 +17,7 @@ class ExpenseClaim extends Expense {
     String costCentreGroup,
     List<String> availableTo,
     List<Map<String, String>> attachments,
+    int createdAt,
   }) : super(
           id: id,
           approvedBy: approvedBy,
@@ -33,6 +34,7 @@ class ExpenseClaim extends Expense {
           availableTo: availableTo,
           approvedByName: approvedByName,
           attachments: attachments,
+          createdAt: createdAt,
         );
 
   ExpenseClaim.fromJson(final Map<String, dynamic> json, {String id})
