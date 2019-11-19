@@ -19,23 +19,24 @@ abstract class Expense {
   List<Map<String, String>> attachments;
   final int createdAt;
 
-  Expense(
-      {this.id,
-      this.approvedBy,
-      this.approvedByName,
-      this.country,
-      this.category,
-      this.currency,
-      this.date,
-      this.description,
-      this.gross,
-      this.net,
-      this.vat,
-      this.createdBy,
-      this.costCentreGroup,
-      this.availableTo,
-      this.attachments,
-      this.createdAt});
+  Expense({
+    this.id,
+    this.approvedBy,
+    this.approvedByName,
+    this.country,
+    this.category,
+    this.currency,
+    this.date,
+    this.description,
+    this.gross,
+    this.net,
+    this.vat,
+    this.createdBy,
+    this.costCentreGroup,
+    this.availableTo,
+    this.attachments,
+    this.createdAt,
+  });
 
   Expense.fromJson(Map<String, dynamic> json, {String id})
       : this.id = id,
