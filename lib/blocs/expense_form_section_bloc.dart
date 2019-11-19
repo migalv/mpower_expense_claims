@@ -193,6 +193,7 @@ class ExpenseFormSectionBloc {
     if (_expenseType == ExpenseType.EXPENSE_CLAIM) {
       expense = ExpenseClaim(
         attachments: attachmentsList,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
         country: selectedCountry.value.id,
         category: selectedCategory.value,
         date: expenseDate.value,
@@ -212,6 +213,7 @@ class ExpenseFormSectionBloc {
     } else if (_expenseType == ExpenseType.INVOICE) {
       expense = Invoice(
         attachments: attachmentsList,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
         country: selectedCountry.value.id,
         category: selectedCategory.value,
         date: expenseDate.value,
