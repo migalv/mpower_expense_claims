@@ -45,8 +45,8 @@ class ExpenseFormSectionBloc {
   Map<String, File> _attachments = Map();
   ExpenseType _expenseType;
   TextEditingController descriptionController = TextEditingController();
-
   final Stream<int> expenseTypeStream;
+  bool edit = false;
 
   // Flags
   bool _multipleAttachments;
@@ -113,7 +113,9 @@ class ExpenseFormSectionBloc {
       _selectedDueDateController.add(dueDate);
   void selectVat(double vat) => _selectedVatController.add(vat);
 
-  void setTemplate(Template template) {
+  void setTemplate(Template template, {bool edit = false}) {
+    this.edit = edit;
+
     if (template != null) {
       // Category
       if (template.category != null) selectCategory(template.category);

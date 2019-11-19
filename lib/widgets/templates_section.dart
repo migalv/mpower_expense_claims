@@ -70,7 +70,7 @@ class TemplatesSection extends StatelessWidget {
                   child: Text(snapshot.data.length >= 1 ? 'Delete' : 'Skip'),
                   textColor: secondaryColor,
                   onPressed: snapshot.data.length >= 1
-                      ? repository.deleteTemplates
+                      ? () => _deleteTemplates(context)
                       : onPressed,
                 ),
               ),
@@ -110,4 +110,40 @@ class TemplatesSection extends StatelessWidget {
           ),
         ),
       );
+
+  void _deleteTemplates(BuildContext context) async {
+    bool delete = await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(
+              "Create template",
+              style: Theme.of(context).textTheme.title,
+            ),
+            content: Text(
+              "How do you want to name your new template?",
+              style: Theme.of(context).textTheme.subtitle,
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  "Cancel",
+                  style: Theme.of(context).textTheme.button,
+                ),
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+              RaisedButton(
+                child: Text(
+                  "Create",
+                ),
+                onPressed: () => Navigator.of(context).pop(true),
+                color: secondaryColor,
+                textColor: black60,
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (delete) repository.deleteTemplates();
+  }
 }

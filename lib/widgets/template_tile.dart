@@ -5,6 +5,7 @@ import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TemplateTile extends StatelessWidget {
   final Template template;
@@ -42,12 +43,8 @@ class TemplateTile extends StatelessWidget {
                 selected
                     ? repository.deselectTemplate(template)
                     : repository.selectTemplate(template);
-              } else {
-                expenseFormSectionBloc.setTemplate(template);
-                pageController.animateTo(MediaQuery.of(context).size.width,
-                    duration: Duration(milliseconds: 275),
-                    curve: Curves.easeIn);
-              }
+              } else
+                _onTemplatePressed(expenseFormSectionBloc, context);
             },
             onLongPress: () {
               // Selection mode ON
@@ -111,7 +108,21 @@ class TemplateTile extends StatelessWidget {
                                 shape: BoxShape.circle,
                               ),
                             )
-                          : Container(),
+                          : Container(
+                              margin: EdgeInsets.only(right: 8),
+                              child: IconButton(
+                                icon: Icon(
+                                  FontAwesomeIcons.pen,
+                                  size: 16,
+                                  color: Colors.white54,
+                                ),
+                                onPressed: () => _onTemplatePressed(
+                                  expenseFormSectionBloc,
+                                  context,
+                                  edit: true,
+                                ),
+                              ),
+                            ),
                     ],
                   ),
                 ],
@@ -121,5 +132,13 @@ class TemplateTile extends StatelessWidget {
         },
       ),
     );
+  }
+
+  void _onTemplatePressed(
+      ExpenseFormSectionBloc expenseFormSectionBloc, BuildContext context,
+      {bool edit = false}) {
+    expenseFormSectionBloc.setTemplate(template, edit: edit);
+    pageController.animateTo(MediaQuery.of(context).size.width,
+        duration: Duration(milliseconds: 275), curve: Curves.easeIn);
   }
 }
