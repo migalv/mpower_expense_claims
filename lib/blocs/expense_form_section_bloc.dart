@@ -55,33 +55,13 @@ class ExpenseFormSectionBloc {
   ExpenseFormSectionBloc({@required Stream<int> expenseTypeStream})
       : this.expenseTypeStream = expenseTypeStream {
     _listenToExpenseTypeChanges();
-    if (repository?.lastSelectedCountry?.value != null)
-      selectCountry(
-          repository.getCountryWithId(repository.lastSelectedCountry.value));
-    if (repository?.lastSelectedCurrency?.value != null)
-      selectCurrency(repository.lastSelectedCurrency.value);
-    if (repository?.lastSelectedApprover?.value != null)
-      selectApprover(repository.lastSelectedApprover.value);
-    selectExpenseDate(DateTime.now());
   }
 
   void _listenToExpenseTypeChanges() {
     _streamSubscriptions.add(expenseTypeStream.listen(
       (expenseType) {
         _expenseType = ExpenseType.values[expenseType ?? 0];
-        _attachments = Map();
-        switch (_expenseType) {
-          case ExpenseType.EXPENSE_CLAIM:
-            _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
-            _attachmentsController.add(_attachments);
-            _multipleAttachments = true;
-            break;
-          case ExpenseType.INVOICE:
-            _attachments[ATTACHMENTS_INVOICE_NAME] = null;
-            _attachmentsController.add(_attachments);
-            _multipleAttachments = true;
-            break;
-        }
+        _initFields();
       },
     ));
   }
@@ -138,17 +118,34 @@ class ExpenseFormSectionBloc {
       selectCostCentre(template.costCentreGroup);
       selectVat(template.vat);
       descriptionController.text = template.description;
-    } else {
-      selectCategory(null);
-      selectCountry(
-          repository.getCountryWithId(repository.lastSelectedCountry.value));
-      selectVat(null);
-      selectCurrency(repository.lastSelectedCurrency.value);
-      selectApprover(repository.lastSelectedApprover.value);
-      selectCostCentre(null);
-      descriptionController.text = "";
-      selectExpenseDate(DateTime.now());
+    } else
+      _initFields();
+  }
+
+  void _initFields() {
+    selectCategory(null);
+    selectCountry(
+        repository.getCountryWithId(repository.lastSelectedCountry.value));
+    selectVat(null);
+    selectCurrency(repository.lastSelectedCurrency.value);
+    selectApprover(repository.lastSelectedApprover.value);
+    selectCostCentre(null);
+    _attachments = Map();
+    switch (_expenseType) {
+      case ExpenseType.EXPENSE_CLAIM:
+        _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
+        _attachmentsController.add(_attachments);
+        _multipleAttachments = true;
+        break;
+      case ExpenseType.INVOICE:
+        _attachments[ATTACHMENTS_INVOICE_NAME] = null;
+        _attachmentsController.add(_attachments);
+        _multipleAttachments = true;
+        break;
     }
+
+    descriptionController.text = "";
+    selectExpenseDate(DateTime.now());
   }
 
   // ATTACHMENTS
@@ -238,6 +235,7 @@ class ExpenseFormSectionBloc {
     }
 
     repository.uploadNewExpense(expense, _attachments);
+    _initFields();
   }
 
   void uploadFormTemplate(String templateName) async {
