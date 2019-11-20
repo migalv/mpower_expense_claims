@@ -47,7 +47,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
   ExpenseFormSectionBloc _expenseClaimBloc;
 
   // Text Controllers
-  final _templateNameController = TextEditingController();
   final _grossController =
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
   final _receiptNumberController = TextEditingController();
@@ -79,20 +78,27 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                 children: <Widget>[
                   _buildTitle(expenseType),
                   _buildCountry(),
+                  _buildTemplateNameField(),
                   _buildCategory(),
                   _buildDescription(),
-                  _buildDate("Date", _expenseClaimBloc.expenseDate,
-                      _expenseClaimBloc.selectExpenseDate),
+                  _expenseClaimBloc.edit
+                      ? Container()
+                      : _buildDate("Date", _expenseClaimBloc.expenseDate,
+                          _expenseClaimBloc.selectExpenseDate),
                   expenseType == ExpenseType.EXPENSE_CLAIM
                       ? Container()
-                      : _buildDate(
-                          "Due date",
-                          _expenseClaimBloc.selectedDueDate,
-                          _expenseClaimBloc.selectDueDate,
-                          lastDate: DateTime(2030)),
+                      : _expenseClaimBloc.edit
+                          ? Container()
+                          : _buildDate(
+                              "Due date",
+                              _expenseClaimBloc.selectedDueDate,
+                              _expenseClaimBloc.selectDueDate,
+                              lastDate: DateTime(2030)),
                   _buildCost(),
                   _buildCostCenterTile(),
-                  _buildreceiptNumberField(),
+                  _expenseClaimBloc.edit
+                      ? Container()
+                      : _buildreceiptNumberField(),
                   _buildApproverTile(),
                   _expenseClaimBloc.edit
                       ? Container(
@@ -119,16 +125,40 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: Text(
-                'New ' +
-                    (expenseType == ExpenseType.EXPENSE_CLAIM
-                        ? "expense claim"
-                        : "invoice"),
+                _expenseClaimBloc.edit
+                    ? "Edit template"
+                    : 'New ' +
+                        (expenseType == ExpenseType.EXPENSE_CLAIM
+                            ? "expense claim"
+                            : "invoice"),
                 style: Theme.of(context).textTheme.title,
               ),
             ),
           ],
         ),
       );
+
+  Widget _buildTemplateNameField() => _expenseClaimBloc.edit
+      ? Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _buildFieldLabel("Template name"),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: TextFormField(
+                controller: _expenseClaimBloc.templateNameController,
+                maxLines: 1,
+                autocorrect: true,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  filled: true,
+                  hintText: 'Enter the name of the template',
+                ),
+              ),
+            ),
+          ],
+        )
+      : Container();
 
   Widget _buildCountry() => StreamBuilder<Country>(
         stream: _expenseClaimBloc.selectedCountry,
@@ -293,29 +323,34 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         ),
       );
 
-  Widget _buildDescription() => Container(
-        margin: EdgeInsets.fromLTRB(24.0, 32.0, 24.0, 8.0),
-        constraints: BoxConstraints(maxHeight: 120.0),
-        child: Scrollbar(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            reverse: true,
-            child: TextFormField(
-              controller: _expenseClaimBloc.descriptionController,
-              maxLines: null,
-              autocorrect: true,
-              keyboardType: TextInputType.text,
-              decoration: InputDecoration(
-                filled: true,
-                hintText: 'Enter a description of the expense...',
+  Widget _buildDescription() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          _buildFieldLabel("Description"),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Scrollbar(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                reverse: true,
+                child: TextFormField(
+                  controller: _expenseClaimBloc.descriptionController,
+                  maxLines: null,
+                  autocorrect: true,
+                  keyboardType: TextInputType.text,
+                  decoration: InputDecoration(
+                    filled: true,
+                    hintText: 'Enter a description of the expense...',
+                  ),
+                  validator: (String description) =>
+                      description == null || ((description?.length ?? 0) < 5)
+                          ? "Description must be at least 5 characters long"
+                          : null,
+                ),
               ),
-              validator: (String description) =>
-                  description == null || ((description?.length ?? 0) < 5)
-                      ? "Description must be at least 5 characters long"
-                      : null,
             ),
           ),
-        ),
+        ],
       );
 
   Widget _buildCost() => Column(
@@ -329,27 +364,31 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Expanded(
-                    child: TextFormField(
-                      controller: _grossController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        WhitelistingTextInputFormatter.digitsOnly,
-                      ],
-                      decoration: InputDecoration(
-                        filled: true,
-                        hintText: 'Gross',
-                        errorMaxLines: 2,
-                      ),
-                      validator: (value) =>
-                          value == null || value == "" || value == '0,00'
-                              ? "Invalid amount"
-                              : null,
-                    ),
-                  ),
-                  Container(
-                    width: 16.0,
-                  ),
+                  _expenseClaimBloc.edit
+                      ? Container()
+                      : Expanded(
+                          child: TextFormField(
+                            controller: _grossController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: <TextInputFormatter>[
+                              WhitelistingTextInputFormatter.digitsOnly,
+                            ],
+                            decoration: InputDecoration(
+                              filled: true,
+                              hintText: 'Gross',
+                              errorMaxLines: 2,
+                            ),
+                            validator: (value) =>
+                                value == null || value == "" || value == '0,00'
+                                    ? "Invalid amount"
+                                    : null,
+                          ),
+                        ),
+                  _expenseClaimBloc.edit
+                      ? Container()
+                      : Container(
+                          width: 16.0,
+                        ),
                   Expanded(
                     child: FormField(
                       validator: _expenseClaimBloc.vatValidator,
@@ -535,7 +574,11 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
   Widget _buildreceiptNumberField() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          _buildFieldLabel('Receipt number'),
+          StreamBuilder<int>(
+              stream: _expenseClaimBloc.expenseTypeStream,
+              initialData: 0,
+              builder: (context, snapshot) => _buildFieldLabel(
+                  (snapshot.data == 0 ? 'Receipt' : 'Invoice') + ' number')),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: TextFormField(
@@ -729,7 +772,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   void _createNewTemplateForm() async {
     if (_expenseClaimBloc.edit)
-      _validateAndUploadTemplate();
+      _editTemplate();
     else {
       bool confirmation = await showDialog(
             context: context,
@@ -748,7 +791,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                   SizedBox(height: 8.0),
                   TextFormField(
                     key: _templateFormKey,
-                    controller: _templateNameController,
+                    controller: _expenseClaimBloc.templateNameController,
                     autofocus: true,
                     keyboardType: TextInputType.text,
                     validator: (templateName) => templateName.length < 3
@@ -792,9 +835,19 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
     }
   }
 
+  void _editTemplate() {
+    _expenseClaimBloc.editTemplate();
+    utils.showSnackbar(
+      scaffoldKey: widget._scaffoldKey,
+      message: "Your template has been edited successfully.",
+      duration: 2,
+    );
+    widget._onDonePressed();
+  }
+
   void _validateAndUploadTemplate() {
     if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadFormTemplate(_templateNameController.text);
+      _expenseClaimBloc.uploadTemplate();
       utils.showSnackbar(
         scaffoldKey: widget._scaffoldKey,
         message: "Your template has been created successfully.",

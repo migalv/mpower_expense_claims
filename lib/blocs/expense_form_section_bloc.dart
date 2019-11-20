@@ -41,12 +41,17 @@ class ExpenseFormSectionBloc {
   final _selectedVatController = BehaviorSubject<double>();
   final _selectedCostCentreController = BehaviorSubject<String>();
 
+  // PRIVATE
   List<StreamSubscription> _streamSubscriptions = [];
   Map<String, File> _attachments = Map();
   ExpenseType _expenseType;
-  TextEditingController descriptionController = TextEditingController();
+
+  // PUBLIC
   final Stream<int> expenseTypeStream;
   bool edit = false;
+  Template _template;
+  TextEditingController descriptionController = TextEditingController();
+  TextEditingController templateNameController = TextEditingController();
 
   // Flags
   bool _multipleAttachments;
@@ -95,8 +100,10 @@ class ExpenseFormSectionBloc {
 
   void setTemplate(Template template, {bool edit = false}) {
     this.edit = edit;
+    _template = template;
 
     if (template != null) {
+      templateNameController.text = _template.name;
       selectCategory(template.category);
       // Country
       if (template.country != null)
@@ -122,6 +129,23 @@ class ExpenseFormSectionBloc {
       descriptionController.text = template.description;
     } else
       _initFields();
+  }
+
+  void editTemplate() {
+    Template newTemplate = Template(
+      id: _template.id,
+      category: _selectedCategoryController.value,
+      approvedBy: _selectedApproverController.value,
+      availableTo: _template.availableTo,
+      costCentreGroup: _selectedCostCentreController.value,
+      country: _selectedCountryController.value.id,
+      currency: _selectedCurrencyController.value,
+      description: descriptionController.text,
+      expenseType: _expenseType,
+      name: templateNameController.text,
+      vat: _selectedVatController.value,
+    );
+    repository.uploadNewTemplate(newTemplate);
   }
 
   void _initFields() {
@@ -240,8 +264,7 @@ class ExpenseFormSectionBloc {
     _initFields();
   }
 
-  void uploadFormTemplate(String templateName) async {
-    if (templateName == null) return;
+  void uploadTemplate() {
     Template template;
 
     template = Template(
@@ -254,12 +277,12 @@ class ExpenseFormSectionBloc {
       currency: selectedCurrency.value,
       description: descriptionController?.text ?? "",
       expenseType: _expenseType,
-      name: templateName,
+      name: templateNameController.text,
       costCentreGroup: selectedCostCentre.value,
       vat: selectedVat.value,
     );
 
-    await repository.uploadNewTemplate(template);
+    repository.uploadNewTemplate(template);
   }
 
   // VALIDATORS

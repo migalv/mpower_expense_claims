@@ -2,7 +2,6 @@ import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
-import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/widgets/template_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -35,6 +34,7 @@ class TemplatesSection extends StatelessWidget {
               (template) => TemplateTile(
                 template: template,
                 pageController: pageController,
+                templatesSectionBloc: bloc,
               ),
             ),
           );
@@ -62,7 +62,7 @@ class TemplatesSection extends StatelessWidget {
               ),
             ),
             StreamBuilder<List<Template>>(
-              stream: repository.selectedTemplates,
+              stream: bloc.selectedTemplates,
               initialData: [],
               builder: (context, snapshot) => Container(
                 margin: EdgeInsets.only(right: 12.0),
@@ -70,7 +70,7 @@ class TemplatesSection extends StatelessWidget {
                   child: Text(snapshot.data.length >= 1 ? 'Delete' : 'Skip'),
                   textColor: secondaryColor,
                   onPressed: snapshot.data.length >= 1
-                      ? () => _deleteTemplates(context)
+                      ? () => _deleteTemplates(context, bloc)
                       : onPressed,
                 ),
               ),
@@ -111,16 +111,17 @@ class TemplatesSection extends StatelessWidget {
         ),
       );
 
-  void _deleteTemplates(BuildContext context) async {
+  void _deleteTemplates(
+      BuildContext context, TemplatesSectionBloc templatesSectionBloc) async {
     bool delete = await showDialog(
           context: context,
           builder: (_) => AlertDialog(
             title: Text(
-              "Create template",
+              "Delete templates",
               style: Theme.of(context).textTheme.title,
             ),
             content: Text(
-              "How do you want to name your new template?",
+              "Are you sure to delete these templates?",
               style: Theme.of(context).textTheme.subtitle,
             ),
             actions: <Widget>[
@@ -133,7 +134,7 @@ class TemplatesSection extends StatelessWidget {
               ),
               RaisedButton(
                 child: Text(
-                  "Create",
+                  "Delete",
                 ),
                 onPressed: () => Navigator.of(context).pop(true),
                 color: secondaryColor,
@@ -144,6 +145,6 @@ class TemplatesSection extends StatelessWidget {
         ) ??
         false;
 
-    if (delete) repository.deleteTemplates();
+    if (delete) templatesSectionBloc.deleteTemplates();
   }
 }

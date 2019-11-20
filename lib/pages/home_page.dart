@@ -7,7 +7,6 @@ import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/expenses_page.dart';
-import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/widgets/expense_form_section.dart';
 import 'package:expense_claims_app/widgets/fab_add_to_close.dart';
 import 'package:expense_claims_app/widgets/navigation_bar_with_fab.dart';
@@ -33,7 +32,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Tween<Offset> _tween = Tween(begin: Offset(0, 2), end: Offset(0, 0));
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   ExpenseFormSectionBloc _expenseFormBloc;
-  bool _selectingTemplates = true;
   List<StreamSubscription> _streamSubscriptions = [];
 
   @override
@@ -72,10 +70,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           vsync: this,
           duration: Duration(milliseconds: 275),
           value: _homeBloc.pageIndex.value.toDouble());
-
-    _streamSubscriptions.add(repository.selectedTemplates.listen((templates) {
-      _selectingTemplates = (templates ?? []).isNotEmpty;
-    }));
   }
 
   @override
@@ -91,136 +85,130 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   @override
-  Widget build(BuildContext context) => WillPopScope(
-        onWillPop: onBackPressed,
-        child: StreamBuilder<int>(
-          initialData: 0,
-          builder: (context, snapshot) => Scaffold(
-            key: _scaffoldKey,
-            bottomNavigationBar: StreamBuilder<int>(
-              stream: _homeBloc.pageIndex,
-              builder: (context, pageIndexSnapshot) => NavigationBarWithFAB(
-                animationController: _navBarController,
-                index: pageIndexSnapshot.data,
-                icon1: MdiIcons.receipt,
-                icon2: FontAwesomeIcons.fileInvoiceDollar,
-                onItemPressed: (int index) {
-                  _homeBloc.setPageIndex(index);
-                  _pageController.animateToPage(
-                    index,
-                    duration: Duration(milliseconds: 275),
-                    curve: Curves.ease,
-                  );
-                },
-              ),
+  Widget build(BuildContext context) => StreamBuilder<int>(
+        initialData: 0,
+        builder: (context, snapshot) => Scaffold(
+          key: _scaffoldKey,
+          bottomNavigationBar: StreamBuilder<int>(
+            stream: _homeBloc.pageIndex,
+            builder: (context, pageIndexSnapshot) => NavigationBarWithFAB(
+              animationController: _navBarController,
+              index: pageIndexSnapshot.data,
+              icon1: MdiIcons.receipt,
+              icon2: FontAwesomeIcons.fileInvoiceDollar,
+              onItemPressed: (int index) {
+                _homeBloc.setPageIndex(index);
+                _pageController.animateToPage(
+                  index,
+                  duration: Duration(milliseconds: 275),
+                  curve: Curves.ease,
+                );
+              },
             ),
-            body: Stack(
-              children: <Widget>[
-                PageView(
-                  controller: _pageController,
-                  onPageChanged: (int index) {
-                    _pageChanged(index);
-                  },
-                  children: <Widget>[
-                    BlocProvider<ExpensesBloc>(
-                      child:
-                          ExpensesPage(expenseType: ExpenseType.EXPENSE_CLAIM),
-                      initBloc: (_, bloc) =>
-                          ExpensesBloc(expenseType: ExpenseType.EXPENSE_CLAIM),
-                      onDispose: (_, bloc) => bloc.dispose(),
-                    ),
-                    BlocProvider<ExpensesBloc>(
-                      child: ExpensesPage(expenseType: ExpenseType.INVOICE),
-                      initBloc: (_, bloc) =>
-                          ExpensesBloc(expenseType: ExpenseType.INVOICE),
-                      onDispose: (_, bloc) => bloc.dispose(),
-                    ),
-                  ],
-                ),
-                SizedBox.expand(
-                  child: SlideTransition(
-                    position: _tween.animate(_bottomSheetController),
-                    child: DraggableScrollableSheet(
-                      builder: (BuildContext context,
-                              ScrollController scrollController) =>
-                          Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).canvasColor,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0x1affffff),
-                              offset: Offset(0, -4),
-                              blurRadius: 5.0,
-                            )
-                          ],
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(32.0),
-                            topRight: Radius.circular(32.0),
-                          ),
+          ),
+          body: Stack(
+            children: <Widget>[
+              PageView(
+                controller: _pageController,
+                onPageChanged: (int index) {
+                  _pageChanged(index);
+                },
+                children: <Widget>[
+                  BlocProvider<ExpensesBloc>(
+                    child: ExpensesPage(expenseType: ExpenseType.EXPENSE_CLAIM),
+                    initBloc: (_, bloc) =>
+                        ExpensesBloc(expenseType: ExpenseType.EXPENSE_CLAIM),
+                    onDispose: (_, bloc) => bloc.dispose(),
+                  ),
+                  BlocProvider<ExpensesBloc>(
+                    child: ExpensesPage(expenseType: ExpenseType.INVOICE),
+                    initBloc: (_, bloc) =>
+                        ExpensesBloc(expenseType: ExpenseType.INVOICE),
+                    onDispose: (_, bloc) => bloc.dispose(),
+                  ),
+                ],
+              ),
+              SizedBox.expand(
+                child: SlideTransition(
+                  position: _tween.animate(_bottomSheetController),
+                  child: DraggableScrollableSheet(
+                    builder: (BuildContext context,
+                            ScrollController scrollController) =>
+                        Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).canvasColor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0x1affffff),
+                            offset: Offset(0, -4),
+                            blurRadius: 5.0,
+                          )
+                        ],
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(32.0),
+                          topRight: Radius.circular(32.0),
                         ),
-                        child: BlocProvider<ExpenseFormSectionBloc>(
-                          initBloc: (_, bloc) => bloc ?? _expenseFormBloc,
-                          onDispose: (_, bloc) => bloc.dispose(),
-                          child: PageView(
-                            controller: _bottomSheetPageController,
-                            physics: NeverScrollableScrollPhysics(),
-                            children: <Widget>[
-                              BlocProvider<TemplatesSectionBloc>(
-                                child: TemplatesSection(
-                                  scrollController: scrollController,
-                                  pageController: _bottomSheetPageController,
-                                  onPressed: () {
-                                    _bottomSheetPageController.animateTo(
-                                        MediaQuery.of(context).size.width,
-                                        duration: Duration(milliseconds: 275),
-                                        curve: Curves.easeIn);
-                                    _expenseFormBloc.setTemplate(null);
-                                  },
-                                ),
-                                initBloc: (_, bloc) => TemplatesSectionBloc(
-                                    expenseTypeStream: _homeBloc.pageIndex),
-                                onDispose: (_, bloc) => bloc.dispose(),
-                              ),
-                              ExpenseFormSection(
+                      ),
+                      child: BlocProvider<ExpenseFormSectionBloc>(
+                        initBloc: (_, bloc) => bloc ?? _expenseFormBloc,
+                        onDispose: (_, bloc) => bloc.dispose(),
+                        child: PageView(
+                          controller: _bottomSheetPageController,
+                          physics: NeverScrollableScrollPhysics(),
+                          children: <Widget>[
+                            BlocProvider<TemplatesSectionBloc>(
+                              child: TemplatesSection(
                                 scrollController: scrollController,
-                                onBackPressed: () {
-                                  _bottomSheetPageController.animateTo(0,
+                                pageController: _bottomSheetPageController,
+                                onPressed: () {
+                                  _bottomSheetPageController.animateTo(
+                                      MediaQuery.of(context).size.width,
                                       duration: Duration(milliseconds: 275),
                                       curve: Curves.easeIn);
-                                },
-                                scaffoldKey: _scaffoldKey,
-                                onDonePressed: () async {
-                                  _playAnimation(_fabController);
-
-                                  await _playAnimation(_bottomSheetController);
-
-                                  _bottomSheetPageController.animateTo(0,
-                                      duration: Duration(milliseconds: 1),
-                                      curve: Curves.easeIn);
+                                  _expenseFormBloc.setTemplate(null);
                                 },
                               ),
-                            ],
-                          ),
+                              initBloc: (_, bloc) => TemplatesSectionBloc(
+                                  expenseTypeStream: _homeBloc.pageIndex),
+                              onDispose: (_, bloc) => bloc.dispose(),
+                            ),
+                            ExpenseFormSection(
+                              scrollController: scrollController,
+                              onBackPressed: () {
+                                _bottomSheetPageController.animateTo(0,
+                                    duration: Duration(milliseconds: 275),
+                                    curve: Curves.easeIn);
+                              },
+                              scaffoldKey: _scaffoldKey,
+                              onDonePressed: () async {
+                                _playAnimation(_fabController);
+
+                                await _playAnimation(_bottomSheetController);
+
+                                _bottomSheetPageController.animateTo(0,
+                                    duration: Duration(milliseconds: 1),
+                                    curve: Curves.easeIn);
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
-            floatingActionButtonLocation:
-                FloatingActionButtonLocation.centerDocked,
-            floatingActionButton: FabAddToClose(
-              controller: _fabController,
-              onPressed: () {
-                _playAnimation(_bottomSheetController);
-              },
-            ),
+              ),
+            ],
+          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerDocked,
+          floatingActionButton: FabAddToClose(
+            controller: _fabController,
+            onPressed: () {
+              _playAnimation(_bottomSheetController);
+            },
           ),
         ),
       );
-
-  Future<bool> onBackPressed() => Future.value(!_selectingTemplates);
 
   void _pageChanged(int index) {
     _homeBloc.setPageIndex(index);

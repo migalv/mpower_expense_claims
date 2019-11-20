@@ -1,5 +1,6 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
+import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/repository.dart';
@@ -10,11 +11,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class TemplateTile extends StatelessWidget {
   final Template template;
   final PageController pageController;
+  final TemplatesSectionBloc templatesSectionBloc;
 
   const TemplateTile({
     Key key,
     @required this.template,
     @required this.pageController,
+    @required this.templatesSectionBloc,
   }) : super(key: key);
 
   @override
@@ -30,7 +33,7 @@ class TemplateTile extends StatelessWidget {
       ),
       child: StreamBuilder<List<Template>>(
         initialData: [],
-        stream: repository.selectedTemplates,
+        stream: templatesSectionBloc.selectedTemplates,
         builder: (context, snapshot) {
           List<Template> selectedTemplates = snapshot.data;
           bool selected = selectedTemplates.contains(template);
@@ -41,15 +44,15 @@ class TemplateTile extends StatelessWidget {
               // Selection mode OFF
               if (selectedTemplates.isNotEmpty) {
                 selected
-                    ? repository.deselectTemplate(template)
-                    : repository.selectTemplate(template);
+                    ? templatesSectionBloc.deselectTemplate(template)
+                    : templatesSectionBloc.selectTemplate(template);
               } else
                 _onTemplatePressed(expenseFormSectionBloc, context);
             },
             onLongPress: () {
               // Selection mode ON
               if (selectedTemplates.isEmpty) {
-                repository.selectTemplate(template);
+                templatesSectionBloc.selectTemplate(template);
               }
             },
             child: ClipRRect(
