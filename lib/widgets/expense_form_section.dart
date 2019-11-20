@@ -50,6 +50,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
   final _templateNameController = TextEditingController();
   final _grossController =
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
+  final _receiptNumberController = TextEditingController();
 
   // Keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -91,6 +92,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                           lastDate: DateTime(2030)),
                   _buildCost(),
                   _buildCostCenterTile(),
+                  _buildreceiptNumberField(),
                   _buildApproverTile(),
                   _buildAttachmentsTile(),
                   _buildButtons(expenseType),
@@ -515,6 +517,26 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         ),
       );
 
+  Widget _buildreceiptNumberField() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          _buildFieldLabel('Receipt number'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: TextFormField(
+              controller: _receiptNumberController,
+              maxLines: 1,
+              autocorrect: true,
+              keyboardType: TextInputType.text,
+              decoration: InputDecoration(
+                filled: true,
+                hintText: 'Enter the receipt number',
+              ),
+            ),
+          ),
+        ],
+      );
+
   Widget _buildFieldLabel(String label) => Padding(
         padding: const EdgeInsets.fromLTRB(24.0, 32.0, 0.0, 8.0),
         child: Text(
@@ -758,7 +780,11 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   void _validateAndUploadExpense() {
     if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadNewExpense(_grossController.text);
+      _expenseClaimBloc.uploadNewExpense(
+          _grossController.text,
+          _receiptNumberController.text == ""
+              ? null
+              : _receiptNumberController.text);
       utils.showSnackbar(
         scaffoldKey: widget._scaffoldKey,
         message: "Your expense has been created successfully.",

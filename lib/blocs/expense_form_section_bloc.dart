@@ -178,7 +178,7 @@ class ExpenseFormSectionBloc {
   }
 
   // UPLOAD DATA
-  void uploadNewExpense(String stringGross) {
+  void uploadNewExpense(String stringGross, String receiptNumber) {
     String parsedString = stringGross.replaceAll('.', '').replaceAll(',', '.');
     double gross = double.tryParse(parsedString);
     double net;
@@ -209,6 +209,7 @@ class ExpenseFormSectionBloc {
         approvedByName: repository.approvers.value
             .singleWhere((user) => user.id == selectedApprover.value)
             ?.name,
+        receiptNumber: receiptNumber,
       );
     } else if (_expenseType == ExpenseType.INVOICE) {
       expense = Invoice(
@@ -230,6 +231,7 @@ class ExpenseFormSectionBloc {
         approvedByName: repository.approvers.value
             .singleWhere((user) => user.id == selectedApprover.value)
             ?.name,
+        receiptNumber: receiptNumber,
       );
     }
 
