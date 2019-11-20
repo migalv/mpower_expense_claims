@@ -235,6 +235,7 @@ class ExpenseFormSectionBloc {
             .singleWhere((user) => user.id == selectedApprover.value)
             ?.name,
         receiptNumber: receiptNumber,
+        status: ExpenseStatus(ExpenseStatus.WAITING),
       );
     } else if (_expenseType == ExpenseType.INVOICE) {
       expense = Invoice(
@@ -257,6 +258,7 @@ class ExpenseFormSectionBloc {
             .singleWhere((user) => user.id == selectedApprover.value)
             ?.name,
         receiptNumber: receiptNumber,
+        status: ExpenseStatus(ExpenseStatus.WAITING),
       );
     }
 

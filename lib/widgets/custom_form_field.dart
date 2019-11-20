@@ -1,5 +1,5 @@
 import 'package:expense_claims_app/colors.dart';
-import 'package:expense_claims_app/utils.dart';
+import 'package:expense_claims_app/widgets/error_form_label.dart';
 import 'package:flutter/material.dart';
 
 class CustomFormField extends StatelessWidget {
@@ -28,7 +28,7 @@ class CustomFormField extends StatelessWidget {
             width: double.infinity,
             child: child,
           ),
-          utils.buildErrorFormLabel(state, padding: false),
+          ErrorFormLabel(state, padding: false),
         ],
       );
 }

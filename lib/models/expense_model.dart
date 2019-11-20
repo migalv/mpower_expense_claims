@@ -1,5 +1,8 @@
+import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
+import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 abstract class Expense {
   final String id;
@@ -19,6 +22,7 @@ abstract class Expense {
   List<Map<String, String>> attachments;
   final int createdAt;
   final String receiptNumber;
+  final ExpenseStatus status;
 
   Expense({
     this.id,
@@ -38,6 +42,7 @@ abstract class Expense {
     this.attachments,
     this.createdAt,
     this.receiptNumber,
+    this.status,
   });
 
   Expense.fromJson(Map<String, dynamic> json, {String id})
@@ -58,7 +63,8 @@ abstract class Expense {
         this.costCentreGroup = json[COST_CENTRE_GROUP],
         this.availableTo = json[AVAILABLE_TO].cast<String>(),
         this.createdAt = json[CREATED_AT_KEY],
-        this.receiptNumber = json[RECEIPT_NUM_KEY] {
+        this.receiptNumber = json[RECEIPT_NUM_KEY],
+        this.status = ExpenseStatus(json[STATUS_KEY]) {
     if (json.containsKey('attachments') &&
         json['attachments'] != null &&
         json['attachments'].isNotEmpty) {
@@ -88,6 +94,7 @@ abstract class Expense {
         ATTACHMENTS_KEY: attachments,
         CREATED_AT_KEY: this.createdAt,
         RECEIPT_NUM_KEY: this.receiptNumber,
+        STATUS_KEY: this.status.value,
       };
 
   @override
@@ -123,9 +130,70 @@ abstract class Expense {
   static const String ATTACHMENTS_KEY = "attachments";
   static const String CREATED_AT_KEY = "created_at";
   static const String RECEIPT_NUM_KEY = "receipt_num";
+  static const String STATUS_KEY = "status";
 }
 
 enum ExpenseType {
   EXPENSE_CLAIM,
   INVOICE,
+}
+
+class ExpenseStatus {
+  final int value;
+  Color _color;
+  Color get color => _color;
+  IconData _icon;
+  IconData get icon => _icon;
+
+  ExpenseStatus(this.value) : assert(0 <= value && value <= 3) {
+    switch (value) {
+      case WAITING:
+        _color = WAITING_COLOR;
+        _icon = WAITING_ICON;
+        break;
+      case APPROVED:
+        _color = APPROVED_COLOR;
+        _icon = APPROVED_ICON;
+        break;
+      case PAID:
+        _color = PAID_COLOR;
+        _icon = PAID_ICON;
+        break;
+      case DENIED:
+        _color = DENIED_COLOR;
+        _icon = DENIED_ICON;
+        break;
+    }
+  }
+
+  @override
+  String toString() {
+    switch (value) {
+      case WAITING:
+        return "Waiting";
+      case APPROVED:
+        return "Approved";
+      case PAID:
+        return "Paid";
+      case DENIED:
+        return "Denied";
+      default:
+        return "";
+    }
+  }
+
+  static const int WAITING = 0;
+  static const int APPROVED = 1;
+  static const int PAID = 2;
+  static const int DENIED = 3;
+
+  static const Color WAITING_COLOR = Colors.orange;
+  static const Color APPROVED_COLOR = Colors.blue;
+  static const Color PAID_COLOR = Colors.green;
+  static const Color DENIED_COLOR = Colors.red;
+
+  static const IconData WAITING_ICON = MdiIcons.history;
+  static const IconData APPROVED_ICON = MdiIcons.check;
+  static const IconData PAID_ICON = MdiIcons.currencyUsd;
+  static const IconData DENIED_ICON = MdiIcons.close;
 }

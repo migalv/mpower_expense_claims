@@ -39,7 +39,6 @@ class _FabAddToCloseState extends State<FabAddToClose>
         } else {
           widget._controller.reverse();
         }
-
         widget._onPressed();
       },
     );

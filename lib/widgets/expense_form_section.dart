@@ -13,6 +13,7 @@ import 'package:expense_claims_app/models/user_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/custom_form_field.dart';
+import 'package:expense_claims_app/widgets/error_form_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -214,7 +215,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                               categoriesSnapshot?.data ?? [])),
                     );
                   }),
-              utils.buildErrorFormLabel(state),
+              ErrorFormLabel(state),
             ],
           ),
         ),
@@ -632,7 +633,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                       ),
                     )
                   : Container(),
-              utils.buildErrorFormLabel(state),
+              ErrorFormLabel(state),
             ],
           ),
         );

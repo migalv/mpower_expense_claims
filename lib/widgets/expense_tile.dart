@@ -3,7 +3,7 @@ import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/attachments_page.dart';
 import 'package:expense_claims_app/repository.dart';
-import 'package:expense_claims_app/utils.dart';
+import 'package:expense_claims_app/widgets/tile_icon.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -64,8 +64,9 @@ class _ExpenseTileState extends State<ExpenseTile>
                       maxWidth: MediaQuery.of(context).size.width),
                   child: Row(
                     children: <Widget>[
-                      utils.buildCategoryIcon(
-                        repository.getCategoryWithId(widget.expense.category),
+                      TileIcon(
+                        iconData: widget.expense.status.icon,
+                        backgroundColor: widget.expense.status.color,
                       ),
                       Expanded(
                         child: Column(

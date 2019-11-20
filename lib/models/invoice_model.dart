@@ -22,6 +22,7 @@ class Invoice extends Expense {
     List<Map<String, String>> attachments,
     int createdAt,
     String receiptNumber,
+    ExpenseStatus status,
   }) : super(
           id: id,
           approvedBy: approvedBy,
@@ -40,6 +41,7 @@ class Invoice extends Expense {
           attachments: attachments,
           createdAt: createdAt,
           receiptNumber: receiptNumber,
+          status: status,
         );
 
   Invoice.fromJson(final Map<String, dynamic> json, {String id})

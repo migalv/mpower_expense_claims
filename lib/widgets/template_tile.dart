@@ -4,7 +4,7 @@ import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/repository.dart';
-import 'package:expense_claims_app/utils.dart';
+import 'package:expense_claims_app/widgets/tile_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -61,8 +61,10 @@ class TemplateTile extends StatelessWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      utils.buildCategoryIcon(
-                          repository.getCategoryWithId(template.category)),
+                      TileIcon(
+                          iconData: repository
+                              .getCategoryWithId(template.category)
+                              .icon),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
