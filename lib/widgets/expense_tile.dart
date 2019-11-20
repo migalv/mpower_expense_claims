@@ -95,9 +95,10 @@ class _ExpenseTileState extends State<ExpenseTile>
                                 ),
                                 Expanded(
                                   child: Container(
+                                    alignment: Alignment.topRight,
                                     height: 32.0,
                                     margin: EdgeInsets.fromLTRB(
-                                        8.0, 6.0, 8.0, 12.0),
+                                        8.0, 6.0, 12.0, 12.0),
                                     child: FittedBox(
                                       child: Chip(
                                         materialTapTargetSize:
@@ -124,7 +125,7 @@ class _ExpenseTileState extends State<ExpenseTile>
                         ),
                       ),
                       Container(
-                        margin: EdgeInsets.only(left: 4.0, right: 12.0),
+                        margin: EdgeInsets.only(right: 12.0),
                         alignment: Alignment.center,
                         child: RotationTransition(
                           turns: _rotateAnimation,

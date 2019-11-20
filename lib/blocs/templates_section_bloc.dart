@@ -4,6 +4,7 @@ import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rxdart/subjects.dart';
 
 class TemplatesSectionBloc {
   final Stream<int> _expenseTypeStream;
@@ -16,7 +17,7 @@ class TemplatesSectionBloc {
   Stream<List<Template>> get templates => _templatesController.stream;
 
   // Subjects
-  final _templatesController = StreamController<List<Template>>();
+  final _templatesController = BehaviorSubject<List<Template>>();
 
   TemplatesSectionBloc({@required Stream<int> expenseTypeStream})
       : _expenseTypeStream = expenseTypeStream {

@@ -2,6 +2,7 @@ import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
+import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/widgets/template_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -20,21 +21,23 @@ class TemplatesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TemplatesSectionBloc bloc = Provider.of<TemplatesSectionBloc>(context);
+
     return StreamBuilder<List<Template>>(
       stream: bloc.templates,
-      initialData: [],
       builder: (BuildContext context, AsyncSnapshot<List<Template>> snapshot) {
-        List<Widget> listWidgets = [_buildTitle(context)];
+        List<Widget> listWidgets = [_buildTitle(context, bloc)];
 
-        if (snapshot.data.isEmpty)
+        if (snapshot == null || snapshot.data == null || snapshot.data.isEmpty)
           listWidgets.add(_buildPlaceholder());
         else
-          listWidgets.addAll(snapshot.data.map(
-            (template) => TemplateTile(
-              template: template,
-              pageController: pageController,
+          listWidgets.addAll(
+            snapshot.data.map(
+              (template) => TemplateTile(
+                template: template,
+                pageController: pageController,
+              ),
             ),
-          ));
+          );
 
         return ListView(
           controller: scrollController,
@@ -45,7 +48,8 @@ class TemplatesSection extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle(BuildContext context) => Container(
+  Widget _buildTitle(BuildContext context, TemplatesSectionBloc bloc) =>
+      Container(
         height: 48,
         alignment: Alignment.topCenter,
         padding: const EdgeInsets.only(left: 24.0),
@@ -57,14 +61,20 @@ class TemplatesSection extends StatelessWidget {
                 style: Theme.of(context).textTheme.title,
               ),
             ),
-            Container(
-              margin: EdgeInsets.only(right: 12.0),
-              child: FlatButton(
-                child: Text('Skip'),
-                textColor: secondaryColor,
-                onPressed: onPressed,
+            StreamBuilder<List<Template>>(
+              stream: repository.selectedTemplates,
+              initialData: [],
+              builder: (context, snapshot) => Container(
+                margin: EdgeInsets.only(right: 12.0),
+                child: FlatButton(
+                  child: Text(snapshot.data.length >= 1 ? 'Delete' : 'Skip'),
+                  textColor: secondaryColor,
+                  onPressed: snapshot.data.length >= 1
+                      ? () => _deleteTemplates(context)
+                      : onPressed,
+                ),
               ),
-            )
+            ),
           ],
         ),
       );
@@ -100,4 +110,40 @@ class TemplatesSection extends StatelessWidget {
           ),
         ),
       );
+
+  void _deleteTemplates(BuildContext context) async {
+    bool delete = await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(
+              "Create template",
+              style: Theme.of(context).textTheme.title,
+            ),
+            content: Text(
+              "How do you want to name your new template?",
+              style: Theme.of(context).textTheme.subtitle,
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  "Cancel",
+                  style: Theme.of(context).textTheme.button,
+                ),
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+              RaisedButton(
+                child: Text(
+                  "Create",
+                ),
+                onPressed: () => Navigator.of(context).pop(true),
+                color: secondaryColor,
+                textColor: black60,
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (delete) repository.deleteTemplates();
+  }
 }

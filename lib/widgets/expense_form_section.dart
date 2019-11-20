@@ -94,7 +94,11 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                   _buildCostCenterTile(),
                   _buildreceiptNumberField(),
                   _buildApproverTile(),
-                  _buildAttachmentsTile(),
+                  _expenseClaimBloc.edit
+                      ? Container(
+                          height: 16,
+                        )
+                      : _buildAttachmentsTile(),
                   _buildButtons(expenseType),
                 ],
               );
@@ -633,32 +637,38 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   Widget _buildButtons(ExpenseType expenseType) => Container(
         margin: EdgeInsets.fromLTRB(24, 0, 24, 48),
-        child: Column(
-          children: <Widget>[
-            FlatButton(
-              textColor: black60,
-              padding: EdgeInsets.all(14.0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
+        child: _expenseClaimBloc.edit ?? false
+            ? FlatButton(
+                textColor: secondaryColor,
+                child: Text('Save'),
+                onPressed: _createNewTemplateForm,
+              )
+            : Column(
+                children: <Widget>[
+                  FlatButton(
+                    textColor: black60,
+                    padding: EdgeInsets.all(14.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    color: secondaryColor,
+                    child: Text(
+                      'Create ' +
+                          (expenseType == ExpenseType.EXPENSE_CLAIM
+                              ? "expense"
+                              : "invoice"),
+                    ),
+                    onPressed: () => _validateAndUploadExpense(),
+                  ),
+                  Container(height: 16),
+                  Text('or'),
+                  FlatButton(
+                    textColor: secondaryColor,
+                    child: Text('Create and save as template'),
+                    onPressed: _createNewTemplateForm,
+                  ),
+                ],
               ),
-              color: secondaryColor,
-              child: Text(
-                'Create ' +
-                    (expenseType == ExpenseType.EXPENSE_CLAIM
-                        ? "expense"
-                        : "invoice"),
-              ),
-              onPressed: () => _validateAndUploadExpense(),
-            ),
-            Container(height: 16),
-            Text('or'),
-            FlatButton(
-              textColor: secondaryColor,
-              child: Text('Create and save as template'),
-              onPressed: _createNewTemplateForm,
-            ),
-          ],
-        ),
       );
 
   void _selectAttachments({String name}) async {
@@ -717,64 +727,68 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
     }
   }
 
-  Future _createNewTemplateForm() async {
-    bool confirmation = await showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: Text(
-              "Create template",
-              style: Theme.of(context).textTheme.title,
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text(
-                  "How do you want to name your new template?",
-                  style: Theme.of(context).textTheme.subtitle,
-                ),
-                SizedBox(height: 8.0),
-                TextFormField(
-                  key: _templateFormKey,
-                  controller: _templateNameController,
-                  autofocus: true,
-                  keyboardType: TextInputType.text,
-                  validator: (templateName) => templateName.length < 3
-                      ? "Must be at least 3 characters long"
-                      : null,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (templateName) =>
-                      Navigator.of(context).pop(true),
-                  decoration: InputDecoration(
-                    filled: true,
-                    hintText: 'ex: Taxi Zambia...',
+  void _createNewTemplateForm() async {
+    if (_expenseClaimBloc.edit)
+      _validateAndUploadTemplate();
+    else {
+      bool confirmation = await showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: Text(
+                "Create template",
+                style: Theme.of(context).textTheme.title,
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    "How do you want to name your new template?",
+                    style: Theme.of(context).textTheme.subtitle,
                   ),
+                  SizedBox(height: 8.0),
+                  TextFormField(
+                    key: _templateFormKey,
+                    controller: _templateNameController,
+                    autofocus: true,
+                    keyboardType: TextInputType.text,
+                    validator: (templateName) => templateName.length < 3
+                        ? "Must be at least 3 characters long"
+                        : null,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (templateName) =>
+                        Navigator.of(context).pop(true),
+                    decoration: InputDecoration(
+                      filled: true,
+                      hintText: 'ex: Taxi Zambia...',
+                    ),
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text(
+                    "Cancel",
+                    style: Theme.of(context).textTheme.button,
+                  ),
+                  onPressed: () => Navigator.of(context).pop(false),
+                ),
+                RaisedButton(
+                  child: Text(
+                    "Create",
+                  ),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  color: secondaryColor,
+                  textColor: black60,
                 ),
               ],
             ),
-            actions: <Widget>[
-              FlatButton(
-                child: Text(
-                  "Cancel",
-                  style: Theme.of(context).textTheme.button,
-                ),
-                onPressed: () => Navigator.of(context).pop(false),
-              ),
-              RaisedButton(
-                child: Text(
-                  "Create",
-                ),
-                onPressed: () => Navigator.of(context).pop(true),
-                color: secondaryColor,
-                textColor: black60,
-              ),
-            ],
-          ),
-        ) ??
-        false;
+          ) ??
+          false;
 
-    if (confirmation) {
-      _validateAndUploadTemplate();
-      _validateAndUploadExpense();
+      if (confirmation) {
+        _validateAndUploadTemplate();
+        _validateAndUploadExpense();
+      }
     }
   }
 
