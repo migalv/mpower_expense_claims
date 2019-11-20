@@ -168,9 +168,11 @@ class _ExpenseTileState extends State<ExpenseTile>
                             Expanded(
                                 child: _buildSection('Net cost',
                                     widget.expense.net.toStringAsFixed(2))),
-                            Expanded(
-                                child: _buildSection('VAT',
-                                    '${widget.expense.vat.toString()} %')),
+                            widget.expense.vat != -1.0
+                                ? Expanded(
+                                    child: _buildSection('VAT',
+                                        '${widget.expense.vat.toString()} %'))
+                                : Container(),
                           ],
                         ),
                         Container(height: 12.0),

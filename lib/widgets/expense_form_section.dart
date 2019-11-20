@@ -355,35 +355,46 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                           stream: _expenseClaimBloc.selectedCountry,
                           builder: (context, selectedCountrySnapshot) =>
                               StreamBuilder(
-                            stream: _expenseClaimBloc.selectedVat,
-                            builder: (context, selectedVatSnapshot) => Column(
-                              children: <Widget>[
-                                CustomFormField(
-                                  child: DropdownButton<double>(
-                                    isDense: true,
-                                    hint: Text("VAT"),
-                                    value: selectedVatSnapshot?.data,
-                                    items: selectedCountrySnapshot
-                                            ?.data?.vatOptions
-                                            ?.map(
-                                              (vat) => DropdownMenuItem(
-                                                child: AutoSizeText(
-                                                  vat.toString() + "%",
-                                                  maxLines: 1,
-                                                ),
-                                                value: vat,
-                                              ),
-                                            )
-                                            ?.toList() ??
-                                        [],
-                                    onChanged: _expenseClaimBloc.selectVat,
-                                    isExpanded: true,
-                                  ),
-                                  state: state,
-                                ),
-                              ],
-                            ),
-                          ),
+                                  stream: _expenseClaimBloc.selectedVat,
+                                  builder: (context, selectedVatSnapshot) {
+                                    List<DropdownMenuItem<double>> items = [
+                                      DropdownMenuItem(
+                                        child: AutoSizeText(
+                                          "No Receipt",
+                                          maxLines: 2,
+                                        ),
+                                        value: -1.0,
+                                      ),
+                                    ];
+                                    if (selectedCountrySnapshot.hasData)
+                                      items.addAll(selectedCountrySnapshot
+                                          .data.vatOptions
+                                          .map(
+                                        (vat) => DropdownMenuItem(
+                                          child: AutoSizeText(
+                                            vat.toString() + "%",
+                                            maxLines: 1,
+                                          ),
+                                          value: vat,
+                                        ),
+                                      ));
+                                    return Column(
+                                      children: <Widget>[
+                                        CustomFormField(
+                                          child: DropdownButton<double>(
+                                            isDense: true,
+                                            hint: Text("VAT"),
+                                            value: selectedVatSnapshot?.data,
+                                            items: items,
+                                            onChanged:
+                                                _expenseClaimBloc.selectVat,
+                                            isExpanded: true,
+                                          ),
+                                          state: state,
+                                        ),
+                                      ],
+                                    );
+                                  }),
                         ),
                       ),
                     ),

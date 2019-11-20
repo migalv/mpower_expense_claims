@@ -183,7 +183,9 @@ class ExpenseFormSectionBloc {
     double gross = double.tryParse(parsedString);
     double net;
     double vat = selectedVat.value;
-    if (net == null && vat != null && gross != null)
+    if (vat == -1)
+      net = gross;
+    else
       net = gross - (gross * vat) / 100;
     Expense expense;
     List<Map<String, String>> attachmentsList = List<Map<String, String>>();
