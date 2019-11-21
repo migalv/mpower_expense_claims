@@ -425,8 +425,10 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                                           .map(
                                         (vat) => DropdownMenuItem(
                                           child: AutoSizeText(
-                                            vat.toString() + "%",
-                                            maxLines: 1,
+                                            vat == 0.0
+                                                ? "0% or No VAT"
+                                                : (vat.toString() + "%"),
+                                            maxLines: vat == 0.0 ? 2 : 1,
                                           ),
                                           value: vat,
                                         ),
