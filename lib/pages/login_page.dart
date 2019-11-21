@@ -168,7 +168,6 @@ class _LoginPageState extends State<LoginPage> {
           utils.showSnackbar(
             scaffoldKey: _scaffoldKey,
             message: "This user has been blocked from loging in.",
-            duration: 2,
           );
           break;
         case AuthState.ERROR:
@@ -177,7 +176,6 @@ class _LoginPageState extends State<LoginPage> {
             backgroundColor: errorColor,
             textColor: Colors.black87,
             message: "Incorrect email or password. Try again.",
-            duration: 2,
           );
           break;
       }

@@ -838,8 +838,8 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         false;
 
     if (confirmation) {
-      _validateAndUploadTemplate();
-      _validateAndUploadExpense();
+      bool isConnected = await _validateAndUploadExpense();
+      if (isConnected) _validateAndUploadTemplate();
     }
   }
 
@@ -848,7 +848,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
     utils.showSnackbar(
       scaffoldKey: widget._scaffoldKey,
       message: "Your Template has been edited successfully.",
-      duration: 2,
     );
     widget._onDonePressed();
   }
@@ -859,12 +858,21 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       utils.showSnackbar(
         scaffoldKey: widget._scaffoldKey,
         message: "Your template has been created successfully.",
-        duration: 2,
       );
     }
   }
 
-  void _validateAndUploadExpense() {
+  Future<bool> _validateAndUploadExpense() async {
+    if (!await utils.isConnectedToInternet()) {
+      utils.showSnackbar(
+        scaffoldKey: widget._scaffoldKey,
+        message: "Error. No internet connection.",
+        backgroundColor: errorColor,
+        textColor: Colors.white,
+      );
+      return false;
+    }
+
     if (_formKey.currentState.validate()) {
       _expenseClaimBloc.uploadNewExpense();
       utils.showSnackbar(
@@ -876,9 +884,9 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
       utils.showSnackbar(
         scaffoldKey: widget._scaffoldKey,
         message: "Error. Some information might be incomplete.",
-        duration: 2,
         backgroundColor: errorColor,
         textColor: Colors.white,
       );
+    return true;
   }
 }

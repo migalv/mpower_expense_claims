@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class Utils {
@@ -20,11 +22,23 @@ class Utils {
     );
   }
 
+  Future<bool> isConnectedToInternet() async {
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        return true;
+      }
+    } on SocketException catch (_) {
+      return false;
+    }
+    return false;
+  }
+
   void showSnackbar({
     @required GlobalKey<ScaffoldState> scaffoldKey,
     @required String message,
     SnackBarAction action,
-    int duration = 5,
+    int duration = 2,
     bool postFrame = true,
     Color backgroundColor,
     Color textColor,
