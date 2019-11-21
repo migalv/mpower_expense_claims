@@ -25,6 +25,9 @@ class Repository {
   User _currentUser;
   User get currentUser => _currentUser;
 
+  // Expenses marked as approved by the user
+  List<Expense> _approvedByMe = [];
+
   //
   // DATA SOURCES
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -50,6 +53,8 @@ class Repository {
   ValueObservable<List<CostCentreGroup>> get costCentresGroups =>
       _costCentresGroupsController.stream;
   ValueObservable<int> get lastPageIndex => _lastSelectedListController.stream;
+  ValueObservable<List<Expense>> get approvedByMe =>
+      _approvedByMeController.stream;
 
   // CONTROLLERS
   final _countriesController = BehaviorSubject<List<Country>>();
@@ -64,6 +69,7 @@ class Repository {
   final _approversController = BehaviorSubject<List<User>>();
   final _costCentresGroupsController = BehaviorSubject<List<CostCentreGroup>>();
   final _templatesController = BehaviorSubject<List<Template>>();
+  final _approvedByMeController = BehaviorSubject<List<Expense>>();
 
   void init() {
     _countriesController.add([]);
@@ -200,6 +206,7 @@ class Repository {
     _setUpStream(TEMPLATES_COLLECTION, _templatesController);
     _setUpStream(USERS_COLLECTION, _approversController);
     _setUpStream(COST_CENTRES_GROUPS_COLLECTION, _costCentresGroupsController);
+    _listenToExpensesApprovedByMeChanges();
     _loadLastSelected();
   }
 
@@ -324,6 +331,60 @@ class Repository {
         return CostCentreGroup.fromJson(docSnapshot.data,
             id: docSnapshot.documentID);
     }
+  }
+
+  void _listenToExpensesApprovedByMeChanges() {
+    _firestore
+        .collection(EXPENSE_CLAIMS_COLLECTION)
+        .where(Expense.APPROVED_BY_KEY, isEqualTo: _currentUserId)
+        .snapshots()
+        .listen((querySnapshot) {
+      querySnapshot.documentChanges.forEach((documentChange) {
+        ExpenseClaim onlineExpense = ExpenseClaim.fromJson(
+            documentChange.document.data,
+            id: documentChange.document.documentID);
+        switch (documentChange.type) {
+          case DocumentChangeType.added:
+            _approvedByMe.add(onlineExpense);
+            break;
+          case DocumentChangeType.modified:
+            _approvedByMe
+                .removeWhere((expense) => expense.id == onlineExpense.id);
+            _approvedByMe.add(onlineExpense);
+            break;
+          case DocumentChangeType.removed:
+            _approvedByMe
+                .removeWhere((expense) => expense.id == onlineExpense.id);
+            break;
+        }
+      });
+      _approvedByMeController.add(_approvedByMe);
+    });
+    _firestore
+        .collection(INVOICES_COLLECTION)
+        .where(Expense.APPROVED_BY_KEY, isEqualTo: _currentUserId)
+        .snapshots()
+        .listen((querySnapshot) {
+      querySnapshot.documentChanges.forEach((documentChange) {
+        Invoice onlineExpense = Invoice.fromJson(documentChange.document.data,
+            id: documentChange.document.documentID);
+        switch (documentChange.type) {
+          case DocumentChangeType.added:
+            _approvedByMe.add(onlineExpense);
+            break;
+          case DocumentChangeType.modified:
+            _approvedByMe
+                .removeWhere((expense) => expense.id == onlineExpense.id);
+            _approvedByMe.add(onlineExpense);
+            break;
+          case DocumentChangeType.removed:
+            _approvedByMe
+                .removeWhere((expense) => expense.id == onlineExpense.id);
+            break;
+        }
+      });
+      _approvedByMeController.add(_approvedByMe);
+    });
   }
 
   void _loadLastSelected() => _firestore
@@ -467,6 +528,7 @@ class Repository {
     _templatesController.close();
     _lastSelectedListController.close();
     _costCentresGroupsController.close();
+    _approvedByMeController.close();
   }
 }
 
