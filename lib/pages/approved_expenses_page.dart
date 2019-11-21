@@ -1,5 +1,6 @@
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/repository.dart';
+import 'package:expense_claims_app/widgets/empty_list_widget.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:flutter/material.dart';
 
@@ -22,10 +23,20 @@ class _ApprovedExpensesPageState extends State<ApprovedExpensesPage> {
         key: _scaffoldKey,
         body: StreamBuilder<List<Expense>>(
             stream: repository.approvedByMe,
+            initialData: [],
             builder: (context, snapshot) {
               List<Widget> list = [];
               list.add(_buildTitle());
-              list.addAll(_buildListTiles(snapshot.data));
+              if (snapshot.data.isEmpty)
+                list.add(EmptyListPlaceHolder(
+                  title: "You don't have any expenses approved by you",
+                  subtitle: Text(
+                      "If someone puts you as an approver the expense will be shown here",
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.subtitle),
+                ));
+              else
+                list.addAll(_buildListTiles(snapshot.data));
               return ListView(
                 children: list,
               );

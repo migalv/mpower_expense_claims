@@ -6,6 +6,7 @@ import 'package:expense_claims_app/pages/approved_expenses_page.dart';
 import 'package:expense_claims_app/pages/login_page.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
+import 'package:expense_claims_app/widgets/empty_list_widget.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/search_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -62,9 +63,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
               child: PopupMenuButton(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Icon(
-                    Icons.settings,
-                  ),
+                  child: Icon(Icons.settings),
                 ),
                 onSelected: (value) {
                   if (value == "logout") _logOut();
@@ -83,7 +82,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
                   ),
                   const PopupMenuItem<String>(
                     value: 'approvedByMeList',
-                    child: Text('My approved expenses'),
+                    child: Text('Approved expenses'),
                   ),
                 ],
               ),
@@ -110,18 +109,39 @@ class _ExpensesPageState extends State<ExpensesPage> {
       ),
     ];
 
-    list.addAll(snapshot.data
-        .map<Widget>((expense) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Container(
-                margin: EdgeInsets.only(bottom: 20.0),
-                child: ExpenseTile(
-                  scaffoldKey: widget.scaffoldKey,
-                  expense: expense,
+    if (snapshot.data.isEmpty) {
+      String title = "You don't have any ";
+      Widget subtitle = Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            "You can create one with the ",
+            style: Theme.of(context).textTheme.subtitle,
+          ),
+          Icon(Icons.add),
+          Text(" button", style: Theme.of(context).textTheme.subtitle),
+        ],
+      );
+      title += widget._expenseType == ExpenseType.EXPENSE_CLAIM
+          ? "expense claims"
+          : "invoices";
+      list.add(EmptyListPlaceHolder(
+        title: title,
+        subtitle: subtitle,
+      ));
+    } else
+      list.addAll(snapshot.data
+          .map<Widget>((expense) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Container(
+                  margin: EdgeInsets.only(bottom: 20.0),
+                  child: ExpenseTile(
+                    scaffoldKey: widget.scaffoldKey,
+                    expense: expense,
+                  ),
                 ),
-              ),
-            ))
-        .toList());
+              ))
+          .toList());
 
     list.add(Container(
       height: 20.0,
