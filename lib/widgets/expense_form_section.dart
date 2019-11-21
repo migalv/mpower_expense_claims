@@ -16,7 +16,6 @@ import 'package:expense_claims_app/widgets/custom_form_field.dart';
 import 'package:expense_claims_app/widgets/error_form_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -47,11 +46,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
   // Bloc
   ExpenseFormSectionBloc _expenseClaimBloc;
 
-  // Text Controllers
-  final _grossController =
-      MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
-  final _receiptNumberController = TextEditingController();
-
   // Keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _templateFormKey = GlobalKey<FormState>();
@@ -73,73 +67,88 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
               ExpenseType expenseType = ExpenseType.values[snapshot.data];
 
-              return ListView(
-                shrinkWrap: true,
+              return SingleChildScrollView(
                 controller: widget._scrollController,
-                children: <Widget>[
-                  _buildTitle(expenseType),
-                  _buildCountry(),
-                  _buildTemplateNameField(),
-                  _buildCategory(),
-                  _buildDescription(),
-                  _expenseClaimBloc.edit
-                      ? Container()
-                      : _buildDate("Date", _expenseClaimBloc.expenseDate,
-                          _expenseClaimBloc.selectExpenseDate),
-                  expenseType == ExpenseType.EXPENSE_CLAIM
-                      ? Container()
-                      : _expenseClaimBloc.edit
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 24.0),
+                  child: Column(
+                    children: <Widget>[
+                      _buildTitle(expenseType),
+                      _buildCountry(),
+                      _buildTemplateNameField(),
+                      _buildCategory(),
+                      _buildDescription(),
+                      _expenseClaimBloc.editingTemplate
                           ? Container()
-                          : _buildDate(
-                              "Due date",
-                              _expenseClaimBloc.selectedDueDate,
-                              _expenseClaimBloc.selectDueDate,
-                              lastDate: DateTime(2030)),
-                  _buildCost(),
-                  _buildCostCenterTile(),
-                  _expenseClaimBloc.edit
-                      ? Container()
-                      : _buildreceiptNumberField(),
-                  _buildApproverTile(),
-                  _expenseClaimBloc.edit
-                      ? Container(
-                          height: 16,
-                        )
-                      : _buildAttachmentsTile(),
-                  _buildButtons(expenseType),
-                ],
+                          : _buildDate("Date", _expenseClaimBloc.expenseDate,
+                              _expenseClaimBloc.selectExpenseDate),
+                      expenseType == ExpenseType.EXPENSE_CLAIM
+                          ? Container()
+                          : _expenseClaimBloc.editingTemplate
+                              ? Container()
+                              : _buildDate(
+                                  "Due date",
+                                  _expenseClaimBloc.selectedDueDate,
+                                  _expenseClaimBloc.selectDueDate,
+                                  lastDate: DateTime(2030)),
+                      _buildCost(),
+                      _buildCostCenterTile(),
+                      _expenseClaimBloc.editingTemplate
+                          ? Container()
+                          : _buildreceiptNumberField(),
+                      _buildApproverTile(),
+                      _expenseClaimBloc.editingTemplate
+                          ? Container(
+                              height: 16,
+                            )
+                          : _buildAttachmentsTile(),
+                      _buildButtons(expenseType),
+                    ],
+                  ),
+                ),
               );
             }),
       );
 
-  Widget _buildTitle(ExpenseType expenseType) => Container(
-        height: 56,
-        alignment: Alignment.topCenter,
-        child: Row(
-          children: <Widget>[
-            IconButton(
-              padding: EdgeInsets.only(left: 16),
-              icon: Icon(FontAwesomeIcons.arrowLeft),
-              iconSize: 16.0,
-              onPressed: widget._onBackPressed,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Text(
-                _expenseClaimBloc.edit
-                    ? "Edit template"
-                    : 'New ' +
-                        (expenseType == ExpenseType.EXPENSE_CLAIM
-                            ? "expense claim"
-                            : "invoice"),
-                style: Theme.of(context).textTheme.title,
-              ),
-            ),
-          ],
-        ),
-      );
+  Widget _buildTitle(ExpenseType expenseType) {
+    String title = "";
+    if (_expenseClaimBloc.editingTemplate)
+      title = "Edit template";
+    else {
+      switch (expenseType) {
+        case ExpenseType.EXPENSE_CLAIM:
+          title = "New expense claim";
+          break;
+        case ExpenseType.INVOICE:
+          title = "New invoice";
+          break;
+      }
+    }
 
-  Widget _buildTemplateNameField() => _expenseClaimBloc.edit
+    return Container(
+      height: 56,
+      alignment: Alignment.topCenter,
+      child: Row(
+        children: <Widget>[
+          IconButton(
+            padding: EdgeInsets.only(left: 16),
+            icon: Icon(FontAwesomeIcons.arrowLeft),
+            iconSize: 16.0,
+            onPressed: widget._onBackPressed,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.title,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTemplateNameField() => _expenseClaimBloc.editingTemplate
       ? Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -365,11 +374,11 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  _expenseClaimBloc.edit
+                  _expenseClaimBloc.editingTemplate
                       ? Container()
                       : Expanded(
                           child: TextFormField(
-                            controller: _grossController,
+                            controller: _expenseClaimBloc.grossController,
                             keyboardType: TextInputType.number,
                             inputFormatters: <TextInputFormatter>[
                               WhitelistingTextInputFormatter.digitsOnly,
@@ -385,7 +394,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                                     : null,
                           ),
                         ),
-                  _expenseClaimBloc.edit
+                  _expenseClaimBloc.editingTemplate
                       ? Container()
                       : Container(
                           width: 16.0,
@@ -583,7 +592,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: TextFormField(
-              controller: _receiptNumberController,
+              controller: _expenseClaimBloc.receiptNumberController,
               maxLines: 1,
               autocorrect: true,
               keyboardType: TextInputType.text,
@@ -617,6 +626,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
             children: <Widget>[
               _buildFieldLabel('Attachments'),
               _buildAttachmentList(attachmentsSnapshot.data),
+              Align(alignment: Alignment.center, child: ErrorFormLabel(state)),
               (_expenseClaimBloc.multipleAttachments ?? false)
                   ? Padding(
                       padding: const EdgeInsets.only(right: 24, bottom: 32),
@@ -633,7 +643,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                       ),
                     )
                   : Container(),
-              ErrorFormLabel(state),
             ],
           ),
         );
@@ -681,11 +690,11 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   Widget _buildButtons(ExpenseType expenseType) => Container(
         margin: EdgeInsets.fromLTRB(24, 0, 24, 48),
-        child: _expenseClaimBloc.edit ?? false
+        child: (_expenseClaimBloc.editingTemplate ?? false)
             ? FlatButton(
                 textColor: secondaryColor,
                 child: Text('Save'),
-                onPressed: _createNewTemplateForm,
+                onPressed: _saveEditing,
               )
             : Column(
                 children: <Widget>[
@@ -709,7 +718,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                   FlatButton(
                     textColor: secondaryColor,
                     child: Text('Create and save as template'),
-                    onPressed: _createNewTemplateForm,
+                    onPressed: _createNewTemplate,
                   ),
                 ],
               ),
@@ -771,76 +780,72 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
     }
   }
 
-  void _createNewTemplateForm() async {
-    if (_expenseClaimBloc.edit)
-      _editTemplate();
-    else {
-      bool confirmation = await showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: Text(
-                "Create template",
-                style: Theme.of(context).textTheme.title,
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text(
-                    "How do you want to name your new template?",
-                    style: Theme.of(context).textTheme.subtitle,
-                  ),
-                  SizedBox(height: 8.0),
-                  TextFormField(
-                    key: _templateFormKey,
-                    controller: _expenseClaimBloc.templateNameController,
-                    autofocus: true,
-                    keyboardType: TextInputType.text,
-                    validator: (templateName) => templateName.length < 3
-                        ? "Must be at least 3 characters long"
-                        : null,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (templateName) =>
-                        Navigator.of(context).pop(true),
-                    decoration: InputDecoration(
-                      filled: true,
-                      hintText: 'ex: Taxi Zambia...',
-                    ),
-                  ),
-                ],
-              ),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text(
-                    "Cancel",
-                    style: Theme.of(context).textTheme.button,
-                  ),
-                  onPressed: () => Navigator.of(context).pop(false),
+  void _createNewTemplate() async {
+    bool confirmation = await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(
+              "Create template",
+              style: Theme.of(context).textTheme.title,
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  "How do you want to name your new template?",
+                  style: Theme.of(context).textTheme.subtitle,
                 ),
-                RaisedButton(
-                  child: Text(
-                    "Create",
+                SizedBox(height: 8.0),
+                TextFormField(
+                  key: _templateFormKey,
+                  controller: _expenseClaimBloc.templateNameController,
+                  autofocus: true,
+                  keyboardType: TextInputType.text,
+                  validator: (templateName) => templateName.length < 3
+                      ? "Must be at least 3 characters long"
+                      : null,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (templateName) =>
+                      Navigator.of(context).pop(true),
+                  decoration: InputDecoration(
+                    filled: true,
+                    hintText: 'ex: Taxi Zambia...',
                   ),
-                  onPressed: () => Navigator.of(context).pop(true),
-                  color: secondaryColor,
-                  textColor: black60,
                 ),
               ],
             ),
-          ) ??
-          false;
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  "Cancel",
+                  style: Theme.of(context).textTheme.button,
+                ),
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+              RaisedButton(
+                child: Text(
+                  "Create",
+                ),
+                onPressed: () => Navigator.of(context).pop(true),
+                color: secondaryColor,
+                textColor: black60,
+              ),
+            ],
+          ),
+        ) ??
+        false;
 
-      if (confirmation) {
-        _validateAndUploadTemplate();
-        _validateAndUploadExpense();
-      }
+    if (confirmation) {
+      _validateAndUploadTemplate();
+      _validateAndUploadExpense();
     }
   }
 
-  void _editTemplate() {
+  void _saveEditing() {
     _expenseClaimBloc.editTemplate();
     utils.showSnackbar(
       scaffoldKey: widget._scaffoldKey,
-      message: "Your template has been edited successfully.",
+      message: "Your Template has been edited successfully.",
       duration: 2,
     );
     widget._onDonePressed();
@@ -859,11 +864,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
   void _validateAndUploadExpense() {
     if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadNewExpense(
-          _grossController.text,
-          _receiptNumberController.text == ""
-              ? null
-              : _receiptNumberController.text);
+      _expenseClaimBloc.uploadNewExpense();
       utils.showSnackbar(
         scaffoldKey: widget._scaffoldKey,
         message: "Your expense has been created successfully.",

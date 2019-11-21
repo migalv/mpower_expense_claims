@@ -115,13 +115,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 },
                 children: <Widget>[
                   BlocProvider<ExpensesBloc>(
-                    child: ExpensesPage(expenseType: ExpenseType.EXPENSE_CLAIM),
+                    child: ExpensesPage(
+                        scaffoldKey: _scaffoldKey,
+                        expenseType: ExpenseType.EXPENSE_CLAIM),
                     initBloc: (_, bloc) =>
                         ExpensesBloc(expenseType: ExpenseType.EXPENSE_CLAIM),
                     onDispose: (_, bloc) => bloc.dispose(),
                   ),
                   BlocProvider<ExpensesBloc>(
-                    child: ExpensesPage(expenseType: ExpenseType.INVOICE),
+                    child: ExpensesPage(
+                        scaffoldKey: _scaffoldKey,
+                        expenseType: ExpenseType.INVOICE),
                     initBloc: (_, bloc) =>
                         ExpensesBloc(expenseType: ExpenseType.INVOICE),
                     onDispose: (_, bloc) => bloc.dispose(),
@@ -204,7 +208,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           floatingActionButton: FabAddToClose(
             controller: _fabController,
             onPressed: () {
-              _playAnimation(_bottomSheetController);
+              _playAnimation(_bottomSheetController).whenComplete(() {
+                if (_bottomSheetPageController.offset != 0)
+                  _bottomSheetPageController.animateTo(0,
+                      duration: Duration(milliseconds: 1),
+                      curve: Curves.easeIn);
+              });
             },
           ),
         ),

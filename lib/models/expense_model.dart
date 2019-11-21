@@ -1,4 +1,3 @@
-import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +22,8 @@ abstract class Expense {
   final int createdAt;
   final String receiptNumber;
   final ExpenseStatus status;
+  bool edited;
+  bool deleted;
 
   Expense({
     this.id,
@@ -43,6 +44,8 @@ abstract class Expense {
     this.createdAt,
     this.receiptNumber,
     this.status,
+    this.edited = false,
+    this.deleted = false,
   });
 
   Expense.fromJson(Map<String, dynamic> json, {String id})
@@ -64,7 +67,9 @@ abstract class Expense {
         this.availableTo = json[AVAILABLE_TO].cast<String>(),
         this.createdAt = json[CREATED_AT_KEY],
         this.receiptNumber = json[RECEIPT_NUM_KEY],
-        this.status = ExpenseStatus(json[STATUS_KEY]) {
+        this.status = ExpenseStatus(json[STATUS_KEY]),
+        this.edited = json[EDITED_KEY] ?? false,
+        this.deleted = json[DELETED_KEY] ?? false {
     if (json.containsKey('attachments') &&
         json['attachments'] != null &&
         json['attachments'].isNotEmpty) {
@@ -95,6 +100,8 @@ abstract class Expense {
         CREATED_AT_KEY: this.createdAt,
         RECEIPT_NUM_KEY: this.receiptNumber,
         STATUS_KEY: this.status.value,
+        EDITED_KEY: this.edited,
+        DELETED_KEY: this.deleted,
       };
 
   @override
@@ -131,6 +138,8 @@ abstract class Expense {
   static const String CREATED_AT_KEY = "created_at";
   static const String RECEIPT_NUM_KEY = "receipt_num";
   static const String STATUS_KEY = "status";
+  static const String EDITED_KEY = "edited";
+  static const String DELETED_KEY = "deleted";
 }
 
 enum ExpenseType {

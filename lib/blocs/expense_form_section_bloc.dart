@@ -8,6 +8,7 @@ import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
 
@@ -48,10 +49,15 @@ class ExpenseFormSectionBloc {
 
   // PUBLIC
   final Stream<int> expenseTypeStream;
-  bool edit = false;
+  bool editingTemplate = false;
   Template _template;
-  TextEditingController descriptionController = TextEditingController();
-  TextEditingController templateNameController = TextEditingController();
+
+  // Text Controllers
+  final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController templateNameController = TextEditingController();
+  final grossController =
+      MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
+  final receiptNumberController = TextEditingController();
 
   // Flags
   bool _multipleAttachments;
@@ -99,7 +105,7 @@ class ExpenseFormSectionBloc {
   void selectVat(double vat) => _selectedVatController.add(vat);
 
   void setTemplate(Template template, {bool edit = false}) {
-    this.edit = edit;
+    this.editingTemplate = edit;
     _template = template;
 
     if (template != null) {
@@ -156,6 +162,12 @@ class ExpenseFormSectionBloc {
     selectCurrency(repository.lastSelectedCurrency.value);
     selectApprover(repository.lastSelectedApprover.value);
     selectCostCentre(null);
+    selectDueDate(null);
+    selectExpenseDate(DateTime.now());
+    receiptNumberController.text = "";
+    grossController.updateValue(0.0);
+    descriptionController.text = "";
+
     _attachments = Map();
     switch (_expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
@@ -169,9 +181,6 @@ class ExpenseFormSectionBloc {
         _multipleAttachments = true;
         break;
     }
-
-    descriptionController.text = "";
-    selectExpenseDate(DateTime.now());
   }
 
   // ATTACHMENTS
@@ -201,9 +210,8 @@ class ExpenseFormSectionBloc {
   }
 
   // UPLOAD DATA
-  void uploadNewExpense(String stringGross, String receiptNumber) {
-    String parsedString = stringGross.replaceAll('.', '').replaceAll(',', '.');
-    double gross = double.tryParse(parsedString);
+  void uploadNewExpense() {
+    double gross = grossController.numberValue;
     double net;
     double vat = selectedVat.value;
     if (vat == -1)
@@ -234,7 +242,9 @@ class ExpenseFormSectionBloc {
         approvedByName: repository.approvers.value
             .singleWhere((user) => user.id == selectedApprover.value)
             ?.name,
-        receiptNumber: receiptNumber,
+        receiptNumber: receiptNumberController.text != ""
+            ? receiptNumberController.text
+            : null,
         status: ExpenseStatus(ExpenseStatus.WAITING),
       );
     } else if (_expenseType == ExpenseType.INVOICE) {
@@ -257,7 +267,9 @@ class ExpenseFormSectionBloc {
         approvedByName: repository.approvers.value
             .singleWhere((user) => user.id == selectedApprover.value)
             ?.name,
-        receiptNumber: receiptNumber,
+        receiptNumber: receiptNumberController.text != ""
+            ? receiptNumberController.text
+            : null,
         status: ExpenseStatus(ExpenseStatus.WAITING),
       );
     }

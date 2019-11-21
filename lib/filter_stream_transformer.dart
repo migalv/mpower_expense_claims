@@ -80,6 +80,11 @@ class FilterStreamTransformer<S, T> implements StreamTransformer<S, T> {
           .toList() as S;
     }
 
+    // Filter the deleted ones
+    _filteredData = (_filteredData as List)
+        .where((element) => element.deleted == false)
+        .toList() as S;
+
     // Sort by
     (_filteredData as List).sort((element1, element2) {
       if (sortingBy == "") // If filtering sort by name

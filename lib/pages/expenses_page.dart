@@ -12,9 +12,12 @@ import 'package:flutter/material.dart';
 
 class ExpensesPage extends StatefulWidget {
   final ExpenseType _expenseType;
+  final GlobalKey scaffoldKey;
 
-  const ExpensesPage({@required ExpenseType expenseType})
-      : _expenseType = expenseType;
+  const ExpensesPage({
+    @required ExpenseType expenseType,
+    @required this.scaffoldKey,
+  }) : _expenseType = expenseType;
 
   @override
   _ExpensesPageState createState() => _ExpensesPageState();
@@ -100,7 +103,10 @@ class _ExpensesPageState extends State<ExpensesPage> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Container(
                 margin: EdgeInsets.only(bottom: 20.0),
-                child: ExpenseTile(expense: expense),
+                child: ExpenseTile(
+                  scaffoldKey: widget.scaffoldKey,
+                  expense: expense,
+                ),
               ),
             ))
         .toList());

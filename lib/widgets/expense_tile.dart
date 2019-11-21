@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:expense_claims_app/colors.dart';
+import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/attachments_page.dart';
 import 'package:expense_claims_app/repository.dart';
+import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/tile_icon.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +13,13 @@ import 'package:timeago/timeago.dart' as timeago;
 
 class ExpenseTile extends StatefulWidget {
   final Expense expense;
+  final GlobalKey scaffoldKey;
 
-  const ExpenseTile({Key key, this.expense}) : super(key: key);
+  const ExpenseTile({
+    Key key,
+    this.expense,
+    @required this.scaffoldKey,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ExpenseTileState();
@@ -25,6 +32,7 @@ class _ExpenseTileState extends State<ExpenseTile>
       _rotationTween = Tween<double>(begin: 0.0, end: 0.5);
   Animation<double> _sizeAnimation, _rotateAnimation;
   bool _isExpanded = false;
+  Offset _tapPosition;
 
   @override
   initState() {
@@ -50,6 +58,41 @@ class _ExpenseTileState extends State<ExpenseTile>
   @override
   Widget build(BuildContext context) => GestureDetector(
         onTap: _toggleExpand,
+        onLongPress: widget.expense.status.value == ExpenseStatus.WAITING
+            ? () {
+                final RenderBox overlay =
+                    Overlay.of(context).context.findRenderObject();
+                showMenu(
+                  position: RelativeRect.fromRect(
+                      _tapPosition & Size(0, 0), Offset.zero & overlay.size),
+                  context: context,
+                  items: <PopupMenuEntry>[
+                    PopupMenuItem(
+                      value: "Delete",
+                      child: Row(
+                        children: <Widget>[
+                          Icon(Icons.delete),
+                          SizedBox(width: 8.0),
+                          Text("Delete"),
+                        ],
+                      ),
+                    ),
+                  ],
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8.0),
+                    bottomLeft: Radius.circular(8.0),
+                    bottomRight: Radius.circular(8.0),
+                  )),
+                ).then((selectedValue) {
+                  if (selectedValue == null) return;
+
+                  if (selectedValue == "Delete") _deleteExpense(context);
+                });
+              }
+            : null,
+        onLongPressStart: (details) =>
+            setState(() => _tapPosition = details.globalPosition),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10.0),
@@ -316,6 +359,49 @@ class _ExpenseTileState extends State<ExpenseTile>
       case AnimationStatus.reverse:
       case AnimationStatus.forward:
         break;
+    }
+  }
+
+  void _deleteExpense(BuildContext context) async {
+    String string = widget.expense is ExpenseClaim ? "expense" : "invoice";
+    bool delete = await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(
+              "Delete " + string,
+              style: Theme.of(context).textTheme.title,
+            ),
+            content: Text(
+              "Are you sure to delete this " + string + "?",
+              style: Theme.of(context).textTheme.subtitle,
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  "Cancel",
+                  style: Theme.of(context).textTheme.button,
+                ),
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+              RaisedButton(
+                child: Text(
+                  "Delete",
+                ),
+                onPressed: () => Navigator.of(context).pop(true),
+                color: secondaryColor,
+                textColor: black60,
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (delete) {
+      repository.deleteExpense(widget.expense);
+      utils.showSnackbar(
+        scaffoldKey: widget.scaffoldKey,
+        message: "Expense claim deleted sucessfully",
+      );
     }
   }
 }

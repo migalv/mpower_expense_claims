@@ -445,6 +445,15 @@ class Repository {
     batch.commit();
   }
 
+  void deleteExpense(Expense expense) {
+    WriteBatch batch = _firestore.batch();
+    String collection = expense is ExpenseClaim ? "expense_claims" : "invoices";
+    DocumentReference docRef = _firestore.document('$collection/${expense.id}');
+    expense.deleted = true;
+    batch.setData(docRef, expense.toJson(), merge: true);
+    batch.commit();
+  }
+
   void dispose() {
     _categoriesController.close();
     _currenciesController.close();
