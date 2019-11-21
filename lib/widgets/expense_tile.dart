@@ -14,11 +14,13 @@ import 'package:timeago/timeago.dart' as timeago;
 class ExpenseTile extends StatefulWidget {
   final Expense expense;
   final GlobalKey scaffoldKey;
+  final bool deletable;
 
   const ExpenseTile({
     Key key,
     this.expense,
     @required this.scaffoldKey,
+    this.deletable = true,
   }) : super(key: key);
 
   @override
@@ -58,7 +60,8 @@ class _ExpenseTileState extends State<ExpenseTile>
   @override
   Widget build(BuildContext context) => GestureDetector(
         onTap: _toggleExpand,
-        onLongPress: widget.expense.status.value == ExpenseStatus.WAITING
+        onLongPress: widget.expense.status.value == ExpenseStatus.WAITING &&
+                widget.deletable
             ? () {
                 final RenderBox overlay =
                     Overlay.of(context).context.findRenderObject();

@@ -2,6 +2,7 @@ import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expenses_bloc.dart';
 import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:expense_claims_app/pages/approved_expenses_page.dart';
 import 'package:expense_claims_app/pages/login_page.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
@@ -67,11 +68,22 @@ class _ExpensesPageState extends State<ExpensesPage> {
                 ),
                 onSelected: (value) {
                   if (value == "logout") _logOut();
+                  if (value == "approvedByMeList")
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ApprovedExpensesPage(),
+                      ),
+                    );
                 },
                 itemBuilder: (_) => <PopupMenuEntry<String>>[
                   const PopupMenuItem<String>(
                     value: 'logout',
                     child: Text('Logout'),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'approvedByMeList',
+                    child: Text('My approved expenses'),
                   ),
                 ],
               ),
