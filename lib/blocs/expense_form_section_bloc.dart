@@ -80,7 +80,7 @@ class ExpenseFormSectionBloc {
   // SELECTS
   void selectCountry(Country country) {
     _selectedVatController.add(null);
-    repository.updateLastSelectedCountry(country.id);
+    repository.updateLastSelectedCountry(country?.id);
     _selectedCountryController.add(country);
   }
 
@@ -275,7 +275,6 @@ class ExpenseFormSectionBloc {
     }
 
     repository.uploadNewExpense(expense, _attachments);
-    _initFields();
   }
 
   void uploadTemplate() {

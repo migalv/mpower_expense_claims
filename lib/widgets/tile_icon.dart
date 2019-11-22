@@ -7,7 +7,7 @@ class TileIcon extends StatelessWidget {
 
   const TileIcon({
     Key key,
-    @required this.iconData,
+    this.iconData,
     this.backgroundColor = Colors.white30,
     this.iconColor = Colors.white,
   }) : super(key: key);
@@ -22,10 +22,12 @@ class TileIcon extends StatelessWidget {
             color: backgroundColor,
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            iconData,
-            color: iconColor,
-          ),
+          child: iconData != null
+              ? Icon(
+                  iconData,
+                  color: iconColor,
+                )
+              : Container(),
         ),
       );
 }

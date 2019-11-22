@@ -64,7 +64,7 @@ class TemplateTile extends StatelessWidget {
                       TileIcon(
                           iconData: repository
                               .getCategoryWithId(template.category)
-                              .icon),
+                              ?.icon),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

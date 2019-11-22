@@ -839,7 +839,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
 
     if (confirmation) {
       bool isConnected = await _validateAndUploadExpense();
-      if (isConnected) _validateAndUploadTemplate();
+      if (isConnected) _uploadTemplate();
     }
   }
 
@@ -852,14 +852,12 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
     widget._onDonePressed();
   }
 
-  void _validateAndUploadTemplate() {
-    if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadTemplate();
-      utils.showSnackbar(
-        scaffoldKey: widget._scaffoldKey,
-        message: "Your template has been created successfully.",
-      );
-    }
+  void _uploadTemplate() {
+    _expenseClaimBloc.uploadTemplate();
+    utils.showSnackbar(
+      scaffoldKey: widget._scaffoldKey,
+      message: "Your template has been created successfully.",
+    );
   }
 
   Future<bool> _validateAndUploadExpense() async {
@@ -880,6 +878,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         message: "Your expense has been created successfully.",
       );
       widget._onDonePressed();
+      return true;
     } else
       utils.showSnackbar(
         scaffoldKey: widget._scaffoldKey,
@@ -887,6 +886,6 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
         backgroundColor: errorColor,
         textColor: Colors.white,
       );
-    return true;
+    return false;
   }
 }
