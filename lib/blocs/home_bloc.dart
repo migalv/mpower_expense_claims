@@ -12,6 +12,7 @@ class HomeBloc {
 
   HomeBloc({lastPageIndex = 0}) {
     _pageIndexController.add(lastPageIndex ?? 0);
+    repository.configureFirebaseCloudMessaging();
   }
 
   //

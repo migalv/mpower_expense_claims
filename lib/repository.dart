@@ -11,6 +11,7 @@ import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -56,6 +57,10 @@ class Repository {
   ValueObservable<List<Expense>> get approvedByMe =>
       _approvedByMeController.stream;
 
+  //
+  // Firebase Cloud Messaging
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+
   // CONTROLLERS
   final _countriesController = BehaviorSubject<List<Country>>();
   final _currenciesController = BehaviorSubject<List<Currency>>();
@@ -83,6 +88,7 @@ class Repository {
     DocumentSnapshot documentSnapshot =
         await _firestore.document('$USERS_COLLECTION/$userId').get();
     _currentUser = User.fromJson(documentSnapshot.data, id: userId);
+    fetchFCMToken();
   }
 
   // UPLOAD
@@ -411,6 +417,33 @@ class Repository {
                 : null);
       });
 
+  // Firebase Cloud Messaging
+  void fetchFCMToken() {
+    _firebaseMessaging.getToken().then(
+          (token) => _firestore
+              .collection(
+                  "$USERS_COLLECTION/$currentUserId/$EDITABLE_INFO_COLLECTION")
+              .document(FMC_TOKENS_DOC)
+              .setData({
+            'tokens': {'mobile': token}
+          }, merge: true),
+        );
+  }
+
+  void configureFirebaseCloudMessaging() {
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        print('on message $message');
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print('on resume $message');
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+        print('on launch $message');
+      },
+    );
+  }
+
   // AUTH
   Future<String> signUp(
       {@required String email, @required String password}) async {
@@ -549,6 +582,7 @@ const String COST_CENTRES_GROUPS_COLLECTION = "cost_centres_groups";
 
 // FIRESTORE DOCUMENT KEYS
 const String LAST_SELECTED_DOC = "last_selected";
+const String FMC_TOKENS_DOC = "fcm_tokens";
 
 // USER ATRIBUTES
 const String APPROVERS = "approvers";
