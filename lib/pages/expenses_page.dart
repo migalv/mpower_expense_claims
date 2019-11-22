@@ -11,6 +11,7 @@ import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/search_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class ExpensesPage extends StatefulWidget {
   final ExpenseType _expenseType;
@@ -58,31 +59,36 @@ class _ExpensesPageState extends State<ExpensesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Align(
-              alignment: Alignment.centerRight,
-              child: PopupMenuButton(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Icon(Icons.settings),
-                ),
-                onSelected: (value) {
-                  if (value == "logout") _logOut();
-                  if (value == "approvedByMeList")
-                    Navigator.push(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                children: <Widget>[
+                  GestureDetector(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: Row(
+                        children: <Widget>[
+                          Icon(MdiIcons.logout),
+                          SizedBox(width: 4.0),
+                          Text("Logout"),
+                        ],
+                      ),
+                    ),
+                    onTap: () => _logOut(),
+                  ),
+                  Expanded(
+                    child: Container(),
+                  ),
+                  IconButton(
+                    alignment: Alignment.centerLeft,
+                    icon: Icon(MdiIcons.fileDocumentBoxCheck),
+                    onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => ApprovedExpensesPage(),
                       ),
-                    );
-                },
-                itemBuilder: (_) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(
-                    value: 'logout',
-                    child: Text('Logout'),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'approvedByMeList',
-                    child: Text('Approved expenses'),
+                    ),
+                    tooltip: "Approved expenses",
                   ),
                 ],
               ),
