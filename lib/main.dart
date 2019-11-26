@@ -12,23 +12,14 @@ import 'package:flutter/services.dart';
 void main() {
   final bool debugMode = false;
 
-  FlutterError.onError = (FlutterErrorDetails details) {
-    if (debugMode) {
-      FlutterError.dumpErrorToConsole(details);
-    } else {
-      Zone.current.handleUncaughtError(details.exception, details.stack);
-      Crashlytics.instance.recordFlutterError(details);
-    }
-  };
-
   repository.init();
 
-  runZoned<Future<Null>>(() async {
-    runApp(MyApp(debugMode: debugMode));
-  }, onError: (error, stackTrace) async {
-    print(error.toString());
-    print(stackTrace.toString());
-  });
+  Crashlytics.instance.enableInDevMode = true;
+  FlutterError.onError = Crashlytics.instance.recordFlutterError;
+
+  runApp(MyApp(
+    debugMode: debugMode,
+  ));
 }
 
 class MyApp extends StatefulWidget {

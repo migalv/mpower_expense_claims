@@ -192,20 +192,21 @@ DEPENDENCIES:
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
 
 SPEC REPOS:
-  trunk:
+  https://cdn.cocoapods.org/:
+    - Fabric
+    - FirebaseCore
+    - FirebaseInstanceID
+  https://github.com/cocoapods/specs.git:
     - BoringSSL-GRPC
     - Crashlytics
-    - Fabric
     - Firebase
     - FirebaseAnalytics
     - FirebaseAnalyticsInterop
     - FirebaseAuth
     - FirebaseAuthInterop
-    - FirebaseCore
     - FirebaseCoreDiagnostics
     - FirebaseCoreDiagnosticsInterop
     - FirebaseFirestore
-    - FirebaseInstanceID
     - FirebaseMessaging
     - FirebaseStorage
     - FMDB
@@ -248,7 +249,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
-  cloud_firestore: c9493dd01ad88934d926e18cc5a92a0129bf2c32
+  cloud_firestore: 187530401afa261d255791ea75580591e345fa7b
   Crashlytics: 540b7e5f5da5a042647227a5e3ac51d85eed06df
   Fabric: 706c8b8098fff96c33c0db69cbf81f9c551d0d74
   Firebase: 5e6b7b12bf9adb90986688edc06b156c37e109cd
@@ -288,4 +289,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 476e2fed613d5ca562fc538af8faba3e0a79ca08
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.7.5
