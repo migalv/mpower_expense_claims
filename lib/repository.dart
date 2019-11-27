@@ -92,8 +92,7 @@ class Repository {
   }
 
   // UPLOAD
-  Future uploadNewExpense(
-      Expense expense, Map<String, File> attachments) async {
+  void uploadNewExpense(Expense expense, Map<String, File> attachments) async {
     String collection;
     DocumentReference docRef;
 
@@ -120,17 +119,11 @@ class Repository {
     docRef.setData(expense.toJson(), merge: true);
   }
 
-  Future uploadNewTemplate(Template template) async {
-    if (template.id == null)
-      await _firestore
-          .collection(TEMPLATES_COLLECTION)
-          .document()
-          .setData(template.toJson());
-    else
-      await _firestore
-          .collection(TEMPLATES_COLLECTION)
-          .document(template.id)
-          .setData(template.toJson());
+  void uploadNewTemplate(Template template) {
+    _firestore
+        .collection(TEMPLATES_COLLECTION)
+        .document(template.id)
+        .setData(template.toJson());
   }
 
   Future<Map<String, String>> _uploadAttachments(
@@ -547,6 +540,9 @@ class Repository {
     batch.setData(docRef, expense.toJson(), merge: true);
     batch.commit();
   }
+
+  String generateDocumentId(String collection) =>
+      _firestore.collection(collection).document().documentID;
 
   void dispose() {
     _categoriesController.close();

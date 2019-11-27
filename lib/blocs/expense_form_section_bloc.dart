@@ -151,6 +151,7 @@ class ExpenseFormSectionBloc {
   void editTemplate() {
     Template newTemplate = Template(
       id: _template.id,
+      createdBy: repository.currentUserId,
       category: _selectedCategoryController.value,
       approvedBy: _selectedApproverController.value,
       availableTo: _template.availableTo,
@@ -290,10 +291,12 @@ class ExpenseFormSectionBloc {
     Template template;
 
     template = Template(
+      id: repository.generateDocumentId(TEMPLATES_COLLECTION),
       approvedBy: selectedApprover.value,
       availableTo: {
         'uid': [repository.currentUserId]
       },
+      createdBy: repository.currentUserId,
       category: selectedCategory.value,
       country: selectedCountry.value.id,
       currency: selectedCurrency.value,

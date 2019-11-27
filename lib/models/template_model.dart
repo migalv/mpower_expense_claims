@@ -1,9 +1,11 @@
 import 'package:expense_claims_app/models/expense_model.dart';
+import 'package:flutter/foundation.dart';
 
 class Template {
   final String id;
   final String name;
   final String approvedBy;
+  final String createdBy;
   final String country;
   final String category;
   final String currency;
@@ -14,17 +16,18 @@ class Template {
   final ExpenseType expenseType;
 
   Template({
-    this.id,
-    this.name,
-    this.approvedBy,
-    this.country,
-    this.category,
-    this.currency,
-    this.description,
-    this.vat,
-    this.availableTo,
-    this.costCentreGroup,
-    this.expenseType,
+    @required this.id,
+    @required this.name,
+    @required this.approvedBy,
+    @required this.category,
+    @required this.country,
+    @required this.createdBy,
+    @required this.currency,
+    @required this.description,
+    @required this.vat,
+    @required this.availableTo,
+    @required this.costCentreGroup,
+    @required this.expenseType,
   });
 
   Template.fromJson(final Map<String, dynamic> json, {String id})
@@ -33,6 +36,7 @@ class Template {
         this.country = json[COUNTRY_KEY],
         this.category = json[CATEGORY_KEY],
         this.description = json[DESCRIPTION_KEY],
+        this.createdBy = json[CREATED_BY],
         this.currency = json[CURRENCY_KEY],
         this.vat = json[VAT_KEY]?.toDouble() ?? 0.0,
         this.approvedBy = json[APPROVED_BY_KEY],
@@ -41,16 +45,17 @@ class Template {
         this.expenseType = ExpenseType.values[json[EXPENSE_TYPE]];
 
   Map<String, dynamic> toJson() => {
-        NAME_KEY: this.name,
-        COUNTRY_KEY: this.country,
-        CATEGORY_KEY: this.category,
-        DESCRIPTION_KEY: this.description,
-        CURRENCY_KEY: this.currency,
-        VAT_KEY: this.vat,
         APPROVED_BY_KEY: this.approvedBy,
         AVAILABLE_TO_KEY: this.availableTo,
+        CATEGORY_KEY: this.category,
+        COUNTRY_KEY: this.country,
         COST_CENTRE_GROUP_KEY: this.costCentreGroup,
+        CREATED_BY: this.createdBy,
+        CURRENCY_KEY: this.currency,
+        DESCRIPTION_KEY: this.description,
         EXPENSE_TYPE: this.expenseType.index,
+        NAME_KEY: this.name,
+        VAT_KEY: this.vat,
       };
 
   @override
@@ -64,14 +69,15 @@ class Template {
     return "Expense Template: {\n\t id: $id,\n\t name:$name\n}";
   }
 
-  static const String NAME_KEY = "name";
-  static const String COUNTRY_KEY = "country";
-  static const String CATEGORY_KEY = "category";
-  static const String DESCRIPTION_KEY = "description";
-  static const String CURRENCY_KEY = "currency";
-  static const String VAT_KEY = "vat";
   static const String APPROVED_BY_KEY = "approved_by";
   static const String AVAILABLE_TO_KEY = "availableTo";
-  static const String EXPENSE_TYPE = "expense_type";
+  static const String CATEGORY_KEY = "category";
   static const String COST_CENTRE_GROUP_KEY = "cost_centre_group";
+  static const String COUNTRY_KEY = "country";
+  static const String CREATED_BY = "created_by";
+  static const String CURRENCY_KEY = "currency";
+  static const String DESCRIPTION_KEY = "description";
+  static const String EXPENSE_TYPE = "expense_type";
+  static const String NAME_KEY = "name";
+  static const String VAT_KEY = "vat";
 }

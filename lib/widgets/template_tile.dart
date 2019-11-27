@@ -113,21 +113,23 @@ class TemplateTile extends StatelessWidget {
                                 shape: BoxShape.circle,
                               ),
                             )
-                          : Container(
-                              margin: EdgeInsets.only(right: 8),
-                              child: IconButton(
-                                icon: Icon(
-                                  FontAwesomeIcons.pen,
-                                  size: 16,
-                                  color: Colors.white54,
-                                ),
-                                onPressed: () => _onTemplatePressed(
-                                  expenseFormSectionBloc,
-                                  context,
-                                  edit: true,
-                                ),
-                              ),
-                            ),
+                          : template.createdBy == repository.currentUserId
+                              ? Container(
+                                  margin: EdgeInsets.only(right: 8),
+                                  child: IconButton(
+                                    icon: Icon(
+                                      FontAwesomeIcons.pen,
+                                      size: 16,
+                                      color: Colors.white54,
+                                    ),
+                                    onPressed: () => _onTemplatePressed(
+                                      expenseFormSectionBloc,
+                                      context,
+                                      edit: true,
+                                    ),
+                                  ),
+                                )
+                              : Container(),
                     ],
                   ),
                 ],
