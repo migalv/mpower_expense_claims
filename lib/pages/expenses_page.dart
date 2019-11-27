@@ -59,39 +59,50 @@ class _ExpensesPageState extends State<ExpensesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                children: <Widget>[
-                  GestureDetector(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+            AppBar(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              elevation: 0,
+              actions: <Widget>[
+                PopupMenuButton(
+                  icon: Icon(MdiIcons.dotsVertical),
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
                       child: Row(
                         children: <Widget>[
-                          Icon(MdiIcons.logout),
-                          SizedBox(width: 4.0),
-                          Text("Logout"),
+                          Icon(MdiIcons.fileDocumentBoxCheck),
+                          SizedBox(
+                            width: 8.0,
+                          ),
+                          Text("Approved Expenses"),
                         ],
                       ),
+                      value: 0,
                     ),
-                    onTap: () => _logOut(),
-                  ),
-                  Expanded(
-                    child: Container(),
-                  ),
-                  IconButton(
-                    alignment: Alignment.centerLeft,
-                    icon: Icon(MdiIcons.fileDocumentBoxCheck),
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ApprovedExpensesPage(),
+                    PopupMenuItem(
+                      child: Row(
+                        children: <Widget>[
+                          Icon(
+                            MdiIcons.logout,
+                            color: Theme.of(context).errorColor.withAlpha(155),
+                          ),
+                          SizedBox(
+                            width: 8.0,
+                          ),
+                          Text(
+                            "Log out",
+                            style:
+                                TextStyle(color: Theme.of(context).errorColor),
+                          ),
+                        ],
                       ),
+                      value: 1,
                     ),
-                    tooltip: "Approved expenses",
-                  ),
-                ],
-              ),
+                  ],
+                  onSelected: (value) => value == 0
+                      ? utils.push(context, ApprovedExpensesPage())
+                      : _logOut(),
+                ),
+              ],
             ),
             Text(
               widget._expenseType == ExpenseType.EXPENSE_CLAIM
@@ -116,24 +127,10 @@ class _ExpensesPageState extends State<ExpensesPage> {
     ];
 
     if (snapshot.data.isEmpty) {
-      String title = "You don't have any ";
-      Widget subtitle = Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            "You can create one with the ",
-            style: Theme.of(context).textTheme.subtitle,
-          ),
-          Icon(Icons.add),
-          Text(" button", style: Theme.of(context).textTheme.subtitle),
-        ],
-      );
-      title += widget._expenseType == ExpenseType.EXPENSE_CLAIM
-          ? "expense claims"
-          : "invoices";
       list.add(EmptyListPlaceHolder(
-        title: title,
-        subtitle: subtitle,
+        title:
+            "You don't have any ${widget._expenseType == ExpenseType.EXPENSE_CLAIM ? 'expense claims' : 'invoices'}",
+        subtitle: "You can create one with the + button",
       ));
     } else
       list.addAll(snapshot.data
@@ -156,18 +153,6 @@ class _ExpensesPageState extends State<ExpensesPage> {
     return ListView(shrinkWrap: true, children: list);
   }
 
-  void _logOut() {
-    repository.logOut();
-    utils.pushReplacement(
-      context,
-      BlocProvider<LoginBloc>(
-        initBloc: (_, bloc) => bloc ?? LoginBloc(),
-        onDispose: (_, bloc) => bloc.dispose(),
-        child: LoginPage(),
-      ),
-    );
-  }
-
   void _closeSearchBar() {
     Future.delayed(Duration(milliseconds: 50)).then((_) {
       _searchTextController.clear();
@@ -178,5 +163,17 @@ class _ExpensesPageState extends State<ExpensesPage> {
   void _searchBy(String searchBy) {
     _expensesBloc.startSearch(true);
     _expensesBloc.searchBy.add(_searchTextController.text);
+  }
+
+  void _logOut() {
+    repository.logOut();
+    utils.pushReplacement(
+      context,
+      BlocProvider<LoginBloc>(
+        initBloc: (_, bloc) => bloc ?? LoginBloc(),
+        onDispose: (_, bloc) => bloc.dispose(),
+        child: LoginPage(),
+      ),
+    );
   }
 }

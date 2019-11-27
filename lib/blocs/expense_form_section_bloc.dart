@@ -30,6 +30,8 @@ class ExpenseFormSectionBloc {
   ValueObservable<double> get selectedVat => _selectedVatController.stream;
   ValueObservable<String> get selectedCostCentre =>
       _selectedCostCentreController.stream;
+  Stream<bool> get addAttachmentsButtonVisible =>
+      _addAttachmentsButtonVisibleController.stream;
 
   // Controllers
   final _selectedCountryController = BehaviorSubject<Country>();
@@ -41,6 +43,7 @@ class ExpenseFormSectionBloc {
   final _selectedApproverController = BehaviorSubject<String>();
   final _selectedVatController = BehaviorSubject<double>();
   final _selectedCostCentreController = BehaviorSubject<String>();
+  final _addAttachmentsButtonVisibleController = StreamController<bool>();
 
   // PRIVATE
   List<StreamSubscription> _streamSubscriptions = [];
@@ -59,13 +62,10 @@ class ExpenseFormSectionBloc {
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
   final receiptNumberController = TextEditingController();
 
-  // Flags
-  bool _multipleAttachments;
-  bool get multipleAttachments => _multipleAttachments;
-
   ExpenseFormSectionBloc({@required Stream<int> expenseTypeStream})
       : this.expenseTypeStream = expenseTypeStream {
     _listenToExpenseTypeChanges();
+    _listenToAttachmentChanges();
   }
 
   void _listenToExpenseTypeChanges() {
@@ -75,6 +75,17 @@ class ExpenseFormSectionBloc {
         _initFields();
       },
     ));
+  }
+
+  void _listenToAttachmentChanges() {
+    _streamSubscriptions.add(attachments.listen((attachments) {
+      if (attachments != null)
+        _addAttachmentsButtonVisibleController.add(
+            attachments.containsKey('Receipt') &&
+                    attachments['Receipt'] != null ||
+                attachments.containsKey('Invoice') &&
+                    attachments['Invoice'] != null);
+    }));
   }
 
   // SELECTS
@@ -173,12 +184,10 @@ class ExpenseFormSectionBloc {
       case ExpenseType.EXPENSE_CLAIM:
         _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
         _attachmentsController.add(_attachments);
-        _multipleAttachments = true;
         break;
       case ExpenseType.INVOICE:
         _attachments[ATTACHMENTS_INVOICE_NAME] = null;
         _attachmentsController.add(_attachments);
-        _multipleAttachments = true;
         break;
     }
   }
@@ -343,7 +352,10 @@ class ExpenseFormSectionBloc {
     _selectedDueDateController.close();
     _selectedApproverController.close();
     _selectedVatController.close();
+    _addAttachmentsButtonVisibleController.close();
     _selectedCostCentreController.close();
+
+    _streamSubscriptions.forEach((s) => s.cancel());
   }
 }
 

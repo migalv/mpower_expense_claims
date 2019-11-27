@@ -30,10 +30,8 @@ class _ApprovedExpensesPageState extends State<ApprovedExpensesPage> {
               if (snapshot.data.isEmpty)
                 list.add(EmptyListPlaceHolder(
                   title: "You don't have any expenses approved by you",
-                  subtitle: Text(
+                  subtitle:
                       "If someone puts you as an approver the expense will be shown here",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.subtitle),
                 ));
               else
                 list.addAll(_buildListTiles(snapshot.data));

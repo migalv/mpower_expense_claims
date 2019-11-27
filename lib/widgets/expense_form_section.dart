@@ -629,22 +629,29 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
               _buildFieldLabel('Attachments'),
               _buildAttachmentList(attachmentsSnapshot.data),
               Align(alignment: Alignment.center, child: ErrorFormLabel(state)),
-              (_expenseClaimBloc.multipleAttachments ?? false)
-                  ? Padding(
-                      padding: const EdgeInsets.only(right: 24, bottom: 32),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          OutlineButton(
-                              borderSide:
-                                  BorderSide(width: 0.5, color: Colors.white54),
-                              highlightedBorderColor: secondaryColor,
-                              child: Text('Add attachments'),
-                              onPressed: () => _selectAttachments()),
-                        ],
-                      ),
-                    )
-                  : Container(),
+              StreamBuilder(
+                stream: _expenseClaimBloc.addAttachmentsButtonVisible,
+                initialData: false,
+                builder: (BuildContext context, AsyncSnapshot snapshot) =>
+                    Container(
+                  child: snapshot.data
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 24, bottom: 32),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              OutlineButton(
+                                  borderSide: BorderSide(
+                                      width: 0.5, color: Colors.white54),
+                                  highlightedBorderColor: secondaryColor,
+                                  child: Text('Add attachments'),
+                                  onPressed: () => _selectAttachments()),
+                            ],
+                          ),
+                        )
+                      : Container(),
+                ),
+              ),
             ],
           ),
         );

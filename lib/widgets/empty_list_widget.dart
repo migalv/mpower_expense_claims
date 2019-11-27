@@ -3,7 +3,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 
 class EmptyListPlaceHolder extends StatelessWidget {
   final String title;
-  final Widget subtitle;
+  final String subtitle;
 
   const EmptyListPlaceHolder(
       {Key key, this.title = "This list is empty", this.subtitle})
@@ -15,21 +15,30 @@ class EmptyListPlaceHolder extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         children: <Widget>[
-          SizedBox(height: 16.0),
-          Icon(
-            MdiIcons.folderOpen,
-            size: 88,
+          SizedBox(height: 56.0),
+          CircleAvatar(
+            child: Icon(
+              MdiIcons.folderOpen,
+              size: 48,
+              color: Colors.white70,
+            ),
+            radius: 44,
+            backgroundColor: Colors.white10,
           ),
           SizedBox(height: 16.0),
           Text(
             title,
-            style: Theme.of(context).textTheme.title.copyWith(fontSize: 24.0),
+            style: Theme.of(context).textTheme.title,
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 8.0),
+          SizedBox(height: 12.0),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: subtitle ?? Container(),
+            child: Text(
+                  subtitle ?? '',
+                  style: Theme.of(context).textTheme.body1,
+                ) ??
+                Container(),
           ),
         ],
       ),
