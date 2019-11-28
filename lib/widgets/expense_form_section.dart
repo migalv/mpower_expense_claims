@@ -30,7 +30,7 @@ class ExpenseFormSection extends StatefulWidget {
 
   ExpenseFormSection({
     @required ScrollController scrollController,
-    @required Function onBackPressed,
+    Function onBackPressed,
     @required Function onDonePressed,
     @required GlobalKey<ScaffoldState> scaffoldKey,
   })  : _scrollController = scrollController,

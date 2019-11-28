@@ -65,7 +65,6 @@ class _ApprovedExpensesPageState extends State<ApprovedExpensesPage> {
           child: ExpenseTile(
             scaffoldKey: _scaffoldKey,
             expense: expense,
-            deletable: false,
           ),
         )));
     return tiles;

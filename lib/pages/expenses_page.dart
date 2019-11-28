@@ -15,12 +15,16 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 
 class ExpensesPage extends StatefulWidget {
   final ExpenseType _expenseType;
-  final GlobalKey scaffoldKey;
+  final GlobalKey _scaffoldKey;
+  final Function _editExpense;
 
   const ExpensesPage({
     @required ExpenseType expenseType,
-    @required this.scaffoldKey,
-  }) : _expenseType = expenseType;
+    @required GlobalKey scaffoldKey,
+    @required Function editExpense,
+  })  : _expenseType = expenseType,
+        _scaffoldKey = scaffoldKey,
+        _editExpense = editExpense;
 
   @override
   _ExpensesPageState createState() => _ExpensesPageState();
@@ -49,10 +53,10 @@ class _ExpensesPageState extends State<ExpensesPage> {
         stream: _expensesBloc.expenses,
         initialData: [],
         builder: (BuildContext context, AsyncSnapshot snapshot) =>
-            _getType(snapshot));
+            _buildBody(snapshot));
   }
 
-  Widget _getType(AsyncSnapshot snapshot) {
+  Widget _buildBody(AsyncSnapshot snapshot) {
     List<Widget> list = <Widget>[
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -139,8 +143,9 @@ class _ExpensesPageState extends State<ExpensesPage> {
                 child: Container(
                   margin: EdgeInsets.only(bottom: 20.0),
                   child: ExpenseTile(
-                    scaffoldKey: widget.scaffoldKey,
+                    scaffoldKey: widget._scaffoldKey,
                     expense: expense,
+                    editExpense: widget._editExpense,
                   ),
                 ),
               ))

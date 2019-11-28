@@ -27,7 +27,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   PageController _pageController;
   PageController _bottomSheetPageController;
-  AnimationController _navBarController, _bottomSheetController, _fabController;
+  AnimationController _navBarController,
+      _bottomSheetController1,
+      _fabController;
   HomeBloc _homeBloc;
   Tween<Offset> _tween = Tween(begin: Offset(0, 2), end: Offset(0, 0));
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -38,7 +40,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    _bottomSheetController =
+    _bottomSheetController1 =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     _fabController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
@@ -76,7 +78,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void dispose() {
     _homeBloc.dispose();
     _navBarController.dispose();
-    _bottomSheetController.dispose();
+    _bottomSheetController1.dispose();
     _fabController.dispose();
 
     _streamSubscriptions.forEach((s) => s.cancel());
@@ -116,91 +118,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 children: <Widget>[
                   BlocProvider<ExpensesBloc>(
                     child: ExpensesPage(
-                        scaffoldKey: _scaffoldKey,
-                        expenseType: ExpenseType.EXPENSE_CLAIM),
+                      scaffoldKey: _scaffoldKey,
+                      expenseType: ExpenseType.EXPENSE_CLAIM,
+                      editExpense: _editExpense,
+                    ),
                     initBloc: (_, bloc) =>
                         ExpensesBloc(expenseType: ExpenseType.EXPENSE_CLAIM),
                     onDispose: (_, bloc) => bloc.dispose(),
                   ),
                   BlocProvider<ExpensesBloc>(
                     child: ExpensesPage(
-                        scaffoldKey: _scaffoldKey,
-                        expenseType: ExpenseType.INVOICE),
+                      scaffoldKey: _scaffoldKey,
+                      expenseType: ExpenseType.INVOICE,
+                      editExpense: _editExpense,
+                    ),
                     initBloc: (_, bloc) =>
                         ExpensesBloc(expenseType: ExpenseType.INVOICE),
                     onDispose: (_, bloc) => bloc.dispose(),
                   ),
                 ],
               ),
-              SizedBox.expand(
-                child: SlideTransition(
-                  position: _tween.animate(_bottomSheetController),
-                  child: DraggableScrollableSheet(
-                    builder: (BuildContext context,
-                            ScrollController scrollController) =>
-                        Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).canvasColor,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(0x1affffff),
-                            offset: Offset(0, -4),
-                            blurRadius: 5.0,
-                          )
-                        ],
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(32.0),
-                          topRight: Radius.circular(32.0),
-                        ),
-                      ),
-                      child: BlocProvider<ExpenseFormSectionBloc>(
-                        initBloc: (_, bloc) => bloc ?? _expenseFormBloc,
-                        onDispose: (_, bloc) => bloc.dispose(),
-                        child: PageView(
-                          controller: _bottomSheetPageController,
-                          physics: NeverScrollableScrollPhysics(),
-                          children: <Widget>[
-                            BlocProvider<TemplatesSectionBloc>(
-                              child: TemplatesSection(
-                                scrollController: scrollController,
-                                pageController: _bottomSheetPageController,
-                                onPressed: () {
-                                  _bottomSheetPageController.animateTo(
-                                      MediaQuery.of(context).size.width,
-                                      duration: Duration(milliseconds: 275),
-                                      curve: Curves.easeIn);
-                                  _expenseFormBloc.setTemplate(null);
-                                },
-                              ),
-                              initBloc: (_, bloc) => TemplatesSectionBloc(
-                                  expenseTypeStream: _homeBloc.pageIndex),
-                              onDispose: (_, bloc) => bloc.dispose(),
-                            ),
-                            ExpenseFormSection(
-                              scrollController: scrollController,
-                              onBackPressed: () {
-                                _bottomSheetPageController.animateTo(0,
-                                    duration: Duration(milliseconds: 275),
-                                    curve: Curves.easeIn);
-                              },
-                              scaffoldKey: _scaffoldKey,
-                              onDonePressed: () async {
-                                _playAnimation(_fabController);
-
-                                await _playAnimation(_bottomSheetController);
-
-                                _bottomSheetPageController.animateTo(0,
-                                    duration: Duration(milliseconds: 1),
-                                    curve: Curves.easeIn);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              _bottomSheet1(),
+              _bottomSheet2(),
             ],
           ),
           floatingActionButtonLocation:
@@ -208,13 +147,120 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           floatingActionButton: FabAddToClose(
             controller: _fabController,
             onPressed: () {
-              _playAnimation(_bottomSheetController).whenComplete(() {
+              _playAnimation(_bottomSheetController1).whenComplete(() {
                 if (_bottomSheetPageController.offset != 0)
                   _bottomSheetPageController.animateTo(0,
                       duration: Duration(milliseconds: 1),
                       curve: Curves.easeIn);
               });
             },
+          ),
+        ),
+      );
+
+  Widget _bottomSheet1() => SizedBox.expand(
+        child: SlideTransition(
+          position: _tween.animate(_bottomSheetController1),
+          child: DraggableScrollableSheet(
+            builder:
+                (BuildContext context, ScrollController scrollController) =>
+                    Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).canvasColor,
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x1affffff),
+                    offset: Offset(0, -4),
+                    blurRadius: 5.0,
+                  )
+                ],
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(32.0),
+                  topRight: Radius.circular(32.0),
+                ),
+              ),
+              child: BlocProvider<ExpenseFormSectionBloc>(
+                initBloc: (_, bloc) => bloc ?? _expenseFormBloc,
+                onDispose: (_, bloc) => bloc.dispose(),
+                child: PageView(
+                  controller: _bottomSheetPageController,
+                  physics: NeverScrollableScrollPhysics(),
+                  children: <Widget>[
+                    BlocProvider<TemplatesSectionBloc>(
+                      child: TemplatesSection(
+                        scrollController: scrollController,
+                        pageController: _bottomSheetPageController,
+                        onPressed: () {
+                          _bottomSheetPageController.animateTo(
+                              MediaQuery.of(context).size.width,
+                              duration: Duration(milliseconds: 275),
+                              curve: Curves.easeIn);
+                          _expenseFormBloc.setTemplate(null);
+                        },
+                      ),
+                      initBloc: (_, bloc) => TemplatesSectionBloc(
+                          expenseTypeStream: _homeBloc.pageIndex),
+                      onDispose: (_, bloc) => bloc.dispose(),
+                    ),
+                    ExpenseFormSection(
+                      scrollController: scrollController,
+                      onBackPressed: () {
+                        _bottomSheetPageController.animateTo(0,
+                            duration: Duration(milliseconds: 275),
+                            curve: Curves.easeIn);
+                      },
+                      scaffoldKey: _scaffoldKey,
+                      onDonePressed: () async {
+                        _playAnimation(_fabController);
+
+                        await _playAnimation(_bottomSheetController1);
+
+                        _bottomSheetPageController.animateTo(0,
+                            duration: Duration(milliseconds: 1),
+                            curve: Curves.easeIn);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+  Widget _bottomSheet2() => SizedBox.expand(
+        child: SlideTransition(
+          position: _tween.animate(_bottomSheetController1),
+          child: DraggableScrollableSheet(
+            builder:
+                (BuildContext context, ScrollController scrollController) =>
+                    Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).canvasColor,
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x1affffff),
+                    offset: Offset(0, -4),
+                    blurRadius: 5.0,
+                  )
+                ],
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(32.0),
+                  topRight: Radius.circular(32.0),
+                ),
+              ),
+              child: BlocProvider<ExpenseFormSectionBloc>(
+                initBloc: (_, bloc) => bloc ?? ExpenseFormSectionBloc(),
+                onDispose: (_, bloc) => bloc.dispose(),
+                child: ExpenseFormSection(
+                  scrollController: scrollController,
+                  scaffoldKey: _scaffoldKey,
+                  onDonePressed: () async {
+                    // TODO
+                  },
+                ),
+              ),
+            ),
           ),
         ),
       );
@@ -231,4 +277,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   TickerFuture _playAnimation(AnimationController controller) =>
       controller.isDismissed ? controller.forward() : controller.reverse();
+
+  void _editExpense(Expense expense) {
+    _bottomSheetPageController.animateTo(
+      1,
+      duration: Duration(milliseconds: 1),
+      curve: Curves.easeIn,
+    );
+
+    _playAnimation(_fabController);
+
+    _playAnimation(_bottomSheetController1).then((_) {
+      _expenseFormBloc.setExpenseToBeEdited(expense);
+    });
+  }
 }

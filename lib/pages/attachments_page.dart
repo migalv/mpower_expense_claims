@@ -5,9 +5,13 @@ import 'package:photo_view/photo_view.dart';
 
 class AttachmentsPage extends StatefulWidget {
   final List<Map<String, String>> attachments;
+  final Map<String, String> openAt;
 
-  const AttachmentsPage({Key key, @required this.attachments})
-      : super(key: key);
+  const AttachmentsPage({
+    Key key,
+    @required this.attachments,
+    @required this.openAt,
+  }) : super(key: key);
 
   @override
   _AttachmentsPageState createState() => _AttachmentsPageState();
@@ -25,6 +29,7 @@ class _AttachmentsPageState extends State<AttachmentsPage> {
                 onPressed: () => Navigator.pop(context),
               ),
               CarouselSlider(
+                initialPage: widget.attachments.indexOf(widget.openAt),
                 height: 480.0,
                 enlargeCenterPage: true,
                 enableInfiniteScroll: false,

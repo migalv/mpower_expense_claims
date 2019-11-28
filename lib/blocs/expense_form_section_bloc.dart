@@ -62,19 +62,20 @@ class ExpenseFormSectionBloc {
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
   final receiptNumberController = TextEditingController();
 
-  ExpenseFormSectionBloc({@required Stream<int> expenseTypeStream})
+  ExpenseFormSectionBloc({Stream<int> expenseTypeStream})
       : this.expenseTypeStream = expenseTypeStream {
     _listenToExpenseTypeChanges();
     _listenToAttachmentChanges();
   }
 
   void _listenToExpenseTypeChanges() {
-    _streamSubscriptions.add(expenseTypeStream.listen(
-      (expenseType) {
-        _expenseType = ExpenseType.values[expenseType ?? 0];
-        _initFields();
-      },
-    ));
+    if (expenseTypeStream != null)
+      _streamSubscriptions.add(expenseTypeStream.listen(
+        (expenseType) {
+          _expenseType = ExpenseType.values[expenseType ?? 0];
+          _initFields();
+        },
+      ));
   }
 
   void _listenToAttachmentChanges() {
@@ -114,6 +115,39 @@ class ExpenseFormSectionBloc {
   void selectDueDate(DateTime dueDate) =>
       _selectedDueDateController.add(dueDate);
   void selectVat(double vat) => _selectedVatController.add(vat);
+
+  void setExpenseToBeEdited(Expense expense) {
+    _expenseType = expense is ExpenseClaim
+        ? ExpenseType.EXPENSE_CLAIM
+        : ExpenseType.INVOICE;
+
+    selectCategory(expense.category);
+
+    // Country
+    if (expense.country != null)
+      selectCountry(repository.getCountryWithId(expense.country));
+    else if (repository?.lastSelectedCountry?.value != null)
+      selectCountry(
+          repository.getCountryWithId(repository.lastSelectedCountry.value));
+
+    // Currency
+    if (expense.currency != null)
+      selectCurrency(expense.currency);
+    else if (repository?.lastSelectedCurrency?.value != null)
+      selectCurrency(repository.lastSelectedCurrency.value);
+
+    // Approver
+    if (expense.approvedBy != null)
+      selectApprover(expense.approvedBy);
+    else if (repository?.lastSelectedApprover?.value != null)
+      selectApprover(repository.lastSelectedApprover.value);
+
+    selectCostCentre(expense.costCentreGroup);
+
+    selectVat(expense.vat);
+
+    descriptionController.text = expense.description;
+  }
 
   void setTemplate(Template template, {bool edit = false}) {
     this.editingTemplate = edit;
