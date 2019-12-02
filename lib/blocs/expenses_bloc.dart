@@ -14,7 +14,7 @@ import 'package:rxdart/rxdart.dart';
 /// Bloc with the logic for both lists of expenses and invoices.const
 class ExpensesBloc {
   StreamTransformer _filterStreamTransformer;
-  final ExpenseType expenseType;
+  final Stream<int> expenseTypeStream;
   Stream<List<Expense>> _stream;
 
   //
@@ -35,25 +35,29 @@ class ExpensesBloc {
   // SUBSCRIPTIONS
   List<StreamSubscription> _streamSubscriptions = [];
 
-  ExpensesBloc({@required this.expenseType}) {
-    switch (expenseType) {
-      case ExpenseType.EXPENSE_CLAIM:
-        _filterStreamTransformer = FilterStreamTransformer<List<ExpenseClaim>,
-            List<ExpenseClaim>>.broadcast(
-          collection: EXPENSE_CLAIMS_COLLECTION,
-          sortingBy: SortOptions.CREATED_AT,
-        );
-        _stream = repository.expenseClaims.transform(_filterStreamTransformer);
-        break;
-      case ExpenseType.INVOICE:
-        _filterStreamTransformer =
-            FilterStreamTransformer<List<Invoice>, List<Invoice>>.broadcast(
-          collection: INVOICES_COLLECTION,
-          sortingBy: SortOptions.CREATED_AT,
-        );
-        _stream = repository.invoices.transform(_filterStreamTransformer);
-        break;
-    }
+  ExpensesBloc({@required this.expenseTypeStream}) {
+    _streamSubscriptions.add(expenseTypeStream.listen((expenseType) {
+      switch (expenseType) {
+        case 0:
+          _filterStreamTransformer = FilterStreamTransformer<List<ExpenseClaim>,
+              List<ExpenseClaim>>.broadcast(
+            collection: EXPENSE_CLAIMS_COLLECTION,
+            sortingBy: SortOptions.CREATED_AT,
+          );
+          _stream =
+              repository.expenseClaims.transform(_filterStreamTransformer);
+          break;
+        case 1:
+          _filterStreamTransformer =
+              FilterStreamTransformer<List<Invoice>, List<Invoice>>.broadcast(
+            collection: INVOICES_COLLECTION,
+            sortingBy: SortOptions.CREATED_AT,
+          );
+          _stream = repository.invoices.transform(_filterStreamTransformer);
+          break;
+      }
+    }));
+
     _listenToSearchChanges();
   }
 
@@ -76,6 +80,7 @@ class ExpensesBloc {
   void dispose() {
     _searchController.close();
     _isSearching.close();
+
     _streamSubscriptions.forEach((s) => s.cancel());
   }
 }

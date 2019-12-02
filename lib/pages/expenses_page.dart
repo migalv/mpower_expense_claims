@@ -1,11 +1,9 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expenses_bloc.dart';
-import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/approved_expenses_page.dart';
-import 'package:expense_claims_app/pages/login_page.dart';
-import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
+import 'package:expense_claims_app/widgets/custom_app_bar.dart';
 import 'package:expense_claims_app/widgets/empty_list_widget.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/search_widget.dart';
@@ -14,18 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class ExpensesPage extends StatefulWidget {
-  final ExpenseType _expenseType;
-  final GlobalKey _scaffoldKey;
-  final Function _editExpense;
-
-  const ExpensesPage({
-    @required ExpenseType expenseType,
-    @required GlobalKey scaffoldKey,
-    @required Function editExpense,
-  })  : _expenseType = expenseType,
-        _scaffoldKey = scaffoldKey,
-        _editExpense = editExpense;
-
   @override
   _ExpensesPageState createState() => _ExpensesPageState();
 }
@@ -33,6 +19,7 @@ class ExpensesPage extends StatefulWidget {
 class _ExpensesPageState extends State<ExpensesPage> {
   final TextEditingController _searchTextController = TextEditingController();
   ExpensesBloc _expensesBloc;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -50,38 +37,31 @@ class _ExpensesPageState extends State<ExpensesPage> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Expense>>(
-        stream: _expensesBloc.expenses,
-        initialData: [],
-        builder: (BuildContext context, AsyncSnapshot snapshot) =>
-            _buildBody(snapshot));
+      stream: _expensesBloc.expenses,
+      initialData: [],
+      builder: (BuildContext context, AsyncSnapshot expensesSnapshot) =>
+          StreamBuilder<int>(
+        stream: _expensesBloc.expenseTypeStream,
+        builder: (context, expenseTypeSnapshot) =>
+            _buildBody(expensesSnapshot, expenseTypeSnapshot),
+      ),
+    );
   }
 
-  Widget _buildBody(AsyncSnapshot snapshot) {
+  Widget _buildBody(
+      AsyncSnapshot expensesSnapshot, AsyncSnapshot<int> expenseTypeSnapshot) {
     List<Widget> list = <Widget>[
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            AppBar(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              elevation: 0,
+            CustomAppBar(
+              title: '',
               actions: <Widget>[
                 PopupMenuButton(
                   icon: Icon(MdiIcons.dotsVertical),
                   itemBuilder: (_) => [
-                    PopupMenuItem(
-                      child: Row(
-                        children: <Widget>[
-                          Icon(MdiIcons.fileDocumentBoxCheck),
-                          SizedBox(
-                            width: 8.0,
-                          ),
-                          Text("Approved Expenses"),
-                        ],
-                      ),
-                      value: 0,
-                    ),
                     PopupMenuItem(
                       child: Row(
                         children: <Widget>[
@@ -104,14 +84,12 @@ class _ExpensesPageState extends State<ExpensesPage> {
                   ],
                   onSelected: (value) => value == 0
                       ? utils.push(context, ApprovedExpensesPage())
-                      : _logOut(),
+                      : utils.logOut(context),
                 ),
               ],
             ),
             Text(
-              widget._expenseType == ExpenseType.EXPENSE_CLAIM
-                  ? "Expense claims"
-                  : "Invoices",
+              expenseTypeSnapshot.data == 0 ? "Expense claims" : "Invoices",
               textAlign: TextAlign.left,
               style: TextStyle(
                 fontSize: 30.0,
@@ -130,22 +108,21 @@ class _ExpensesPageState extends State<ExpensesPage> {
       ),
     ];
 
-    if (snapshot.data.isEmpty) {
+    if (expensesSnapshot.data.isEmpty) {
       list.add(EmptyListPlaceHolder(
         title:
-            "You don't have any ${widget._expenseType == ExpenseType.EXPENSE_CLAIM ? 'expense claims' : 'invoices'}",
+            "You don't have any ${expenseTypeSnapshot.data == 0 ? 'expense claims' : 'invoices'}",
         subtitle: "You can create one with the + button",
       ));
     } else
-      list.addAll(snapshot.data
+      list.addAll(expensesSnapshot.data
           .map<Widget>((expense) => Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Container(
                   margin: EdgeInsets.only(bottom: 20.0),
                   child: ExpenseTile(
-                    scaffoldKey: widget._scaffoldKey,
+                    scaffoldKey: _scaffoldKey,
                     expense: expense,
-                    editExpense: widget._editExpense,
                   ),
                 ),
               ))
@@ -168,17 +145,5 @@ class _ExpensesPageState extends State<ExpensesPage> {
   void _searchBy(String searchBy) {
     _expensesBloc.startSearch(true);
     _expensesBloc.searchBy.add(_searchTextController.text);
-  }
-
-  void _logOut() {
-    repository.logOut();
-    utils.pushReplacement(
-      context,
-      BlocProvider<LoginBloc>(
-        initBloc: (_, bloc) => bloc ?? LoginBloc(),
-        onDispose: (_, bloc) => bloc.dispose(),
-        child: LoginPage(),
-      ),
-    );
   }
 }

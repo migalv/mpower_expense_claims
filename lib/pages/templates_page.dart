@@ -1,30 +1,25 @@
 import 'package:expense_claims_app/bloc_provider.dart';
-import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
+import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
+import 'package:expense_claims_app/blocs/templates_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
+import 'package:expense_claims_app/pages/new_expense_page.dart';
+import 'package:expense_claims_app/utils.dart';
+import 'package:expense_claims_app/widgets/custom_app_bar.dart';
 import 'package:expense_claims_app/widgets/template_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class TemplatesSection extends StatelessWidget {
-  final ScrollController scrollController;
-  final Function onPressed;
-  final PageController pageController;
-
-  const TemplatesSection({
-    Key key,
-    @required this.onPressed,
-    this.scrollController,
-    @required this.pageController,
-  }) : super(key: key);
+class TemplatesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    TemplatesSectionBloc bloc = Provider.of<TemplatesSectionBloc>(context);
+    TemplatesBloc bloc = Provider.of<TemplatesBloc>(context);
 
     return StreamBuilder<List<Template>>(
+      initialData: [],
       stream: bloc.templates,
       builder: (BuildContext context, AsyncSnapshot<List<Template>> snapshot) {
-        List<Widget> listWidgets = [_buildTitle(context, bloc)];
+        List<Widget> listWidgets = [];
 
         if (snapshot == null || snapshot.data == null || snapshot.data.isEmpty)
           listWidgets.add(_buildPlaceholder());
@@ -33,51 +28,43 @@ class TemplatesSection extends StatelessWidget {
             snapshot.data.map(
               (template) => TemplateTile(
                 template: template,
-                pageController: pageController,
                 templatesSectionBloc: bloc,
               ),
             ),
           );
 
-        return ListView(
-          controller: scrollController,
-          children: listWidgets,
-          shrinkWrap: true,
+        return Scaffold(
+          appBar: CustomAppBar(
+            title: 'Templates',
+            actions: <Widget>[
+              FlatButton(
+                child: Text(snapshot.data.length >= 1 ? 'Delete' : 'Skip'),
+                textColor: secondaryColor,
+                onPressed: snapshot.data.length >= 1
+                    ? () => _deleteTemplates(context, bloc)
+                    : () {
+                        utils.push(
+                          context,
+                          BlocProvider<NewExpenseBloc>(
+                            initBloc: (_, b) =>
+                                b ??
+                                NewExpenseBloc(expenseType: bloc.expenseType),
+                            child: NewExpensePage(),
+                            onDispose: (_, b) => b.dispose(),
+                          ),
+                        );
+                      },
+              ),
+            ],
+          ),
+          body: ListView(
+            children: listWidgets,
+            shrinkWrap: true,
+          ),
         );
       },
     );
   }
-
-  Widget _buildTitle(BuildContext context, TemplatesSectionBloc bloc) =>
-      Container(
-        height: 48,
-        alignment: Alignment.topCenter,
-        padding: const EdgeInsets.only(left: 24.0),
-        child: Row(
-          children: <Widget>[
-            Expanded(
-              child: Text(
-                "Templates",
-                style: Theme.of(context).textTheme.title,
-              ),
-            ),
-            StreamBuilder<List<Template>>(
-              stream: bloc.selectedTemplates,
-              initialData: [],
-              builder: (context, snapshot) => Container(
-                margin: EdgeInsets.only(right: 12.0),
-                child: FlatButton(
-                  child: Text(snapshot.data.length >= 1 ? 'Delete' : 'Skip'),
-                  textColor: secondaryColor,
-                  onPressed: snapshot.data.length >= 1
-                      ? () => _deleteTemplates(context, bloc)
-                      : onPressed,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
 
   Widget _buildPlaceholder() => Container(
         margin: EdgeInsets.all(16.0),
@@ -112,7 +99,7 @@ class TemplatesSection extends StatelessWidget {
       );
 
   void _deleteTemplates(
-      BuildContext context, TemplatesSectionBloc templatesSectionBloc) async {
+      BuildContext context, TemplatesBloc templatesSectionBloc) async {
     bool delete = await showDialog(
           context: context,
           builder: (_) => AlertDialog(

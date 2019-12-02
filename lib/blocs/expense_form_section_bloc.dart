@@ -12,7 +12,7 @@ import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
 
-class ExpenseFormSectionBloc {
+class NewExpenseBloc {
   // Streams
   ValueObservable<Country> get selectedCountry =>
       _selectedCountryController.stream;
@@ -48,10 +48,9 @@ class ExpenseFormSectionBloc {
   // PRIVATE
   List<StreamSubscription> _streamSubscriptions = [];
   Map<String, File> _attachments = Map();
-  ExpenseType _expenseType;
 
   // PUBLIC
-  final Stream<int> expenseTypeStream;
+  final ExpenseType expenseType;
   bool editingTemplate = false;
   Template _template;
 
@@ -62,20 +61,10 @@ class ExpenseFormSectionBloc {
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
   final receiptNumberController = TextEditingController();
 
-  ExpenseFormSectionBloc({Stream<int> expenseTypeStream})
-      : this.expenseTypeStream = expenseTypeStream {
-    _listenToExpenseTypeChanges();
-    _listenToAttachmentChanges();
-  }
+  NewExpenseBloc({@required this.expenseType}) {
+    _initFields();
 
-  void _listenToExpenseTypeChanges() {
-    if (expenseTypeStream != null)
-      _streamSubscriptions.add(expenseTypeStream.listen(
-        (expenseType) {
-          _expenseType = ExpenseType.values[expenseType ?? 0];
-          _initFields();
-        },
-      ));
+    _listenToAttachmentChanges();
   }
 
   void _listenToAttachmentChanges() {
@@ -115,39 +104,6 @@ class ExpenseFormSectionBloc {
   void selectDueDate(DateTime dueDate) =>
       _selectedDueDateController.add(dueDate);
   void selectVat(double vat) => _selectedVatController.add(vat);
-
-  void setExpenseToBeEdited(Expense expense) {
-    _expenseType = expense is ExpenseClaim
-        ? ExpenseType.EXPENSE_CLAIM
-        : ExpenseType.INVOICE;
-
-    selectCategory(expense.category);
-
-    // Country
-    if (expense.country != null)
-      selectCountry(repository.getCountryWithId(expense.country));
-    else if (repository?.lastSelectedCountry?.value != null)
-      selectCountry(
-          repository.getCountryWithId(repository.lastSelectedCountry.value));
-
-    // Currency
-    if (expense.currency != null)
-      selectCurrency(expense.currency);
-    else if (repository?.lastSelectedCurrency?.value != null)
-      selectCurrency(repository.lastSelectedCurrency.value);
-
-    // Approver
-    if (expense.approvedBy != null)
-      selectApprover(expense.approvedBy);
-    else if (repository?.lastSelectedApprover?.value != null)
-      selectApprover(repository.lastSelectedApprover.value);
-
-    selectCostCentre(expense.costCentreGroup);
-
-    selectVat(expense.vat);
-
-    descriptionController.text = expense.description;
-  }
 
   void setTemplate(Template template, {bool edit = false}) {
     this.editingTemplate = edit;
@@ -193,7 +149,7 @@ class ExpenseFormSectionBloc {
       country: _selectedCountryController.value.id,
       currency: _selectedCurrencyController.value,
       description: descriptionController.text,
-      expenseType: _expenseType,
+      expenseType: expenseType,
       name: templateNameController.text,
       vat: _selectedVatController.value,
     );
@@ -215,7 +171,7 @@ class ExpenseFormSectionBloc {
     descriptionController.text = "";
 
     _attachments = Map();
-    switch (_expenseType) {
+    switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
         _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
         _attachmentsController.add(_attachments);
@@ -243,10 +199,10 @@ class ExpenseFormSectionBloc {
     if (name == null) return;
 
     if (name == ATTACHMENTS_EXPENSE_CLAIM_NAME &&
-        _expenseType == ExpenseType.EXPENSE_CLAIM)
+        expenseType == ExpenseType.EXPENSE_CLAIM)
       _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
     else if (name == ATTACHMENTS_INVOICE_NAME &&
-        _expenseType == ExpenseType.INVOICE)
+        expenseType == ExpenseType.INVOICE)
       _attachments[ATTACHMENTS_INVOICE_NAME] = null;
     else
       _attachments.remove(name);
@@ -267,7 +223,7 @@ class ExpenseFormSectionBloc {
 
     _attachments.forEach((name, file) => attachmentsList.add({"name": name}));
 
-    if (_expenseType == ExpenseType.EXPENSE_CLAIM) {
+    if (expenseType == ExpenseType.EXPENSE_CLAIM) {
       expense = ExpenseClaim(
         attachments: attachmentsList,
         createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -291,7 +247,7 @@ class ExpenseFormSectionBloc {
             : null,
         status: ExpenseStatus(ExpenseStatus.WAITING),
       );
-    } else if (_expenseType == ExpenseType.INVOICE) {
+    } else if (expenseType == ExpenseType.INVOICE) {
       expense = Invoice(
         attachments: attachmentsList,
         createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -335,7 +291,7 @@ class ExpenseFormSectionBloc {
       country: selectedCountry.value.id,
       currency: selectedCurrency.value,
       description: descriptionController?.text ?? "",
-      expenseType: _expenseType,
+      expenseType: expenseType,
       name: templateNameController.text,
       costCentreGroup: selectedCostCentre.value,
       vat: selectedVat.value,
@@ -346,7 +302,7 @@ class ExpenseFormSectionBloc {
 
   // VALIDATORS
   String attachmentsValidator() {
-    switch (_expenseType) {
+    switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
         if (_attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] == null)
           return "You need to attach a receipt";

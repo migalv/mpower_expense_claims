@@ -1,6 +1,6 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
-import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
+import 'package:expense_claims_app/blocs/templates_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/repository.dart';
@@ -10,20 +10,18 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TemplateTile extends StatelessWidget {
   final Template template;
-  final PageController pageController;
-  final TemplatesSectionBloc templatesSectionBloc;
+  final TemplatesBloc templatesSectionBloc;
 
   const TemplateTile({
     Key key,
     @required this.template,
-    @required this.pageController,
     @required this.templatesSectionBloc,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    ExpenseFormSectionBloc expenseFormSectionBloc =
-        Provider.of<ExpenseFormSectionBloc>(context);
+    NewExpenseBloc expenseFormSectionBloc =
+        Provider.of<NewExpenseBloc>(context);
 
     return Container(
       margin: EdgeInsets.fromLTRB(24, 16, 24, 0),
@@ -142,10 +140,6 @@ class TemplateTile extends StatelessWidget {
   }
 
   void _onTemplatePressed(
-      ExpenseFormSectionBloc expenseFormSectionBloc, BuildContext context,
-      {bool edit = false}) {
-    expenseFormSectionBloc.setTemplate(template, edit: edit);
-    pageController.animateTo(MediaQuery.of(context).size.width,
-        duration: Duration(milliseconds: 275), curve: Curves.easeIn);
-  }
+      NewExpenseBloc expenseFormSectionBloc, BuildContext context,
+      {bool edit = false}) {}
 }

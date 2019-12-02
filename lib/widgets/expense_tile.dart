@@ -9,19 +9,16 @@ import 'package:expense_claims_app/widgets/tile_icon.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class ExpenseTile extends StatefulWidget {
   final Expense expense;
   final GlobalKey scaffoldKey;
-  final Function editExpense;
 
   const ExpenseTile({
     Key key,
     @required this.expense,
     @required this.scaffoldKey,
-    this.editExpense,
   }) : super(key: key);
 
   @override
@@ -73,21 +70,6 @@ class _ExpenseTileState extends State<ExpenseTile>
                       _tapPosition & Size(0, 0), Offset.zero & overlay.size),
                   context: context,
                   items: <PopupMenuEntry>[
-                    widget.editExpense != null
-                        ? PopupMenuItem(
-                            value: "Edit $expenseType",
-                            child: Row(
-                              children: <Widget>[
-                                Icon(
-                                  FontAwesomeIcons.pen,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 12.0),
-                                Text("Edit $expenseType"),
-                              ],
-                            ),
-                          )
-                        : Container(),
                     PopupMenuItem(
                       value: "Delete $expenseType",
                       child: Row(
@@ -108,10 +90,7 @@ class _ExpenseTileState extends State<ExpenseTile>
                 ).then((selectedValue) {
                   if (selectedValue == null) return;
 
-                  if (selectedValue.contains('Delete'))
-                    _deleteExpense(context);
-                  else if (selectedValue.contains('Edit'))
-                    widget.editExpense(widget.expense);
+                  if (selectedValue.contains('Delete')) _deleteExpense(context);
                 });
               }
             : null,
@@ -297,39 +276,42 @@ class _ExpenseTileState extends State<ExpenseTile>
               .map(
                 (attachment) => Padding(
                   padding: const EdgeInsets.only(right: 12),
-                  child: CachedNetworkImage(
-                    imageUrl: attachment['url'],
-                    imageBuilder: (context, imageProvider) => GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AttachmentsPage(
-                            attachments: widget.expense.attachments,
-                            openAt: attachment,
+                  child: attachment['url'] == null
+                      ? Container()
+                      : CachedNetworkImage(
+                          imageUrl: attachment['url'],
+                          imageBuilder: (context, imageProvider) =>
+                              GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AttachmentsPage(
+                                  attachments: widget.expense.attachments,
+                                  openAt: attachment,
+                                ),
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: Image(
+                                image: imageProvider,
+                                height: 48.0,
+                              ),
+                            ),
+                          ),
+                          placeholder: (context, url) =>
+                              Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) => Tooltip(
+                            message: "Could not find attachments",
+                            child: Row(
+                              children: <Widget>[
+                                Icon(Icons.error),
+                                SizedBox(width: 4.0),
+                                Text("Not found"),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image(
-                          image: imageProvider,
-                          height: 48.0,
-                        ),
-                      ),
-                    ),
-                    placeholder: (context, url) =>
-                        Center(child: CircularProgressIndicator()),
-                    errorWidget: (context, url, error) => Tooltip(
-                      message: "Could not find attachments",
-                      child: Row(
-                        children: <Widget>[
-                          Icon(Icons.error),
-                          SizedBox(width: 4.0),
-                          Text("Not found"),
-                        ],
-                      ),
-                    ),
-                  ),
                 ),
               )
               .toList(),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
+import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/cost_center_groups_model.dart';
@@ -10,8 +11,10 @@ import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
+import 'package:expense_claims_app/pages/home_page.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
+import 'package:expense_claims_app/widgets/custom_app_bar.dart';
 import 'package:expense_claims_app/widgets/custom_form_field.dart';
 import 'package:expense_claims_app/widgets/error_form_label.dart';
 import 'package:flutter/material.dart';
@@ -23,130 +26,77 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 
-class ExpenseFormSection extends StatefulWidget {
-  final ScrollController _scrollController;
-  final Function _onBackPressed, _onDonePressed;
-  final GlobalKey<ScaffoldState> _scaffoldKey;
-
-  ExpenseFormSection({
-    @required ScrollController scrollController,
-    Function onBackPressed,
-    @required Function onDonePressed,
-    @required GlobalKey<ScaffoldState> scaffoldKey,
-  })  : _scrollController = scrollController,
-        _onBackPressed = onBackPressed,
-        _onDonePressed = onDonePressed,
-        _scaffoldKey = scaffoldKey;
-
+class NewExpensePage extends StatefulWidget {
   @override
-  _ExpenseFormSectionState createState() => _ExpenseFormSectionState();
+  _NewExpensePageState createState() => _NewExpensePageState();
 }
 
-class _ExpenseFormSectionState extends State<ExpenseFormSection> {
+class _NewExpensePageState extends State<NewExpensePage> {
   // Bloc
-  ExpenseFormSectionBloc _expenseClaimBloc;
+  NewExpenseBloc _expenseClaimBloc;
 
   // Keys
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _templateFormKey = GlobalKey<FormState>();
 
   @override
   void didChangeDependencies() {
-    _expenseClaimBloc = Provider.of<ExpenseFormSectionBloc>(context);
+    _expenseClaimBloc = Provider.of<NewExpenseBloc>(context);
     super.didChangeDependencies();
   }
 
   @override
-  Widget build(BuildContext context) => Form(
-        key: _formKey,
-        child: StreamBuilder<int>(
-            initialData: 0,
-            stream: _expenseClaimBloc.expenseTypeStream,
-            builder: (context, snapshot) {
-              if (snapshot.data == null) return Container();
-
-              ExpenseType expenseType = ExpenseType.values[snapshot.data];
-
-              return SingleChildScrollView(
-                controller: widget._scrollController,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 24.0),
-                  child: Column(
-                    children: <Widget>[
-                      _buildTitle(expenseType),
-                      _buildCountry(),
-                      _buildTemplateNameField(),
-                      _buildCategory(),
-                      _buildDescription(),
-                      _expenseClaimBloc.editingTemplate
+  Widget build(BuildContext context) => Scaffold(
+        appBar: CustomAppBar(
+          title: _expenseClaimBloc.editingTemplate
+              ? "Edit template"
+              : _expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
+                  ? 'New expense claim'
+                  : 'New invoice',
+        ),
+        body: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 24.0),
+              child: Column(
+                children: <Widget>[
+                  _buildCountry(),
+                  _buildTemplateNameField(),
+                  _buildCategory(),
+                  _buildDescription(),
+                  _expenseClaimBloc.editingTemplate
+                      ? Container()
+                      : _buildDate("Date", _expenseClaimBloc.expenseDate,
+                          _expenseClaimBloc.selectExpenseDate),
+                  _expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
+                      ? Container()
+                      : _expenseClaimBloc.editingTemplate
                           ? Container()
-                          : _buildDate("Date", _expenseClaimBloc.expenseDate,
-                              _expenseClaimBloc.selectExpenseDate),
-                      expenseType == ExpenseType.EXPENSE_CLAIM
-                          ? Container()
-                          : _expenseClaimBloc.editingTemplate
-                              ? Container()
-                              : _buildDate(
-                                  "Due date",
-                                  _expenseClaimBloc.selectedDueDate,
-                                  _expenseClaimBloc.selectDueDate,
-                                  lastDate: DateTime(2030)),
-                      _buildCost(),
-                      _buildCostCenterTile(),
-                      _expenseClaimBloc.editingTemplate
-                          ? Container()
-                          : _buildreceiptNumberField(),
-                      _buildApproverTile(),
-                      _expenseClaimBloc.editingTemplate
-                          ? Container(
-                              height: 16,
-                            )
-                          : _buildAttachmentsTile(),
-                      _buildButtons(expenseType),
-                    ],
-                  ),
-                ),
-              );
-            }),
-      );
-
-  Widget _buildTitle(ExpenseType expenseType) {
-    String title = "";
-    if (_expenseClaimBloc.editingTemplate)
-      title = "Edit template";
-    else {
-      switch (expenseType) {
-        case ExpenseType.EXPENSE_CLAIM:
-          title = "New expense claim";
-          break;
-        case ExpenseType.INVOICE:
-          title = "New invoice";
-          break;
-      }
-    }
-
-    return Container(
-      height: 56,
-      alignment: Alignment.topCenter,
-      child: Row(
-        children: <Widget>[
-          IconButton(
-            padding: EdgeInsets.only(left: 16),
-            icon: Icon(FontAwesomeIcons.arrowLeft),
-            iconSize: 16.0,
-            onPressed: widget._onBackPressed,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.title,
+                          : _buildDate(
+                              "Due date",
+                              _expenseClaimBloc.selectedDueDate,
+                              _expenseClaimBloc.selectDueDate,
+                              lastDate: DateTime(2030)),
+                  _buildCost(),
+                  _buildCostCenterTile(),
+                  _expenseClaimBloc.editingTemplate
+                      ? Container()
+                      : _buildreceiptNumberField(),
+                  _buildApproverTile(),
+                  _expenseClaimBloc.editingTemplate
+                      ? Container(
+                          height: 16,
+                        )
+                      : _buildAttachmentsTile(),
+                  _buildButtons(),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      );
 
   Widget _buildTemplateNameField() => _expenseClaimBloc.editingTemplate
       ? Column(
@@ -586,11 +536,11 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
   Widget _buildreceiptNumberField() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          StreamBuilder<int>(
-              stream: _expenseClaimBloc.expenseTypeStream,
-              initialData: 0,
-              builder: (context, snapshot) => _buildFieldLabel(
-                  (snapshot.data == 0 ? 'Receipt' : 'Invoice') + ' number')),
+          _buildFieldLabel(
+              (_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
+                      ? 'Receipt'
+                      : 'Invoice') +
+                  ' number'),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: TextFormField(
@@ -697,7 +647,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
     );
   }
 
-  Widget _buildButtons(ExpenseType expenseType) => Container(
+  Widget _buildButtons() => Container(
         margin: EdgeInsets.fromLTRB(24, 0, 24, 48),
         child: (_expenseClaimBloc.editingTemplate ?? false)
             ? FlatButton(
@@ -716,7 +666,8 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                     color: secondaryColor,
                     child: Text(
                       'Create ' +
-                          (expenseType == ExpenseType.EXPENSE_CLAIM
+                          (_expenseClaimBloc.expenseType ==
+                                  ExpenseType.EXPENSE_CLAIM
                               ? "expense"
                               : "invoice"),
                     ),
@@ -829,13 +780,13 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
                   "Cancel",
                   style: Theme.of(context).textTheme.button,
                 ),
-                onPressed: () => Navigator.of(context).pop(false),
+                onPressed: _goToHomePage,
               ),
               RaisedButton(
                 child: Text(
                   "Create",
                 ),
-                onPressed: () => Navigator.of(context).pop(true),
+                onPressed: _goToHomePage,
                 color: secondaryColor,
                 textColor: black60,
               ),
@@ -850,19 +801,33 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
     }
   }
 
+  void _goToHomePage() {
+    utils.pushReplacement(
+      context,
+      BlocProvider<HomeBloc>(
+        initBloc: (_, bloc) =>
+            bloc ?? HomeBloc(lastPageIndex: repository?.lastPageIndex?.value),
+        onDispose: (_, bloc) => bloc.dispose(),
+        child: HomePage(
+          lastPageIndex: repository?.lastPageIndex?.value ?? 0,
+        ),
+      ),
+    );
+  }
+
   void _saveEditing() {
     _expenseClaimBloc.editTemplate();
     utils.showSnackbar(
-      scaffoldKey: widget._scaffoldKey,
+      scaffoldKey: _scaffoldKey,
       message: "Your Template has been edited successfully.",
     );
-    widget._onDonePressed();
+    _goToHomePage();
   }
 
   void _uploadTemplate() {
     _expenseClaimBloc.uploadTemplate();
     utils.showSnackbar(
-      scaffoldKey: widget._scaffoldKey,
+      scaffoldKey: _scaffoldKey,
       message: "Your template has been created successfully.",
     );
   }
@@ -870,7 +835,7 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
   Future<bool> _validateAndUploadExpense() async {
     if (!await utils.isConnectedToInternet()) {
       utils.showSnackbar(
-        scaffoldKey: widget._scaffoldKey,
+        scaffoldKey: _scaffoldKey,
         message: "Error. No internet connection.",
         backgroundColor: errorColor,
         textColor: Colors.white,
@@ -881,14 +846,13 @@ class _ExpenseFormSectionState extends State<ExpenseFormSection> {
     if (_formKey.currentState.validate()) {
       _expenseClaimBloc.uploadNewExpense();
       utils.showSnackbar(
-        scaffoldKey: widget._scaffoldKey,
+        scaffoldKey: _scaffoldKey,
         message: "Your expense has been created successfully.",
       );
-      widget._onDonePressed();
       return true;
     } else
       utils.showSnackbar(
-        scaffoldKey: widget._scaffoldKey,
+        scaffoldKey: _scaffoldKey,
         message: "Error. Some information might be incomplete.",
         backgroundColor: errorColor,
         textColor: Colors.white,
