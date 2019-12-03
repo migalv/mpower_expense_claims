@@ -1,14 +1,18 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:expense_claims_app/bloc_provider.dart';
+import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/attachments_page.dart';
+import 'package:expense_claims_app/pages/new_expense_page.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/tile_icon.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class ExpenseTile extends StatefulWidget {
@@ -71,10 +75,26 @@ class _ExpenseTileState extends State<ExpenseTile>
                   context: context,
                   items: <PopupMenuEntry>[
                     PopupMenuItem(
+                      value: "Edit $expenseType",
+                      child: Row(
+                        children: <Widget>[
+                          Icon(
+                            FontAwesomeIcons.pen,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8.0),
+                          Text("Edit $expenseType"),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
                       value: "Delete $expenseType",
                       child: Row(
                         children: <Widget>[
-                          Icon(Icons.delete),
+                          Icon(
+                            FontAwesomeIcons.trash,
+                            size: 20,
+                          ),
                           SizedBox(width: 8.0),
                           Text("Delete $expenseType"),
                         ],
@@ -87,11 +107,16 @@ class _ExpenseTileState extends State<ExpenseTile>
                     bottomLeft: Radius.circular(8.0),
                     bottomRight: Radius.circular(8.0),
                   )),
-                ).then((selectedValue) {
-                  if (selectedValue == null) return;
+                ).then(
+                  (selectedValue) {
+                    if (selectedValue == null) return;
 
-                  if (selectedValue.contains('Delete')) _deleteExpense(context);
-                });
+                    if (selectedValue.contains('Delete'))
+                      _deleteExpense(context);
+                    else if (selectedValue.contains('Edit'))
+                      _editExpense(context);
+                  },
+                );
               }
             : null,
         onLongPressStart: (details) =>
@@ -377,5 +402,23 @@ class _ExpenseTileState extends State<ExpenseTile>
         message: "Expense claim deleted sucessfully",
       );
     }
+  }
+
+  void _editExpense(BuildContext context) {
+    utils.push(
+      context,
+      BlocProvider<NewExpenseBloc>(
+        initBloc: (_, b) =>
+            b ??
+            NewExpenseBloc(
+              expenseType: widget.expense is ExpenseClaim
+                  ? ExpenseType.EXPENSE_CLAIM
+                  : ExpenseType.INVOICE,
+              expenseToBeEdited: widget.expense,
+            ),
+        child: NewExpensePage(),
+        onDispose: (_, b) => b.dispose(),
+      ),
+    );
   }
 }

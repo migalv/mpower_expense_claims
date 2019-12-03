@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
-import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
+import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/category_model.dart';
@@ -49,7 +49,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: CustomAppBar(
-          title: _expenseClaimBloc.editingTemplate
+          title: _expenseClaimBloc.editing
               ? "Edit template"
               : _expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
                   ? 'New expense claim'
@@ -66,29 +66,28 @@ class _NewExpensePageState extends State<NewExpensePage> {
                   _buildTemplateNameField(),
                   _buildCategory(),
                   _buildDescription(),
-                  _expenseClaimBloc.editingTemplate
+                  _expenseClaimBloc.editing
                       ? Container()
                       : _buildDate("Date", _expenseClaimBloc.expenseDate,
                           _expenseClaimBloc.selectExpenseDate),
                   _expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
                       ? Container()
-                      : _expenseClaimBloc.editingTemplate
+                      : _expenseClaimBloc.editing
                           ? Container()
                           : _buildDate(
                               "Due date",
                               _expenseClaimBloc.selectedDueDate,
                               _expenseClaimBloc.selectDueDate,
-                              lastDate: DateTime(2030)),
+                              lastDate: DateTime(2030),
+                            ),
                   _buildCost(),
                   _buildCostCenterTile(),
-                  _expenseClaimBloc.editingTemplate
+                  _expenseClaimBloc.editing
                       ? Container()
                       : _buildreceiptNumberField(),
                   _buildApproverTile(),
-                  _expenseClaimBloc.editingTemplate
-                      ? Container(
-                          height: 16,
-                        )
+                  _expenseClaimBloc.editing
+                      ? Container(height: 16)
                       : _buildAttachmentsTile(),
                   _buildButtons(),
                 ],
@@ -98,7 +97,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
         ),
       );
 
-  Widget _buildTemplateNameField() => _expenseClaimBloc.editingTemplate
+  Widget _buildTemplateNameField() => _expenseClaimBloc.editing
       ? Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -324,7 +323,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  _expenseClaimBloc.editingTemplate
+                  _expenseClaimBloc.editing
                       ? Container()
                       : Expanded(
                           child: TextFormField(
@@ -344,7 +343,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
                                     : null,
                           ),
                         ),
-                  _expenseClaimBloc.editingTemplate
+                  _expenseClaimBloc.editing
                       ? Container()
                       : Container(
                           width: 16.0,
@@ -649,7 +648,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   Widget _buildButtons() => Container(
         margin: EdgeInsets.fromLTRB(24, 0, 24, 48),
-        child: (_expenseClaimBloc.editingTemplate ?? false)
+        child: (_expenseClaimBloc.editing ?? false)
             ? FlatButton(
                 textColor: secondaryColor,
                 child: Text('Save'),
@@ -780,13 +779,13 @@ class _NewExpensePageState extends State<NewExpensePage> {
                   "Cancel",
                   style: Theme.of(context).textTheme.button,
                 ),
-                onPressed: _goToHomePage,
+                onPressed: () => Navigator.pop(context),
               ),
               RaisedButton(
                 child: Text(
                   "Create",
                 ),
-                onPressed: _goToHomePage,
+                onPressed: () => Navigator.of(context).pop(true),
                 color: secondaryColor,
                 textColor: black60,
               ),
@@ -817,19 +816,12 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   void _saveEditing() {
     _expenseClaimBloc.editTemplate();
-    utils.showSnackbar(
-      scaffoldKey: _scaffoldKey,
-      message: "Your Template has been edited successfully.",
-    );
     _goToHomePage();
   }
 
   void _uploadTemplate() {
     _expenseClaimBloc.uploadTemplate();
-    utils.showSnackbar(
-      scaffoldKey: _scaffoldKey,
-      message: "Your template has been created successfully.",
-    );
+    _goToHomePage();
   }
 
   Future<bool> _validateAndUploadExpense() async {
@@ -845,10 +837,6 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
     if (_formKey.currentState.validate()) {
       _expenseClaimBloc.uploadNewExpense();
-      utils.showSnackbar(
-        scaffoldKey: _scaffoldKey,
-        message: "Your expense has been created successfully.",
-      );
       return true;
     } else
       utils.showSnackbar(

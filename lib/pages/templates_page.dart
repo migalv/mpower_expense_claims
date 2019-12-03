@@ -1,5 +1,5 @@
 import 'package:expense_claims_app/bloc_provider.dart';
-import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
+import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/blocs/templates_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
@@ -28,7 +28,6 @@ class TemplatesPage extends StatelessWidget {
             snapshot.data.map(
               (template) => TemplateTile(
                 template: template,
-                templatesSectionBloc: bloc,
               ),
             ),
           );

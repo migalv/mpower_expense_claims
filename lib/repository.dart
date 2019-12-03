@@ -92,7 +92,7 @@ class Repository {
   }
 
   // UPLOAD
-  void uploadNewExpense(Expense expense, Map<String, File> attachments) async {
+  void uploadExpense(Expense expense, Map<String, File> attachments) async {
     String collection;
     DocumentReference docRef;
 

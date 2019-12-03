@@ -51,8 +51,10 @@ class NewExpenseBloc {
 
   // PUBLIC
   final ExpenseType expenseType;
-  bool editingTemplate = false;
-  Template _template;
+  bool editing = false;
+
+  Template _templateToBeEdited;
+  Expense _expenseToBeEdited;
 
   // Text Controllers
   final TextEditingController descriptionController = TextEditingController();
@@ -61,21 +63,30 @@ class NewExpenseBloc {
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
   final receiptNumberController = TextEditingController();
 
-  NewExpenseBloc({@required this.expenseType}) {
+  NewExpenseBloc(
+      {@required this.expenseType,
+      Expense expenseToBeEdited,
+      Template templateToBeEdited})
+      : _expenseToBeEdited = expenseToBeEdited,
+        _templateToBeEdited = templateToBeEdited {
     _initFields();
 
     _listenToAttachmentChanges();
   }
 
   void _listenToAttachmentChanges() {
-    _streamSubscriptions.add(attachments.listen((attachments) {
-      if (attachments != null)
-        _addAttachmentsButtonVisibleController.add(
-            attachments.containsKey('Receipt') &&
-                    attachments['Receipt'] != null ||
-                attachments.containsKey('Invoice') &&
-                    attachments['Invoice'] != null);
-    }));
+    _streamSubscriptions.add(
+      attachments.listen(
+        (attachments) {
+          if (attachments != null)
+            _addAttachmentsButtonVisibleController.add(
+                attachments.containsKey('Receipt') &&
+                        attachments['Receipt'] != null ||
+                    attachments.containsKey('Invoice') &&
+                        attachments['Invoice'] != null);
+        },
+      ),
+    );
   }
 
   // SELECTS
@@ -105,46 +116,13 @@ class NewExpenseBloc {
       _selectedDueDateController.add(dueDate);
   void selectVat(double vat) => _selectedVatController.add(vat);
 
-  void setTemplate(Template template, {bool edit = false}) {
-    this.editingTemplate = edit;
-    _template = template;
-
-    if (template != null) {
-      templateNameController.text = _template.name;
-      selectCategory(template.category);
-      // Country
-      if (template.country != null)
-        selectCountry(repository.getCountryWithId(template.country));
-      else if (repository?.lastSelectedCountry?.value != null)
-        selectCountry(
-            repository.getCountryWithId(repository.lastSelectedCountry.value));
-
-      // Currency
-      if (template.currency != null)
-        selectCurrency(template.currency);
-      else if (repository?.lastSelectedCurrency?.value != null)
-        selectCurrency(repository.lastSelectedCurrency.value);
-
-      // Approver
-      if (template.approvedBy != null)
-        selectApprover(template.approvedBy);
-      else if (repository?.lastSelectedApprover?.value != null)
-        selectApprover(repository.lastSelectedApprover.value);
-
-      selectCostCentre(template.costCentreGroup);
-      selectVat(template.vat);
-      descriptionController.text = template.description;
-    } else
-      _initFields();
-  }
-
   void editTemplate() {
     Template newTemplate = Template(
-      id: _template.id,
+      id: _templateToBeEdited.id,
       createdBy: repository.currentUserId,
       category: _selectedCategoryController.value,
       approvedBy: _selectedApproverController.value,
-      availableTo: _template.availableTo,
+      availableTo: _templateToBeEdited.availableTo,
       costCentreGroup: _selectedCostCentreController.value,
       country: _selectedCountryController.value.id,
       currency: _selectedCurrencyController.value,
@@ -157,18 +135,35 @@ class NewExpenseBloc {
   }
 
   void _initFields() {
-    selectCategory(null);
-    selectCountry(
-        repository.getCountryWithId(repository.lastSelectedCountry.value));
-    selectVat(null);
-    selectCurrency(repository.lastSelectedCurrency.value);
-    selectApprover(repository.lastSelectedApprover.value);
-    selectCostCentre(null);
-    selectDueDate(null);
-    selectExpenseDate(DateTime.now());
-    receiptNumberController.text = "";
-    grossController.updateValue(0.0);
-    descriptionController.text = "";
+    selectCategory(
+        _expenseToBeEdited?.category ?? _templateToBeEdited?.category);
+
+    selectCountry(repository.getCountryWithId(_expenseToBeEdited?.country ??
+        _templateToBeEdited?.country ??
+        repository.lastSelectedCountry.value));
+
+    selectVat(_expenseToBeEdited?.vat ?? _templateToBeEdited?.vat);
+
+    selectCurrency(_expenseToBeEdited?.currency ??
+        _templateToBeEdited?.currency ??
+        repository.lastSelectedCurrency.value);
+
+    selectApprover(_expenseToBeEdited?.approvedBy ??
+        _templateToBeEdited?.approvedBy ??
+        repository.lastSelectedApprover.value);
+    selectCostCentre(_expenseToBeEdited?.costCentreGroup ??
+        _templateToBeEdited?.costCentreGroup);
+    selectDueDate(
+        _expenseToBeEdited != null && expenseType == ExpenseType.INVOICE
+            ? (_expenseToBeEdited as Invoice).dueDate
+            : null);
+    selectExpenseDate(_expenseToBeEdited?.date ?? DateTime.now());
+    grossController.updateValue(_expenseToBeEdited?.gross ?? 0.0);
+
+    receiptNumberController.text = _expenseToBeEdited?.receiptNumber;
+    descriptionController.text =
+        _expenseToBeEdited?.description ?? _templateToBeEdited?.description;
+    templateNameController.text = _templateToBeEdited?.name;
 
     _attachments = Map();
     switch (expenseType) {
@@ -274,7 +269,7 @@ class NewExpenseBloc {
       );
     }
 
-    repository.uploadNewExpense(expense, _attachments);
+    repository.uploadExpense(expense, _attachments);
   }
 
   void uploadTemplate() {

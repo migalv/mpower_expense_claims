@@ -40,98 +40,102 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) => StreamBuilder<int>(
-      initialData: 0,
-      stream: _homeBloc.pageIndex,
-      builder: (context, snapshot) {
-        List<Widget> pages = [
-          BlocProvider<ExpensesBloc>(
-            child: ExpensesPage(),
-            initBloc: (_, bloc) =>
-                bloc ?? ExpensesBloc(expenseTypeStream: _homeBloc.pageIndex),
-            onDispose: (_, bloc) => bloc.dispose(),
-          ),
-          BlocProvider<ExpensesBloc>(
-            child: ExpensesPage(),
-            initBloc: (_, bloc) =>
-                bloc ?? ExpensesBloc(expenseTypeStream: _homeBloc.pageIndex),
-            onDispose: (_, bloc) => bloc.dispose(),
-          ),
-          ApprovedExpensesPage(),
-        ];
+        initialData: 0,
+        stream: _homeBloc.pageIndex,
+        builder: (context, snapshot) {
+          List<Widget> pages = [
+            BlocProvider<ExpensesBloc>(
+              child: ExpensesPage(),
+              initBloc: (_, bloc) =>
+                  bloc ?? ExpensesBloc(expenseTypeStream: _homeBloc.pageIndex),
+              onDispose: (_, bloc) => bloc.dispose(),
+            ),
+            BlocProvider<ExpensesBloc>(
+              child: ExpensesPage(),
+              initBloc: (_, bloc) =>
+                  bloc ?? ExpensesBloc(expenseTypeStream: _homeBloc.pageIndex),
+              onDispose: (_, bloc) => bloc.dispose(),
+            ),
+            ApprovedExpensesPage(),
+          ];
 
-        return Scaffold(
-          bottomNavigationBar: BottomNavigationBar(
-            type: BottomNavigationBarType.shifting,
-            onTap: (int newIndex) => _homeBloc.setPageIndex(newIndex),
-            currentIndex: snapshot.data,
-            items: <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                activeIcon: const Icon(
-                  MdiIcons.homeVariant,
-                  color: secondaryColor,
+          return Scaffold(
+            bottomNavigationBar: BottomNavigationBar(
+              type: BottomNavigationBarType.shifting,
+              onTap: (int newIndex) => _homeBloc.setPageIndex(newIndex),
+              currentIndex: snapshot.data,
+              items: <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  activeIcon: const Icon(
+                    MdiIcons.homeVariant,
+                    color: secondaryColor,
+                  ),
+                  icon: const Icon(
+                    MdiIcons.homeVariant,
+                    color: Colors.white38,
+                  ),
+                  title: Text(
+                    'Expenses',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-                icon: const Icon(
-                  MdiIcons.homeVariant,
-                  color: Colors.white38,
+                BottomNavigationBarItem(
+                  activeIcon: const Icon(
+                    Icons.description,
+                    color: secondaryColor,
+                  ),
+                  icon: const Icon(
+                    Icons.description,
+                    color: Colors.white38,
+                  ),
+                  title: Text(
+                    'Invoices',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-                title: Text(
-                  'Expenses',
-                  style: TextStyle(color: Colors.white),
+                BottomNavigationBarItem(
+                  activeIcon: const Icon(
+                    MdiIcons.fileDocumentBoxCheck,
+                    color: secondaryColor,
+                  ),
+                  icon: const Icon(
+                    MdiIcons.fileDocumentBoxCheck,
+                    color: Colors.white38,
+                  ),
+                  title: Text(
+                    'Approved',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-              ),
-              BottomNavigationBarItem(
-                activeIcon: const Icon(
-                  Icons.description,
-                  color: secondaryColor,
-                ),
-                icon: const Icon(
-                  Icons.description,
-                  color: Colors.white38,
-                ),
-                title: Text(
-                  'Invoices',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-              BottomNavigationBarItem(
-                activeIcon: const Icon(
-                  MdiIcons.fileDocumentBoxCheck,
-                  color: secondaryColor,
-                ),
-                icon: const Icon(
-                  MdiIcons.fileDocumentBoxCheck,
-                  color: Colors.white38,
-                ),
-                title: Text(
-                  'Approved',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-          body: pages[snapshot.data],
-          floatingActionButton: FloatingActionButton.extended(
-            label: Text(
-              snapshot.data == 0 ? 'New expense claim' : 'New invoice',
+              ],
             ),
-            icon: Icon(
-              FontAwesomeIcons.plus,
-              size: 20,
-            ),
-            onPressed: () {
-              utils.push(
-                context,
-                BlocProvider<TemplatesBloc>(
-                  initBloc: (_, bloc) =>
-                      bloc ??
-                      TemplatesBloc(
-                          expenseType: ExpenseType.values[snapshot.data]),
-                  onDispose: (_, bloc) => bloc.dispose(),
-                  child: TemplatesPage(),
-                ),
-              );
-            },
-          ),
-        );
-      });
+            body: pages[snapshot.data],
+            floatingActionButton: snapshot.data != 2
+                ? FloatingActionButton.extended(
+                    label: Text(
+                      snapshot.data == 0 ? 'New expense claim' : 'New invoice',
+                    ),
+                    icon: Icon(
+                      FontAwesomeIcons.plus,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      utils.push(
+                        context,
+                        BlocProvider<TemplatesBloc>(
+                          initBloc: (_, bloc) =>
+                              bloc ??
+                              TemplatesBloc(
+                                  expenseType:
+                                      ExpenseType.values[snapshot.data]),
+                          onDispose: (_, bloc) => bloc.dispose(),
+                          child: TemplatesPage(),
+                        ),
+                      );
+                    },
+                  )
+                : null,
+          );
+        },
+      );
 }
