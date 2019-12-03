@@ -80,9 +80,9 @@ class _ExpenseTileState extends State<ExpenseTile>
                         children: <Widget>[
                           Icon(
                             FontAwesomeIcons.pen,
-                            size: 20,
+                            size: 16,
                           ),
-                          SizedBox(width: 8.0),
+                          SizedBox(width: 16.0),
                           Text("Edit $expenseType"),
                         ],
                       ),
@@ -93,9 +93,9 @@ class _ExpenseTileState extends State<ExpenseTile>
                         children: <Widget>[
                           Icon(
                             FontAwesomeIcons.trash,
-                            size: 20,
+                            size: 16,
                           ),
-                          SizedBox(width: 8.0),
+                          SizedBox(width: 16.0),
                           Text("Delete $expenseType"),
                         ],
                       ),

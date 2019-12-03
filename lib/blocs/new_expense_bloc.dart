@@ -225,6 +225,7 @@ class NewExpenseBloc {
 
     if (expenseType == ExpenseType.EXPENSE_CLAIM) {
       expense = ExpenseClaim(
+        id: _expenseToBeEdited?.id,
         attachments: attachmentsList,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         country: selectedCountry.value.id,
@@ -249,6 +250,7 @@ class NewExpenseBloc {
       );
     } else if (expenseType == ExpenseType.INVOICE) {
       expense = Invoice(
+        id: _expenseToBeEdited?.id,
         attachments: attachmentsList,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         country: selectedCountry.value.id,

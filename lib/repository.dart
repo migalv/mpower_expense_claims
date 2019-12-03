@@ -103,8 +103,9 @@ class Repository {
       case Invoice:
         collection = INVOICES_COLLECTION;
     }
+
     // Upload the expense
-    docRef = _firestore.collection(collection).document();
+    docRef = _firestore.collection(collection).document(expense.id);
     docRef.setData(expense.toJson());
 
     Map<String, String> downloadUrls =
