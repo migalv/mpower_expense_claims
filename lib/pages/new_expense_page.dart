@@ -49,11 +49,11 @@ class _NewExpensePageState extends State<NewExpensePage> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: CustomAppBar(
-          title: _expenseClaimBloc.editing
+          title: _expenseClaimBloc.editingTemplate
               ? "Edit template"
-              : _expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
-                  ? 'New expense claim'
-                  : 'New invoice',
+              : _expenseClaimBloc.editingExpense
+                  ? 'Edit ${_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM ? 'expense claim' : 'invoice'}'
+                  : 'New ${_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM ? 'expense claim' : 'invoice'}',
         ),
         body: Form(
           key: _formKey,
@@ -66,13 +66,13 @@ class _NewExpensePageState extends State<NewExpensePage> {
                   _buildTemplateNameField(),
                   _buildCategory(),
                   _buildDescription(),
-                  _expenseClaimBloc.editing
+                  _expenseClaimBloc.editingTemplate
                       ? Container()
                       : _buildDate("Date", _expenseClaimBloc.expenseDate,
                           _expenseClaimBloc.selectExpenseDate),
                   _expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
                       ? Container()
-                      : _expenseClaimBloc.editing
+                      : _expenseClaimBloc.editingTemplate
                           ? Container()
                           : _buildDate(
                               "Due date",
@@ -82,11 +82,11 @@ class _NewExpensePageState extends State<NewExpensePage> {
                             ),
                   _buildCost(),
                   _buildCostCenterTile(),
-                  _expenseClaimBloc.editing
+                  _expenseClaimBloc.editingTemplate
                       ? Container()
                       : _buildreceiptNumberField(),
                   _buildApproverTile(),
-                  _expenseClaimBloc.editing
+                  _expenseClaimBloc.editingTemplate
                       ? Container(height: 16)
                       : _buildAttachmentsTile(),
                   _buildButtons(),
@@ -97,7 +97,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
         ),
       );
 
-  Widget _buildTemplateNameField() => _expenseClaimBloc.editing
+  Widget _buildTemplateNameField() => _expenseClaimBloc.editingTemplate
       ? Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -323,7 +323,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  _expenseClaimBloc.editing
+                  _expenseClaimBloc.editingTemplate
                       ? Container()
                       : Expanded(
                           child: TextFormField(
@@ -343,7 +343,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
                                     : null,
                           ),
                         ),
-                  _expenseClaimBloc.editing
+                  _expenseClaimBloc.editingTemplate
                       ? Container()
                       : Container(
                           width: 16.0,
@@ -648,7 +648,8 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   Widget _buildButtons() => Container(
         margin: EdgeInsets.fromLTRB(24, 0, 24, 48),
-        child: (_expenseClaimBloc.editing ?? false)
+        child: _expenseClaimBloc.editingTemplate ||
+                _expenseClaimBloc.editingExpense
             ? FlatButton(
                 textColor: secondaryColor,
                 child: Text('Save'),
@@ -815,8 +816,10 @@ class _NewExpensePageState extends State<NewExpensePage> {
   }
 
   void _saveEditing() {
-    _expenseClaimBloc.editTemplate();
-    _goToHomePage();
+    if (_formKey.currentState.validate()) {
+      _expenseClaimBloc.saveEditing();
+      _goToHomePage();
+    }
   }
 
   void _uploadTemplate() {
@@ -836,7 +839,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
     }
 
     if (_formKey.currentState.validate()) {
-      _expenseClaimBloc.uploadNewExpense();
+      _expenseClaimBloc.uploadExpense();
       return true;
     } else
       utils.showSnackbar(

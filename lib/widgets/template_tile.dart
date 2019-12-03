@@ -123,7 +123,6 @@ class TemplateTile extends StatelessWidget {
                                     onPressed: () => _onTemplatePressed(
                                       expenseFormSectionBloc,
                                       context,
-                                      edit: true,
                                     ),
                                   ),
                                 )
@@ -140,18 +139,17 @@ class TemplateTile extends StatelessWidget {
   }
 
   void _onTemplatePressed(
-      NewExpenseBloc expenseFormSectionBloc, BuildContext context,
-      {bool edit = false}) {
+      NewExpenseBloc expenseFormSectionBloc, BuildContext context) {
     utils.push(
       context,
       BlocProvider<NewExpenseBloc>(
-        initBloc: (_, b) =>
-            b ??
+        initBloc: (_, bloc) =>
+            bloc ??
             NewExpenseBloc(
                 expenseType: template.expenseType,
                 templateToBeEdited: template),
         child: NewExpensePage(),
-        onDispose: (_, b) => b.dispose(),
+        onDispose: (_, bloc) => bloc.dispose(),
       ),
     );
   }

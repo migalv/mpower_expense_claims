@@ -51,7 +51,7 @@ class NewExpenseBloc {
 
   // PUBLIC
   final ExpenseType expenseType;
-  bool editing = false;
+  bool editingTemplate = false, editingExpense = false;
 
   Template _templateToBeEdited;
   Expense _expenseToBeEdited;
@@ -69,6 +69,9 @@ class NewExpenseBloc {
       Template templateToBeEdited})
       : _expenseToBeEdited = expenseToBeEdited,
         _templateToBeEdited = templateToBeEdited {
+    editingTemplate = templateToBeEdited != null;
+    editingExpense = expenseToBeEdited != null;
+
     _initFields();
 
     _listenToAttachmentChanges();
@@ -115,24 +118,6 @@ class NewExpenseBloc {
   void selectDueDate(DateTime dueDate) =>
       _selectedDueDateController.add(dueDate);
   void selectVat(double vat) => _selectedVatController.add(vat);
-
-  void editTemplate() {
-    Template newTemplate = Template(
-      id: _templateToBeEdited.id,
-      createdBy: repository.currentUserId,
-      category: _selectedCategoryController.value,
-      approvedBy: _selectedApproverController.value,
-      availableTo: _templateToBeEdited.availableTo,
-      costCentreGroup: _selectedCostCentreController.value,
-      country: _selectedCountryController.value.id,
-      currency: _selectedCurrencyController.value,
-      description: descriptionController.text,
-      expenseType: expenseType,
-      name: templateNameController.text,
-      vat: _selectedVatController.value,
-    );
-    repository.uploadNewTemplate(newTemplate);
-  }
 
   void _initFields() {
     selectCategory(
@@ -204,8 +189,28 @@ class NewExpenseBloc {
     _attachmentsController.add(_attachments);
   }
 
+  void saveEditing() {
+    if (editingTemplate) {
+      Template newTemplate = Template(
+        id: _templateToBeEdited.id,
+        createdBy: repository.currentUserId,
+        category: _selectedCategoryController.value,
+        approvedBy: _selectedApproverController.value,
+        availableTo: _templateToBeEdited.availableTo,
+        costCentreGroup: _selectedCostCentreController.value,
+        country: _selectedCountryController.value.id,
+        currency: _selectedCurrencyController.value,
+        description: descriptionController.text,
+        expenseType: expenseType,
+        name: templateNameController.text,
+        vat: _selectedVatController.value,
+      );
+      repository.uploadNewTemplate(newTemplate);
+    } else if (editingExpense) uploadExpense();
+  }
+
   // UPLOAD DATA
-  void uploadNewExpense() {
+  void uploadExpense() {
     double gross = grossController.numberValue;
     double net;
     double vat = selectedVat.value;
