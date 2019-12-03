@@ -671,7 +671,9 @@ class _NewExpensePageState extends State<NewExpensePage> {
                               ? "expense"
                               : "invoice"),
                     ),
-                    onPressed: () => _validateAndUploadExpense(),
+                    onPressed: () async {
+                      if (await _validateAndUploadExpense()) _goToHomePage();
+                    },
                   ),
                   Container(height: 16),
                   Text('or'),
@@ -802,17 +804,12 @@ class _NewExpensePageState extends State<NewExpensePage> {
   }
 
   void _goToHomePage() {
-    utils.pushReplacement(
-      context,
-      BlocProvider<HomeBloc>(
-        initBloc: (_, bloc) =>
-            bloc ?? HomeBloc(lastPageIndex: repository?.lastPageIndex?.value),
-        onDispose: (_, bloc) => bloc.dispose(),
-        child: HomePage(
-          lastPageIndex: repository?.lastPageIndex?.value ?? 0,
-        ),
-      ),
-    );
+    if (_expenseClaimBloc.editingExpense || _expenseClaimBloc.editingTemplate)
+      Navigator.pop(context);
+    else {
+      Navigator.pop(context);
+      Navigator.pop(context);
+    }
   }
 
   void _saveEditing() {
