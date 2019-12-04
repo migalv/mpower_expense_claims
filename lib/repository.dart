@@ -11,6 +11,7 @@ import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
+import 'package:expense_claims_app/utils.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,6 +26,7 @@ class Repository {
   String get currentUserId => _currentUserId;
   User _currentUser;
   User get currentUser => _currentUser;
+  List<StreamSubscription> _streamSubscriptions = [];
 
   // Expenses marked as approved by the user
   List<Expense> _approvedByMe = [];
@@ -258,51 +260,46 @@ class Repository {
         break;
     }
 
-    queries.forEach(
-      (query) => query.snapshots().listen(
-        (snapshot) {
-          // It's only one document
-          if (snapshot is DocumentSnapshot) {
-            final onlineElement = _initializeFromJson(collection, snapshot);
-            if (collection == USERS_COLLECTION) {
-              list.clear();
-              list.addAll(onlineElement);
-            } else {
-              list.removeWhere((ele) => ele.id == onlineElement.id);
-              list.add(onlineElement);
-            }
-            // It's multiple documents
-          } else if (snapshot is QuerySnapshot)
-            snapshot.documentChanges.forEach((DocumentChange documentChange) {
-              final onlineElement =
-                  _initializeFromJson(collection, documentChange.document);
-              switch (documentChange.type) {
-                case DocumentChangeType.added:
-                  if (collection == USERS_COLLECTION)
-                    list.addAll(onlineElement);
-                  else
-                    list.add(onlineElement);
-                  break;
-                case DocumentChangeType.modified:
-                  if (collection == USERS_COLLECTION) {
-                    list.clear();
-                    list.addAll(onlineElement);
+    queries.forEach((query) => _streamSubscriptions.add(
+          query.snapshots().listen(
+            (snapshot) {
+              // It's only one document
+              if (snapshot is DocumentSnapshot) {
+                list.clear();
+                list.addAll(_initializeFromJson(collection, snapshot));
+                // It's multiple documents
+              } else if (snapshot is QuerySnapshot)
+                snapshot.documentChanges
+                    .forEach((DocumentChange documentChange) {
+                  final onlineElement =
+                      _initializeFromJson(collection, documentChange.document);
+                  switch (documentChange.type) {
+                    case DocumentChangeType.added:
+                      if (collection == USERS_COLLECTION)
+                        list.addAll(onlineElement);
+                      else
+                        list.add(onlineElement);
+                      break;
+                    case DocumentChangeType.modified:
+                      if (collection == USERS_COLLECTION) {
+                        list.clear();
+                        list.addAll(onlineElement);
+                      }
+                      list.removeWhere((ele) => ele.id == onlineElement.id);
+                      list.add(onlineElement);
+                      break;
+                    case DocumentChangeType.removed:
+                      if (collection == USERS_COLLECTION) {
+                        list.clear();
+                      }
+                      list.removeWhere((ele) => ele.id == onlineElement.id);
+                      break;
                   }
-                  list.removeWhere((ele) => ele.id == onlineElement.id);
-                  list.add(onlineElement);
-                  break;
-                case DocumentChangeType.removed:
-                  if (collection == USERS_COLLECTION) {
-                    list.clear();
-                  }
-                  list.removeWhere((ele) => ele.id == onlineElement.id);
-                  break;
-              }
-            });
-          streamController.add(list);
-        },
-      ),
-    );
+                });
+              streamController.add(list);
+            },
+          ),
+        ));
   }
 
   dynamic _initializeFromJson(String collection, DocumentSnapshot docSnapshot) {
@@ -473,7 +470,7 @@ class Repository {
     if (authResult != null) {
       _currentUserId = authResult.user.uid;
       await initUser(_currentUserId);
-      if (_currentUser.locked) return AuthState.LOCKED;
+      if (_currentUser.blocked) return AuthState.BLOCKED;
       loadSettings();
       return AuthState.SUCCESS;
     }
@@ -518,11 +515,11 @@ class Repository {
     return true;
   }
 
-  Future logOut() async {
+  void logOut() async {
     _currentUserId = null;
     _currentUser = null;
 
-    await _auth.signOut();
+    _auth.signOut();
   }
 
   void deleteTemplates(List<Template> templates) {
@@ -559,6 +556,8 @@ class Repository {
     _lastSelectedListController.close();
     _costCentresGroupsController.close();
     _approvedByMeController.close();
+
+    _streamSubscriptions.forEach((s) => s.cancel());
   }
 }
 

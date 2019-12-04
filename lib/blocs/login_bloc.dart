@@ -29,5 +29,5 @@ class AuthState {
   static const String SUCCESS = "SUCCESS";
   static const String ERROR = "ERROR";
   static const String EMAIL_EXISTS = "EMAIL_EXISTS";
-  static const String LOCKED = "LOCKED";
+  static const String BLOCKED = "BLOCKED";
 }

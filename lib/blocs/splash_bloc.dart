@@ -6,7 +6,6 @@ import 'package:rxdart/rxdart.dart';
 
 class SplashBloc {
   Stream<bool> get isLoggedIn => _isLoggedInController.stream;
-
   final _isLoggedInController = BehaviorSubject<bool>();
 
   SplashBloc() {
@@ -27,6 +26,8 @@ class SplashBloc {
 
     _isLoggedInController.add(firebaseUser != null);
   }
+
+  bool get isBlocked => repository.currentUser.blocked;
 
   void dispose() {
     _isLoggedInController.close();

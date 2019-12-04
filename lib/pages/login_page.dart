@@ -164,7 +164,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
           break;
-        case AuthState.LOCKED:
+        case AuthState.BLOCKED:
           utils.showSnackbar(
             scaffoldKey: _scaffoldKey,
             message: "This user has been blocked from loging in.",

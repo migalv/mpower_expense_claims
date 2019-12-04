@@ -15,6 +15,7 @@ class SplashPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final splashBloc = Provider.of<SplashBloc>(context);
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
     return Scaffold(
         body: StreamBuilder<bool>(
@@ -22,20 +23,26 @@ class SplashPage extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot != null && snapshot.hasData) {
                 if (snapshot.data) {
-                  utils.pushReplacement(
-                      context,
-                      BlocProvider<HomeBloc>(
-                        initBloc: (_, bloc) =>
-                            bloc ??
-                            HomeBloc(
-                                lastPageIndex:
-                                    repository?.lastPageIndex?.value),
-                        onDispose: (_, bloc) => bloc.dispose(),
-                        child: HomePage(
-                          lastPageIndex: repository?.lastPageIndex?.value ?? 0,
+                  if (splashBloc.isBlocked)
+                    utils.showSnackbar(
+                        scaffoldKey: _scaffoldKey,
+                        message: 'You are not allowed to access the app.');
+                  else
+                    utils.pushReplacement(
+                        context,
+                        BlocProvider<HomeBloc>(
+                          initBloc: (_, bloc) =>
+                              bloc ??
+                              HomeBloc(
+                                  lastPageIndex:
+                                      repository?.lastPageIndex?.value),
+                          onDispose: (_, bloc) => bloc.dispose(),
+                          child: HomePage(
+                            lastPageIndex:
+                                repository?.lastPageIndex?.value ?? 0,
+                          ),
                         ),
-                      ),
-                      delay: 3);
+                        delay: 3);
                 } else if (!snapshot.data) {
                   utils.pushReplacement(
                       context,

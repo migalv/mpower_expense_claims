@@ -1,12 +1,12 @@
 class User {
   final String id, name, profilePictureUrl, userName;
-  final bool locked;
+  final bool blocked;
   Map<String, String> tokens;
   User({
     this.id,
     this.name,
     this.profilePictureUrl,
-    this.locked,
+    this.blocked,
     this.userName,
     this.tokens,
   });
@@ -15,13 +15,13 @@ class User {
       : this.id = id,
         this.name = json[NAME_KEY],
         this.profilePictureUrl = json[PROFILE_PICTURE_URL_KEY],
-        this.locked = json[LOCKED_KEY] ?? false,
+        this.blocked = json[BLOCKED_KEY] ?? false,
         this.userName = json[USER_NAME_KEY],
         this.tokens = json.containsKey(TOKENS_KEY) ? json[TOKENS_KEY] : null;
 
   Map<String, dynamic> toJson() => {
         NAME_KEY: name,
-        LOCKED_KEY: locked,
+        BLOCKED_KEY: blocked,
         USER_NAME_KEY: userName,
         TOKENS_KEY: tokens,
       };
@@ -34,7 +34,7 @@ class User {
 
   static const String NAME_KEY = "name";
   static const String PROFILE_PICTURE_URL_KEY = "profile_picture_url";
-  static const String LOCKED_KEY = "locked";
+  static const String BLOCKED_KEY = "blocked";
   static const String USER_NAME_KEY = "user_name";
   static const String TOKENS_KEY = "tokens";
 }
