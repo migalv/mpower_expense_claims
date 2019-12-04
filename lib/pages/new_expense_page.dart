@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
-import 'package:expense_claims_app/blocs/home_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/cost_center_groups_model.dart';
@@ -11,12 +10,12 @@ import 'package:expense_claims_app/models/country_model.dart';
 import 'package:expense_claims_app/models/currency_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
-import 'package:expense_claims_app/pages/home_page.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/custom_app_bar.dart';
 import 'package:expense_claims_app/widgets/custom_form_field.dart';
 import 'package:expense_claims_app/widgets/error_form_label.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -623,8 +622,16 @@ class _NewExpensePageState extends State<NewExpensePage> {
                       size: 20,
                       color: Colors.white54,
                     )
-                  : Container(
-                      height: 40.0, width: 48.0, child: Image.file(attachment)),
+                  : _expenseClaimBloc.isImageAttachment(attachment)
+                      ? Container(
+                          height: 40.0,
+                          width: 48.0,
+                          child: Image.file(attachment))
+                      : Icon(
+                          FontAwesomeIcons.solidFile,
+                          size: 20,
+                          color: Colors.white54,
+                        ),
             )),
         title: Text(
           name,
@@ -714,12 +721,22 @@ class _NewExpensePageState extends State<NewExpensePage> {
             },
           ),
           ListTile(
-            title: Text('Storage'),
+            title: Text('Gallery'),
             leading: Icon(Icons.photo_library),
             onTap: () async {
               Navigator.pop(context);
               File attachment =
                   await ImagePicker.pickImage(source: ImageSource.gallery);
+              if (attachment != null)
+                _expenseClaimBloc.addAttachment(name, attachment);
+            },
+          ),
+          ListTile(
+            title: Text('Storage'),
+            leading: Icon(Icons.folder),
+            onTap: () async {
+              Navigator.pop(context);
+              File attachment = await FilePicker.getFile();
               if (attachment != null)
                 _expenseClaimBloc.addAttachment(name, attachment);
             },

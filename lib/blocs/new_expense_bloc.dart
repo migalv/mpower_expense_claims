@@ -11,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
 
 class NewExpenseBloc {
   // Streams
@@ -188,6 +189,8 @@ class NewExpenseBloc {
       _attachments.remove(name);
     _attachmentsController.add(_attachments);
   }
+
+  bool isImageAttachment(File file) => p.extension(file.path) == '.jpg';
 
   void saveEditing() {
     if (editingTemplate) {

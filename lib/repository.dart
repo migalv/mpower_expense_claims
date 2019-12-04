@@ -11,13 +11,13 @@ import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/models/user_model.dart';
-import 'package:expense_claims_app/utils.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:path/path.dart' as p;
 
 import 'models/expense_claim_model.dart';
 
@@ -154,7 +154,7 @@ class Repository {
       StorageReference ref = FirebaseStorage.instance
           .ref()
           .child('uploads/$collection/$expenseId')
-          .child('$attachmentName.jpg');
+          .child('$attachmentName${p.extension(file.path)}');
 
       StorageUploadTask storageUploadTask = ref.putFile(file);
 
