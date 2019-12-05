@@ -5,6 +5,7 @@ import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/pages/login_page.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 
 class Utils {
   void pushReplacement(BuildContext context, Widget to, {int delay = 0}) async {
@@ -82,6 +83,10 @@ class Utils {
       ),
     );
   }
+
+  bool isImageAttachment(dynamic attachment) => attachment is File
+      ? p.extension(attachment.path) == '.jpg'
+      : attachment is String ? attachment.contains('.jpg') : false;
 }
 
 final Utils utils = Utils();

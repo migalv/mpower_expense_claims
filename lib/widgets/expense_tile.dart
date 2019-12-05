@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
 class ExpenseTile extends StatefulWidget {
   final Expense expense;
@@ -303,40 +304,71 @@ class _ExpenseTileState extends State<ExpenseTile>
                   padding: const EdgeInsets.only(right: 12),
                   child: attachment['url'] == null
                       ? Container()
-                      : CachedNetworkImage(
-                          imageUrl: attachment['url'],
-                          imageBuilder: (context, imageProvider) =>
-                              GestureDetector(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => AttachmentsPage(
-                                  attachments: widget.expense.attachments,
-                                  openAt: attachment,
+                      : utils.isImageAttachment(attachment['url'])
+                          ? CachedNetworkImage(
+                              imageUrl: attachment['url'],
+                              imageBuilder: (context, imageProvider) =>
+                                  GestureDetector(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AttachmentsPage(
+                                      attachments: widget.expense.attachments,
+                                      openAt: attachment,
+                                    ),
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image(
+                                    image: imageProvider,
+                                    height: 48.0,
+                                  ),
                                 ),
                               ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Image(
-                                image: imageProvider,
-                                height: 48.0,
+                              placeholder: (context, url) =>
+                                  Center(child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) => Tooltip(
+                                message: "Could not find attachments",
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(Icons.error),
+                                    SizedBox(width: 4.0),
+                                    Text("Not found"),
+                                  ],
+                                ),
                               ),
+                            )
+                          : GestureDetector(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  color: Colors.white10,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Icon(
+                                        FontAwesomeIcons.solidFile,
+                                        size: 18,
+                                      ),
+                                      Container(
+                                        height: 6,
+                                      ),
+                                      Text(
+                                        attachment['name'],
+                                        style:
+                                            Theme.of(context).textTheme.caption,
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              onTap: () async {
+                                if (await canLaunch(attachment['url']))
+                                  launch(attachment['url']);
+                              },
                             ),
-                          ),
-                          placeholder: (context, url) =>
-                              Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) => Tooltip(
-                            message: "Could not find attachments",
-                            child: Row(
-                              children: <Widget>[
-                                Icon(Icons.error),
-                                SizedBox(width: 4.0),
-                                Text("Not found"),
-                              ],
-                            ),
-                          ),
-                        ),
                 ),
               )
               .toList(),

@@ -622,7 +622,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
                       size: 20,
                       color: Colors.white54,
                     )
-                  : _expenseClaimBloc.isImageAttachment(attachment)
+                  : utils.isImageAttachment(attachment)
                       ? Container(
                           height: 40.0,
                           width: 48.0,
