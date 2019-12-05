@@ -608,45 +608,51 @@ class _NewExpensePageState extends State<NewExpensePage> {
   Widget _buildAttachmentList(Map<String, File> attachments) {
     List<Widget> list = [];
 
-    attachments.forEach((String name, File attachment) {
-      list.add(ListTile(
-        leading: ClipRRect(
-            borderRadius: BorderRadius.circular(4.0),
-            child: Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: attachment == null
-                  ? Icon(
-                      name == 'Invoice'
-                          ? FontAwesomeIcons.fileInvoiceDollar
-                          : Icons.attachment,
-                      size: 20,
-                      color: Colors.white54,
-                    )
-                  : utils.isImageAttachment(attachment)
-                      ? Container(
-                          height: 40.0,
-                          width: 48.0,
-                          child: Image.file(attachment))
-                      : Icon(
-                          FontAwesomeIcons.solidFile,
-                          size: 20,
-                          color: Colors.white54,
-                        ),
-            )),
-        title: Text(
-          name,
-        ),
-        trailing: IconButton(
-          icon: Icon(attachment == null ? MdiIcons.imagePlus : Icons.delete),
-          onPressed: () {
-            if (attachment == null)
-              _selectAttachments(name: name);
-            else
-              _expenseClaimBloc.removeAttachment(name);
-          },
-        ),
-      ));
-    });
+    attachments.forEach(
+      (String name, File attachment) {
+        list.add(
+          ListTile(
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(4.0),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: attachment == null
+                    ? Icon(
+                        name == 'Invoice'
+                            ? FontAwesomeIcons.fileInvoiceDollar
+                            : Icons.attachment,
+                        size: 20,
+                        color: Colors.white54,
+                      )
+                    : utils.isImageAttachment(attachment)
+                        ? Container(
+                            height: 40.0,
+                            width: 48.0,
+                            child: Image.file(attachment))
+                        : Icon(
+                            FontAwesomeIcons.solidFile,
+                            size: 20,
+                            color: Colors.white54,
+                          ),
+              ),
+            ),
+            title: Text(
+              name,
+            ),
+            trailing: IconButton(
+              icon:
+                  Icon(attachment == null ? MdiIcons.imagePlus : Icons.delete),
+              onPressed: () {
+                if (attachment == null)
+                  _selectAttachments(name: name);
+                else
+                  _expenseClaimBloc.removeAttachment(name);
+              },
+            ),
+          ),
+        );
+      },
+    );
 
     return Column(
       children: list,

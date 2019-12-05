@@ -13,8 +13,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:path/path.dart' as p;
 
 class ExpenseTile extends StatefulWidget {
   final Expense expense;
@@ -349,14 +351,14 @@ class _ExpenseTileState extends State<ExpenseTile>
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
                                       Icon(
-                                        FontAwesomeIcons.solidFile,
+                                        MdiIcons.fileDocument,
                                         size: 18,
                                       ),
                                       Container(
                                         height: 6,
                                       ),
                                       Text(
-                                        attachment['name'],
+                                        '${_getAttachmentName(attachment['name'])} File',
                                         style:
                                             Theme.of(context).textTheme.caption,
                                       )
@@ -453,4 +455,7 @@ class _ExpenseTileState extends State<ExpenseTile>
       ),
     );
   }
+
+  String _getAttachmentName(String name) =>
+      p.extension(name).substring(1).toUpperCase();
 }

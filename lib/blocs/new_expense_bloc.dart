@@ -11,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
 
 class NewExpenseBloc {
   // Streams
@@ -165,13 +166,17 @@ class NewExpenseBloc {
 
   // ATTACHMENTS
   void addAttachment(String name, File attachment) {
+    String extension = p.extension(attachment.path);
+    String finalName = extension == '.jpg' ? name : '$name$extension';
+
     if (name != null && _attachments.containsKey(name)) {
-      _attachments[name] = attachment;
-    } else {
+      _attachments[finalName] = attachment;
+      _attachments.remove(name);
+    } else
       _attachments.putIfAbsent(
-          name ?? DateFormat('h:mm:ss a').format(DateTime.now()),
+          '${DateFormat('h:mm a').format(DateTime.now())}${p.extension(attachment.path)}',
           () => attachment);
-    }
+
     _attachmentsController.add(_attachments);
   }
 
@@ -304,17 +309,32 @@ class NewExpenseBloc {
 
   // VALIDATORS
   String attachmentsValidator() {
+    String returnString;
+
     switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
-        if (_attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] == null)
-          return "You need to attach a receipt";
+        for (var name in _attachments.keys) {
+          if (name != null &&
+              name.contains(ATTACHMENTS_EXPENSE_CLAIM_NAME) &&
+              _attachments[name] == null) {
+            returnString = "You need to attach a receipt";
+            break;
+          }
+        }
         break;
       case ExpenseType.INVOICE:
-        if (_attachments[ATTACHMENTS_INVOICE_NAME] == null)
-          return "You need to attach the invoice";
+        for (var name in _attachments.keys) {
+          if (name != null &&
+              name.contains(ATTACHMENTS_INVOICE_NAME) &&
+              _attachments[name] == null) {
+            returnString = "You need to attach an invoice";
+            break;
+          }
+        }
         break;
     }
-    return null;
+
+    return returnString;
   }
 
   String categoryValidator(String value) =>
