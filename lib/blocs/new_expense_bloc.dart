@@ -52,9 +52,16 @@ class NewExpenseBloc {
 
   // PUBLIC
   final ExpenseType expenseType;
-  bool editingTemplate = false, editingExpense = false;
+  final bool editingTemplate;
+  bool editingExpense = false;
 
+  /// The template that is being used to prefill info
+  final Template template;
+
+  /// The template that is being edited
   Template _templateToBeEdited;
+
+  /// The expense that is being edited
   Expense _expenseToBeEdited;
 
   // Text Controllers
@@ -64,14 +71,15 @@ class NewExpenseBloc {
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
   final receiptNumberController = TextEditingController();
 
-  NewExpenseBloc(
-      {@required this.expenseType,
-      Expense expenseToBeEdited,
-      Template templateToBeEdited})
-      : _expenseToBeEdited = expenseToBeEdited,
-        _templateToBeEdited = templateToBeEdited {
-    editingTemplate = templateToBeEdited != null;
+  NewExpenseBloc({
+    @required this.expenseType,
+    Expense expenseToBeEdited,
+    this.template,
+    this.editingTemplate = false,
+  }) : _expenseToBeEdited = expenseToBeEdited {
     editingExpense = expenseToBeEdited != null;
+
+    if (template != null && editingTemplate) _templateToBeEdited = template;
 
     _initFields();
 
@@ -136,35 +144,65 @@ class NewExpenseBloc {
   void selectVat(double vat) => _selectedVatController.add(vat);
 
   void _initFields() {
-    selectCategory(
-        _expenseToBeEdited?.category ?? _templateToBeEdited?.category);
+    // If using a template to prefill
+    if (template != null && !editingTemplate) {
+      templateNameController.text = template.name;
+      selectCategory(template.category);
+      // Country
+      if (template.country != null)
+        selectCountry(repository.getCountryWithId(template.country));
+      else if (repository?.lastSelectedCountry?.value != null)
+        selectCountry(
+            repository.getCountryWithId(repository.lastSelectedCountry.value));
 
-    selectCountry(repository.getCountryWithId(_expenseToBeEdited?.country ??
-        _templateToBeEdited?.country ??
-        repository.lastSelectedCountry.value));
+      // Currency
+      if (template.currency != null)
+        selectCurrency(template.currency);
+      else if (repository?.lastSelectedCurrency?.value != null)
+        selectCurrency(repository.lastSelectedCurrency.value);
 
-    selectVat(_expenseToBeEdited?.vat ?? _templateToBeEdited?.vat);
+      // Approver
+      if (template.approvedBy != null)
+        selectApprover(template.approvedBy);
+      else if (repository?.lastSelectedApprover?.value != null)
+        selectApprover(repository.lastSelectedApprover.value);
 
-    selectCurrency(_expenseToBeEdited?.currency ??
-        _templateToBeEdited?.currency ??
-        repository.lastSelectedCurrency.value);
+      selectCostCentre(template.costCentreGroup);
+      selectVat(template.vat);
+      descriptionController.text = template.description;
+    } // If not using a template
+    else {
+      selectCategory(
+          _expenseToBeEdited?.category ?? _templateToBeEdited?.category);
 
-    selectApprover(_expenseToBeEdited?.approvedBy ??
-        _templateToBeEdited?.approvedBy ??
-        repository.lastSelectedApprover.value);
-    selectCostCentre(_expenseToBeEdited?.costCentreGroup ??
-        _templateToBeEdited?.costCentreGroup);
+      selectCountry(repository.getCountryWithId(_expenseToBeEdited?.country ??
+          _templateToBeEdited?.country ??
+          repository.lastSelectedCountry.value));
+
+      selectVat(_expenseToBeEdited?.vat ?? _templateToBeEdited?.vat);
+
+      selectCurrency(_expenseToBeEdited?.currency ??
+          _templateToBeEdited?.currency ??
+          repository.lastSelectedCurrency.value);
+
+      selectApprover(_expenseToBeEdited?.approvedBy ??
+          _templateToBeEdited?.approvedBy ??
+          repository.lastSelectedApprover.value);
+      selectCostCentre(_expenseToBeEdited?.costCentreGroup ??
+          _templateToBeEdited?.costCentreGroup);
+
+      descriptionController.text =
+          _expenseToBeEdited?.description ?? _templateToBeEdited?.description;
+      templateNameController.text = _templateToBeEdited?.name;
+    }
+
+    receiptNumberController.text = _expenseToBeEdited?.receiptNumber;
     selectDueDate(
         _expenseToBeEdited != null && expenseType == ExpenseType.INVOICE
             ? (_expenseToBeEdited as Invoice).dueDate
             : null);
     selectExpenseDate(_expenseToBeEdited?.date ?? DateTime.now());
     grossController.updateValue(_expenseToBeEdited?.gross ?? 0.0);
-
-    receiptNumberController.text = _expenseToBeEdited?.receiptNumber;
-    descriptionController.text =
-        _expenseToBeEdited?.description ?? _templateToBeEdited?.description;
-    templateNameController.text = _templateToBeEdited?.name;
 
     _attachments = Map();
     switch (expenseType) {

@@ -5,7 +5,6 @@ import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/pages/new_expense_page.dart';
 import 'package:expense_claims_app/repository.dart';
-import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/tile_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -19,8 +18,6 @@ class TemplateTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    NewExpenseBloc expenseFormSectionBloc =
-        Provider.of<NewExpenseBloc>(context);
     TemplatesBloc templatesBloc = Provider.of<TemplatesBloc>(context);
 
     return Container(
@@ -45,7 +42,7 @@ class TemplateTile extends StatelessWidget {
                     ? templatesBloc.deselectTemplate(template)
                     : templatesBloc.selectTemplate(template);
               } else
-                _onTemplatePressed(expenseFormSectionBloc, context);
+                _onTemplatePressed(context);
             },
             onLongPress: () {
               // Selection mode ON
@@ -120,10 +117,8 @@ class TemplateTile extends StatelessWidget {
                                       size: 16,
                                       color: Colors.white54,
                                     ),
-                                    onPressed: () => _onTemplatePressed(
-                                      expenseFormSectionBloc,
-                                      context,
-                                    ),
+                                    onPressed: () =>
+                                        _onTemplatePressed(context, edit: true),
                                   ),
                                 )
                               : Container(),
@@ -138,19 +133,21 @@ class TemplateTile extends StatelessWidget {
     );
   }
 
-  void _onTemplatePressed(
-      NewExpenseBloc expenseFormSectionBloc, BuildContext context) {
-    utils.push(
-      context,
-      BlocProvider<NewExpenseBloc>(
-        initBloc: (_, bloc) =>
-            bloc ??
-            NewExpenseBloc(
-                expenseType: template.expenseType,
-                templateToBeEdited: template),
-        child: NewExpensePage(),
-        onDispose: (_, bloc) => bloc.dispose(),
-      ),
-    );
-  }
+  void _onTemplatePressed(BuildContext context, {bool edit = false}) =>
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BlocProvider<NewExpenseBloc>(
+            initBloc: (_, bloc) =>
+                bloc ??
+                NewExpenseBloc(
+                  expenseType: template.expenseType,
+                  template: template,
+                  editingTemplate: edit,
+                ),
+            child: NewExpensePage(),
+            onDispose: (_, bloc) => bloc.dispose(),
+          ),
+        ),
+      );
 }

@@ -36,24 +36,31 @@ class TemplatesPage extends StatelessWidget {
           appBar: CustomAppBar(
             title: 'Templates',
             actions: <Widget>[
-              FlatButton(
-                child: Text(snapshot.data.length >= 1 ? 'Delete' : 'Skip'),
-                textColor: secondaryColor,
-                onPressed: snapshot.data.length >= 1
-                    ? () => _deleteTemplates(context, bloc)
-                    : () {
-                        utils.push(
-                          context,
-                          BlocProvider<NewExpenseBloc>(
-                            initBloc: (_, b) =>
-                                b ??
-                                NewExpenseBloc(expenseType: bloc.expenseType),
-                            child: NewExpensePage(),
-                            onDispose: (_, b) => b.dispose(),
-                          ),
-                        );
-                      },
-              ),
+              StreamBuilder<List<Template>>(
+                  stream: bloc.selectedTemplates,
+                  initialData: [],
+                  builder: (context, snapshot) {
+                    return FlatButton(
+                      child:
+                          Text(snapshot.data.length >= 1 ? 'Delete' : 'Skip'),
+                      textColor: secondaryColor,
+                      onPressed: snapshot.data.length >= 1
+                          ? () => _deleteTemplates(context, bloc)
+                          : () {
+                              utils.push(
+                                context,
+                                BlocProvider<NewExpenseBloc>(
+                                  initBloc: (_, b) =>
+                                      b ??
+                                      NewExpenseBloc(
+                                          expenseType: bloc.expenseType),
+                                  child: NewExpensePage(),
+                                  onDispose: (_, b) => b.dispose(),
+                                ),
+                              );
+                            },
+                    );
+                  }),
             ],
           ),
           body: ListView(

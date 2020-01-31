@@ -14,12 +14,11 @@ class TemplatesBloc {
 
   //
   //  OUTPUT
-  Stream<List<Template>> get templates => _templatesController.stream;
+  Stream<List<Template>> get templates => repository.templates;
   ValueObservable<List<Template>> get selectedTemplates =>
       _selectedTemplatesController.stream;
 
   // Subjects
-  final _templatesController = BehaviorSubject<List<Template>>();
   final _selectedTemplatesController = BehaviorSubject<List<Template>>();
 
   TemplatesBloc({@required this.expenseType}) {
@@ -43,7 +42,6 @@ class TemplatesBloc {
   }
 
   void dispose() {
-    _templatesController.close();
     _selectedTemplatesController.close();
 
     _streamSubscriptions.forEach((s) => s.cancel());
