@@ -36,6 +36,7 @@ class ExpensesBloc {
   List<StreamSubscription> _streamSubscriptions = [];
 
   ExpensesBloc({@required this.expenseTypeStream}) {
+    print("expenses init");
     _streamSubscriptions.add(expenseTypeStream.listen((expenseType) {
       switch (expenseType) {
         case 0:
@@ -82,5 +83,6 @@ class ExpensesBloc {
     _isSearching.close();
 
     _streamSubscriptions.forEach((s) => s.cancel());
+    print("expenses disposed");
   }
 }

@@ -70,10 +70,10 @@ abstract class Expense {
         this.status = ExpenseStatus(json[STATUS_KEY] ?? 0),
         this.edited = json[EDITED_KEY] ?? false,
         this.deleted = json[DELETED_KEY] ?? false {
+    attachments = List<Map<String, String>>();
     if (json.containsKey('attachments') &&
         json['attachments'] != null &&
         json['attachments'].isNotEmpty) {
-      attachments = List<Map<String, String>>();
       List attachmentsList = json["attachments"].toList();
       attachmentsList.forEach((attachment) {
         Map<String, String> attachmentMap = Map.from(attachment);

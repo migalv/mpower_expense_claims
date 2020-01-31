@@ -67,15 +67,12 @@ class _ExpensesPageState extends State<ExpensesPage> {
                         children: <Widget>[
                           Icon(
                             MdiIcons.logout,
-                            color: Theme.of(context).errorColor.withAlpha(155),
                           ),
                           SizedBox(
                             width: 8.0,
                           ),
                           Text(
                             "Log out",
-                            style:
-                                TextStyle(color: Theme.of(context).errorColor),
                           ),
                         ],
                       ),

@@ -85,8 +85,14 @@ class Utils {
   }
 
   bool isImageAttachment(dynamic attachment) => attachment is File
-      ? p.extension(attachment.path) == '.jpg'
-      : attachment is String ? attachment.contains('.jpg') : false;
+      ? p.extension(attachment.path) == '.jpg' ||
+          p.extension(attachment.path) == '.png' ||
+          p.extension(attachment.path) == '.jpeg'
+      : attachment is String
+          ? attachment.contains('.jpg') ||
+              attachment.contains('.jpeg') ||
+              attachment.contains('.png')
+          : false;
 }
 
 final Utils utils = Utils();

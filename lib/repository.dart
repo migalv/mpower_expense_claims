@@ -79,6 +79,8 @@ class Repository {
   final _approvedByMeController = BehaviorSubject<List<Expense>>();
 
   void init() {
+    print("repository init");
+
     _countriesController.add([]);
     _currenciesController.add([]);
     _categoriesController.add([]);
@@ -558,6 +560,7 @@ class Repository {
     _approvedByMeController.close();
 
     _streamSubscriptions.forEach((s) => s.cancel());
+    print("repository disposed");
   }
 }
 

@@ -82,12 +82,27 @@ class NewExpenseBloc {
     _streamSubscriptions.add(
       attachments.listen(
         (attachments) {
-          if (attachments != null)
-            _addAttachmentsButtonVisibleController.add(
-                attachments.containsKey('Receipt') &&
-                        attachments['Receipt'] != null ||
-                    attachments.containsKey('Invoice') &&
-                        attachments['Invoice'] != null);
+          if (attachments != null) {
+            bool hasAllAttachments = false;
+
+            for (MapEntry entry in attachments.entries) {
+              if (expenseType == ExpenseType.EXPENSE_CLAIM) {
+                if (entry.key.contains(ATTACHMENTS_EXPENSE_CLAIM_NAME) &&
+                    entry.value != null) {
+                  hasAllAttachments = true;
+                  break;
+                }
+              }
+              if (expenseType == ExpenseType.INVOICE) {
+                if (entry.key.contains(ATTACHMENTS_INVOICE_NAME) &&
+                    entry.value != null) {
+                  hasAllAttachments = true;
+                  break;
+                }
+              }
+            }
+            _addAttachmentsButtonVisibleController.add(hasAllAttachments);
+          }
         },
       ),
     );
@@ -167,14 +182,14 @@ class NewExpenseBloc {
   // ATTACHMENTS
   void addAttachment(String name, File attachment) {
     String extension = p.extension(attachment.path);
-    String finalName = extension == '.jpg' ? name : '$name$extension';
+    String finalName = '$name$extension';
 
     if (name != null && _attachments.containsKey(name)) {
       _attachments[finalName] = attachment;
-      _attachments.remove(name);
+      if (finalName != name) _attachments.remove(name);
     } else
       _attachments.putIfAbsent(
-          '${DateFormat('h:mm a').format(DateTime.now())}${p.extension(attachment.path)}',
+          '${DateFormat('h:mm:ss a').format(DateTime.now())}${p.extension(attachment.path)}',
           () => attachment);
 
     _attachmentsController.add(_attachments);
@@ -183,14 +198,15 @@ class NewExpenseBloc {
   void removeAttachment(String name) {
     if (name == null) return;
 
-    if (name == ATTACHMENTS_EXPENSE_CLAIM_NAME &&
-        expenseType == ExpenseType.EXPENSE_CLAIM)
+    _attachments.remove(name);
+    if (name.contains(ATTACHMENTS_EXPENSE_CLAIM_NAME) &&
+        expenseType == ExpenseType.EXPENSE_CLAIM) {
       _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
-    else if (name == ATTACHMENTS_INVOICE_NAME &&
-        expenseType == ExpenseType.INVOICE)
+    } else if (name.contains(ATTACHMENTS_INVOICE_NAME) &&
+        expenseType == ExpenseType.INVOICE) {
       _attachments[ATTACHMENTS_INVOICE_NAME] = null;
-    else
-      _attachments.remove(name);
+    }
+
     _attachmentsController.add(_attachments);
   }
 

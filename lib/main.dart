@@ -11,7 +11,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_crashlytics/flutter_crashlytics.dart';
 
 void main() {
-  bool debugMode = false;
+  WidgetsFlutterBinding.ensureInitialized();
+
+  bool debugMode = true;
   repository.init();
 
   Crashlytics.instance.enableInDevMode = true;
@@ -59,7 +61,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.detached) {
       repository.dispose();
     }
   }
