@@ -52,14 +52,14 @@ abstract class Expense {
       : this.id = id,
         this.country = json[COUNTRY_KEY],
         this.category = json[CATEGORY_KEY],
-        this.date = json.containsKey(DATE_KEY)
+        this.date = json.containsKey(DATE_KEY) && json[DATE_KEY] != null
             ? DateTime.fromMillisecondsSinceEpoch(json[DATE_KEY])
             : null,
         this.description = json[DESCRIPTION_KEY],
         this.currency = json[CURRENCY_KEY],
-        this.gross = json[GROSS_KEY],
-        this.net = json[NET_KEY],
-        this.vat = json[VAT_KEY],
+        this.gross = json[GROSS_KEY].toDouble(),
+        this.net = json[NET_KEY].toDouble(),
+        this.vat = json[VAT_KEY].toDouble(),
         this.approvedBy = json[APPROVED_BY_KEY],
         this.approvedByName = json[APPROVED_BY_NAME_KEY],
         this.createdBy = json[CREATED_BY_KEY],
@@ -67,7 +67,7 @@ abstract class Expense {
         this.availableTo = json[AVAILABLE_TO].cast<String>(),
         this.createdAt = json[CREATED_AT_KEY],
         this.receiptNumber = json[RECEIPT_NUM_KEY],
-        this.status = ExpenseStatus(json[STATUS_KEY]),
+        this.status = ExpenseStatus(json[STATUS_KEY] ?? 0),
         this.edited = json[EDITED_KEY] ?? false,
         this.deleted = json[DELETED_KEY] ?? false {
     if (json.containsKey('attachments') &&
