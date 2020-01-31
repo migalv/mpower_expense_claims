@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.suspending) {
+    if (state == AppLifecycleState.inactive) {
       repository.dispose();
     }
   }

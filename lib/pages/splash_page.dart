@@ -51,7 +51,6 @@ class SplashPage extends StatelessWidget {
                 child: Container(
                     height: 56.0,
                     child: Center(
-                        // TODO: CHANGE LOGO PICTURE
                         child: SvgPicture.asset('assets/icons/logo.svg'))),
               );
             }));
