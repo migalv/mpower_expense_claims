@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/splash_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
@@ -10,32 +8,15 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/services.dart';
 
 void main() {
-  final bool debugMode = false;
-
-  FlutterError.onError = (FlutterErrorDetails details) {
-    if (debugMode) {
-      FlutterError.dumpErrorToConsole(details);
-    } else {
-      Zone.current.handleUncaughtError(details.exception, details.stack);
-      Crashlytics.instance.recordFlutterError(details);
-    }
-  };
-
   repository.init();
 
-  runZoned<Future<Null>>(() async {
-    runApp(MyApp(debugMode: debugMode));
-  }, onError: (error, stackTrace) async {
-    print(error.toString());
-    print(stackTrace.toString());
-  });
+  Crashlytics.instance.enableInDevMode = true;
+  FlutterError.onError = Crashlytics.instance.recordFlutterError;
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  final bool debugMode;
-
-  const MyApp({Key key, @required this.debugMode}) : super(key: key);
-
   @override
   _MyAppState createState() => _MyAppState();
 }

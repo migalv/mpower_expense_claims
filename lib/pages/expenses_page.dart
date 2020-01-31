@@ -1,11 +1,9 @@
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/expenses_bloc.dart';
-import 'package:expense_claims_app/blocs/login_bloc.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/approved_expenses_page.dart';
-import 'package:expense_claims_app/pages/login_page.dart';
-import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
+import 'package:expense_claims_app/widgets/custom_app_bar.dart';
 import 'package:expense_claims_app/widgets/empty_list_widget.dart';
 import 'package:expense_claims_app/widgets/expense_tile.dart';
 import 'package:expense_claims_app/widgets/search_widget.dart';
@@ -14,14 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class ExpensesPage extends StatefulWidget {
-  final ExpenseType _expenseType;
-  final GlobalKey scaffoldKey;
-
-  const ExpensesPage({
-    @required ExpenseType expenseType,
-    @required this.scaffoldKey,
-  }) : _expenseType = expenseType;
-
   @override
   _ExpensesPageState createState() => _ExpensesPageState();
 }
@@ -29,6 +19,7 @@ class ExpensesPage extends StatefulWidget {
 class _ExpensesPageState extends State<ExpensesPage> {
   final TextEditingController _searchTextController = TextEditingController();
   ExpensesBloc _expensesBloc;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -46,57 +37,59 @@ class _ExpensesPageState extends State<ExpensesPage> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Expense>>(
-        stream: _expensesBloc.expenses,
-        initialData: [],
-        builder: (BuildContext context, AsyncSnapshot snapshot) =>
-            _getType(snapshot));
+      stream: _expensesBloc.expenses,
+      initialData: [],
+      builder: (BuildContext context, AsyncSnapshot expensesSnapshot) =>
+          StreamBuilder<int>(
+        stream: _expensesBloc.expenseTypeStream,
+        builder: (context, expenseTypeSnapshot) =>
+            _buildBody(expensesSnapshot, expenseTypeSnapshot),
+      ),
+    );
   }
 
-  Widget _getType(AsyncSnapshot snapshot) {
+  Widget _buildBody(
+      AsyncSnapshot expensesSnapshot, AsyncSnapshot<int> expenseTypeSnapshot) {
     List<Widget> list = <Widget>[
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                children: <Widget>[
-                  GestureDetector(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+            CustomAppBar(
+              title: '',
+              actions: <Widget>[
+                PopupMenuButton(
+                  icon: Icon(MdiIcons.dotsVertical),
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
                       child: Row(
                         children: <Widget>[
-                          Icon(MdiIcons.logout),
-                          SizedBox(width: 4.0),
-                          Text("Logout"),
+                          Icon(
+                            MdiIcons.logout,
+                            color: Theme.of(context).errorColor.withAlpha(155),
+                          ),
+                          SizedBox(
+                            width: 8.0,
+                          ),
+                          Text(
+                            "Log out",
+                            style:
+                                TextStyle(color: Theme.of(context).errorColor),
+                          ),
                         ],
                       ),
+                      value: 1,
                     ),
-                    onTap: () => _logOut(),
-                  ),
-                  Expanded(
-                    child: Container(),
-                  ),
-                  IconButton(
-                    alignment: Alignment.centerLeft,
-                    icon: Icon(MdiIcons.fileDocumentBoxCheck),
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ApprovedExpensesPage(),
-                      ),
-                    ),
-                    tooltip: "Approved expenses",
-                  ),
-                ],
-              ),
+                  ],
+                  onSelected: (value) => value == 0
+                      ? utils.push(context, ApprovedExpensesPage())
+                      : utils.logOut(context),
+                ),
+              ],
             ),
             Text(
-              widget._expenseType == ExpenseType.EXPENSE_CLAIM
-                  ? "Expense claims"
-                  : "Invoices",
+              expenseTypeSnapshot.data == 0 ? "Expense claims" : "Invoices",
               textAlign: TextAlign.left,
               style: TextStyle(
                 fontSize: 30.0,
@@ -115,34 +108,20 @@ class _ExpensesPageState extends State<ExpensesPage> {
       ),
     ];
 
-    if (snapshot.data.isEmpty) {
-      String title = "You don't have any ";
-      Widget subtitle = Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            "You can create one with the ",
-            style: Theme.of(context).textTheme.subtitle,
-          ),
-          Icon(Icons.add),
-          Text(" button", style: Theme.of(context).textTheme.subtitle),
-        ],
-      );
-      title += widget._expenseType == ExpenseType.EXPENSE_CLAIM
-          ? "expense claims"
-          : "invoices";
+    if (expensesSnapshot.data.isEmpty) {
       list.add(EmptyListPlaceHolder(
-        title: title,
-        subtitle: subtitle,
+        title:
+            "You don't have any ${expenseTypeSnapshot.data == 0 ? 'expense claims' : 'invoices'}",
+        subtitle: "You can create one with the + button",
       ));
     } else
-      list.addAll(snapshot.data
+      list.addAll(expensesSnapshot.data
           .map<Widget>((expense) => Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Container(
                   margin: EdgeInsets.only(bottom: 20.0),
                   child: ExpenseTile(
-                    scaffoldKey: widget.scaffoldKey,
+                    scaffoldKey: _scaffoldKey,
                     expense: expense,
                   ),
                 ),
@@ -154,18 +133,6 @@ class _ExpensesPageState extends State<ExpensesPage> {
     ));
 
     return ListView(shrinkWrap: true, children: list);
-  }
-
-  void _logOut() {
-    repository.logOut();
-    utils.pushReplacement(
-      context,
-      BlocProvider<LoginBloc>(
-        initBloc: (_, bloc) => bloc ?? LoginBloc(),
-        onDispose: (_, bloc) => bloc.dispose(),
-        child: LoginPage(),
-      ),
-    );
   }
 
   void _closeSearchBar() {

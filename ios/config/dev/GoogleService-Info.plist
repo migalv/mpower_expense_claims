@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>172921463223-mtdid7b0o2ni37h24rk2dhuises8j80r.apps.googleusercontent.com</string>
+	<string>708632930807-k041arb31aj0ias834jti1eo6kuiv6dv.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.172921463223-mtdid7b0o2ni37h24rk2dhuises8j80r</string>
+	<string>com.googleusercontent.apps.708632930807-k041arb31aj0ias834jti1eo6kuiv6dv</string>
 	<key>API_KEY</key>
-	<string>AIzaSyASTWXXYHTsMgwBv_jnP4ouaPeA4RYj2xY</string>
+	<string>AIzaSyB0l8r47q_5tbExAB2tAb1MzemjCAPchqk</string>
 	<key>GCM_SENDER_ID</key>
-	<string>172921463223</string>
+	<string>708632930807</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.mpower.expenseClaimsApp</string>
 	<key>PROJECT_ID</key>
-	<string>expense-claims-app</string>
+	<string>expense-claims-app-dev</string>
 	<key>STORAGE_BUCKET</key>
-	<string>expense-claims-app.appspot.com</string>
+	<string>expense-claims-app-dev.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,8 +29,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:172921463223:ios:7713dad8ee12a7fdcd4832</string>
+	<string>1:708632930807:ios:8d9784b10ea5b67702a6f2</string>
 	<key>DATABASE_URL</key>
-	<string>https://expense-claims-app.firebaseio.com</string>
+	<string>https://expense-claims-app-dev.firebaseio.com</string>
 </dict>
 </plist>

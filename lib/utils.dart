@@ -1,6 +1,11 @@
 import 'dart:io';
 
+import 'package:expense_claims_app/bloc_provider.dart';
+import 'package:expense_claims_app/blocs/login_bloc.dart';
+import 'package:expense_claims_app/pages/login_page.dart';
+import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 
 class Utils {
   void pushReplacement(BuildContext context, Widget to, {int delay = 0}) async {
@@ -66,6 +71,22 @@ class Utils {
       action: action,
     ));
   }
+
+  void logOut(BuildContext context) {
+    repository.logOut();
+    utils.pushReplacement(
+      context,
+      BlocProvider<LoginBloc>(
+        initBloc: (_, bloc) => bloc ?? LoginBloc(),
+        onDispose: (_, bloc) => bloc.dispose(),
+        child: LoginPage(),
+      ),
+    );
+  }
+
+  bool isImageAttachment(dynamic attachment) => attachment is File
+      ? p.extension(attachment.path) == '.jpg'
+      : attachment is String ? attachment.contains('.jpg') : false;
 }
 
 final Utils utils = Utils();

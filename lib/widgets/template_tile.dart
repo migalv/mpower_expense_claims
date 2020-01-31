@@ -1,29 +1,27 @@
 import 'package:expense_claims_app/bloc_provider.dart';
-import 'package:expense_claims_app/blocs/expense_form_section_bloc.dart';
-import 'package:expense_claims_app/blocs/templates_section_bloc.dart';
+import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
+import 'package:expense_claims_app/blocs/templates_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/template_model.dart';
+import 'package:expense_claims_app/pages/new_expense_page.dart';
 import 'package:expense_claims_app/repository.dart';
+import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/tile_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TemplateTile extends StatelessWidget {
   final Template template;
-  final PageController pageController;
-  final TemplatesSectionBloc templatesSectionBloc;
-
   const TemplateTile({
     Key key,
     @required this.template,
-    @required this.pageController,
-    @required this.templatesSectionBloc,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    ExpenseFormSectionBloc expenseFormSectionBloc =
-        Provider.of<ExpenseFormSectionBloc>(context);
+    NewExpenseBloc expenseFormSectionBloc =
+        Provider.of<NewExpenseBloc>(context);
+    TemplatesBloc templatesBloc = Provider.of<TemplatesBloc>(context);
 
     return Container(
       margin: EdgeInsets.fromLTRB(24, 16, 24, 0),
@@ -33,7 +31,7 @@ class TemplateTile extends StatelessWidget {
       ),
       child: StreamBuilder<List<Template>>(
         initialData: [],
-        stream: templatesSectionBloc.selectedTemplates,
+        stream: templatesBloc.selectedTemplates,
         builder: (context, snapshot) {
           List<Template> selectedTemplates = snapshot.data;
           bool selected = selectedTemplates.contains(template);
@@ -44,15 +42,15 @@ class TemplateTile extends StatelessWidget {
               // Selection mode OFF
               if (selectedTemplates.isNotEmpty) {
                 selected
-                    ? templatesSectionBloc.deselectTemplate(template)
-                    : templatesSectionBloc.selectTemplate(template);
+                    ? templatesBloc.deselectTemplate(template)
+                    : templatesBloc.selectTemplate(template);
               } else
                 _onTemplatePressed(expenseFormSectionBloc, context);
             },
             onLongPress: () {
               // Selection mode ON
               if (selectedTemplates.isEmpty) {
-                templatesSectionBloc.selectTemplate(template);
+                templatesBloc.selectTemplate(template);
               }
             },
             child: ClipRRect(
@@ -113,21 +111,22 @@ class TemplateTile extends StatelessWidget {
                                 shape: BoxShape.circle,
                               ),
                             )
-                          : Container(
-                              margin: EdgeInsets.only(right: 8),
-                              child: IconButton(
-                                icon: Icon(
-                                  FontAwesomeIcons.pen,
-                                  size: 16,
-                                  color: Colors.white54,
-                                ),
-                                onPressed: () => _onTemplatePressed(
-                                  expenseFormSectionBloc,
-                                  context,
-                                  edit: true,
-                                ),
-                              ),
-                            ),
+                          : template.createdBy == repository.currentUserId
+                              ? Container(
+                                  margin: EdgeInsets.only(right: 8),
+                                  child: IconButton(
+                                    icon: Icon(
+                                      FontAwesomeIcons.pen,
+                                      size: 16,
+                                      color: Colors.white54,
+                                    ),
+                                    onPressed: () => _onTemplatePressed(
+                                      expenseFormSectionBloc,
+                                      context,
+                                    ),
+                                  ),
+                                )
+                              : Container(),
                     ],
                   ),
                 ],
@@ -140,10 +139,18 @@ class TemplateTile extends StatelessWidget {
   }
 
   void _onTemplatePressed(
-      ExpenseFormSectionBloc expenseFormSectionBloc, BuildContext context,
-      {bool edit = false}) {
-    expenseFormSectionBloc.setTemplate(template, edit: edit);
-    pageController.animateTo(MediaQuery.of(context).size.width,
-        duration: Duration(milliseconds: 275), curve: Curves.easeIn);
+      NewExpenseBloc expenseFormSectionBloc, BuildContext context) {
+    utils.push(
+      context,
+      BlocProvider<NewExpenseBloc>(
+        initBloc: (_, bloc) =>
+            bloc ??
+            NewExpenseBloc(
+                expenseType: template.expenseType,
+                templateToBeEdited: template),
+        child: NewExpensePage(),
+        onDispose: (_, bloc) => bloc.dispose(),
+      ),
+    );
   }
 }

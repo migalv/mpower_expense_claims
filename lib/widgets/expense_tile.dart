@@ -1,26 +1,31 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:expense_claims_app/bloc_provider.dart';
+import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
 import 'package:expense_claims_app/models/expense_claim_model.dart';
 import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/pages/attachments_page.dart';
+import 'package:expense_claims_app/pages/new_expense_page.dart';
 import 'package:expense_claims_app/repository.dart';
 import 'package:expense_claims_app/utils.dart';
 import 'package:expense_claims_app/widgets/tile_icon.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
+import 'package:path/path.dart' as p;
 
 class ExpenseTile extends StatefulWidget {
   final Expense expense;
   final GlobalKey scaffoldKey;
-  final bool deletable;
 
   const ExpenseTile({
     Key key,
-    this.expense,
+    @required this.expense,
     @required this.scaffoldKey,
-    this.deletable = true,
   }) : super(key: key);
 
   @override
@@ -61,8 +66,10 @@ class _ExpenseTileState extends State<ExpenseTile>
   Widget build(BuildContext context) => GestureDetector(
         onTap: _toggleExpand,
         onLongPress: widget.expense.status.value == ExpenseStatus.WAITING &&
-                widget.deletable
+                widget.expense.createdBy == repository.currentUserId
             ? () {
+                final String expenseType =
+                    widget.expense is ExpenseClaim ? 'expense' : 'invoice';
                 final RenderBox overlay =
                     Overlay.of(context).context.findRenderObject();
                 showMenu(
@@ -71,12 +78,28 @@ class _ExpenseTileState extends State<ExpenseTile>
                   context: context,
                   items: <PopupMenuEntry>[
                     PopupMenuItem(
-                      value: "Delete",
+                      value: "Edit $expenseType",
                       child: Row(
                         children: <Widget>[
-                          Icon(Icons.delete),
-                          SizedBox(width: 8.0),
-                          Text("Delete"),
+                          Icon(
+                            FontAwesomeIcons.pen,
+                            size: 16,
+                          ),
+                          SizedBox(width: 16.0),
+                          Text("Edit $expenseType"),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: "Delete $expenseType",
+                      child: Row(
+                        children: <Widget>[
+                          Icon(
+                            FontAwesomeIcons.trash,
+                            size: 16,
+                          ),
+                          SizedBox(width: 16.0),
+                          Text("Delete $expenseType"),
                         ],
                       ),
                     ),
@@ -87,11 +110,16 @@ class _ExpenseTileState extends State<ExpenseTile>
                     bottomLeft: Radius.circular(8.0),
                     bottomRight: Radius.circular(8.0),
                   )),
-                ).then((selectedValue) {
-                  if (selectedValue == null) return;
+                ).then(
+                  (selectedValue) {
+                    if (selectedValue == null) return;
 
-                  if (selectedValue == "Delete") _deleteExpense(context);
-                });
+                    if (selectedValue.contains('Delete'))
+                      _deleteExpense(context);
+                    else if (selectedValue.contains('Edit'))
+                      _editExpense(context);
+                  },
+                );
               }
             : null,
         onLongPressStart: (details) =>
@@ -268,84 +296,86 @@ class _ExpenseTileState extends State<ExpenseTile>
         ],
       );
 
-  Widget _buildAttachmentsRow() {
-    String previewAttachmentUrl = widget.expense.attachments.first["url"];
-    int numAttachments = widget.expense.attachments.length;
-    if (previewAttachmentUrl == null) return Container();
-    return Row(
-      children: <Widget>[
-        Text(
-          "Attachments",
-          style: Theme.of(context)
-              .textTheme
-              .body2
-              .copyWith(fontWeight: FontWeight.bold),
-        ),
-        SizedBox(width: 16.0),
-        CachedNetworkImage(
-          imageUrl: previewAttachmentUrl,
-          imageBuilder: (context, imageProvider) => GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    AttachmentsPage(attachments: widget.expense.attachments),
-              ),
-            ),
-            child: Stack(
-              children: <Widget>[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Image(
-                    image: imageProvider,
-                    height: 48.0,
-                  ),
-                ),
-                numAttachments > 1
-                    ? Positioned(
-                        right: 2.0,
-                        top: 2.0,
-                        child: Container(
-                          padding: EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: secondaryColor,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          constraints: BoxConstraints(
-                            minWidth: 12,
-                            minHeight: 12,
-                          ),
-                          child: Text(
-                            numAttachments.toString(),
-                            style: TextStyle(
-                              color: Colors.black54,
-                              fontSize: 8,
+  Widget _buildAttachmentsRow() => Container(
+        height: 48,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: widget.expense.attachments
+              .map(
+                (attachment) => Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: attachment['url'] == null
+                      ? Container()
+                      : utils.isImageAttachment(attachment['url'])
+                          ? CachedNetworkImage(
+                              imageUrl: attachment['url'],
+                              imageBuilder: (context, imageProvider) =>
+                                  GestureDetector(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AttachmentsPage(
+                                      attachments: widget.expense.attachments,
+                                      openAt: attachment,
+                                    ),
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image(
+                                    image: imageProvider,
+                                    height: 48.0,
+                                  ),
+                                ),
+                              ),
+                              placeholder: (context, url) =>
+                                  Center(child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) => Tooltip(
+                                message: "Could not find attachments",
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(Icons.error),
+                                    SizedBox(width: 4.0),
+                                    Text("Not found"),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : GestureDetector(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  color: Colors.white10,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Icon(
+                                        MdiIcons.fileDocument,
+                                        size: 18,
+                                      ),
+                                      Container(
+                                        height: 6,
+                                      ),
+                                      Text(
+                                        '${_getAttachmentName(attachment['name'])} File',
+                                        style:
+                                            Theme.of(context).textTheme.caption,
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              onTap: () async {
+                                if (await canLaunch(attachment['url']))
+                                  launch(attachment['url']);
+                              },
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )
-                    : Container(),
-              ],
-            ),
-          ),
-          placeholder: (context, url) =>
-              Center(child: CircularProgressIndicator()),
-          errorWidget: (context, url, error) => Tooltip(
-            message: "Could not find attachments",
-            child: Row(
-              children: <Widget>[
-                Icon(Icons.error),
-                SizedBox(width: 4.0),
-                Text("Not found"),
-              ],
-            ),
-          ),
+                ),
+              )
+              .toList(),
         ),
-        Expanded(child: Container()),
-      ],
-    );
-  }
+      );
 
   //
   // METHODS
@@ -407,4 +437,25 @@ class _ExpenseTileState extends State<ExpenseTile>
       );
     }
   }
+
+  void _editExpense(BuildContext context) {
+    utils.push(
+      context,
+      BlocProvider<NewExpenseBloc>(
+        initBloc: (_, b) =>
+            b ??
+            NewExpenseBloc(
+              expenseType: widget.expense is ExpenseClaim
+                  ? ExpenseType.EXPENSE_CLAIM
+                  : ExpenseType.INVOICE,
+              expenseToBeEdited: widget.expense,
+            ),
+        child: NewExpensePage(),
+        onDispose: (_, b) => b.dispose(),
+      ),
+    );
+  }
+
+  String _getAttachmentName(String name) =>
+      p.extension(name).substring(1).toUpperCase();
 }

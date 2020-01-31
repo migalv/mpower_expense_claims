@@ -12,13 +12,18 @@ class ErrorFormLabel extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: EdgeInsets.symmetric(horizontal: padding ? 24.0 : 0.0),
         child: state.hasError
-            ? Column(
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  SizedBox(height: 4.0),
-                  AutoSizeText(
-                    state.errorText,
-                    style: TextStyle(color: errorColor, fontSize: 12.0),
-                  ),
+                  Column(
+                    children: <Widget>[
+                      SizedBox(height: 4.0),
+                      AutoSizeText(
+                        state.errorText,
+                        style: TextStyle(color: errorColor, fontSize: 12.0),
+                      ),
+                    ],
+                  )
                 ],
               )
             : Container(),

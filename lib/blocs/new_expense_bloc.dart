@@ -11,8 +11,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
 
-class ExpenseFormSectionBloc {
+class NewExpenseBloc {
   // Streams
   ValueObservable<Country> get selectedCountry =>
       _selectedCountryController.stream;
@@ -30,6 +31,8 @@ class ExpenseFormSectionBloc {
   ValueObservable<double> get selectedVat => _selectedVatController.stream;
   ValueObservable<String> get selectedCostCentre =>
       _selectedCostCentreController.stream;
+  Stream<bool> get addAttachmentsButtonVisible =>
+      _addAttachmentsButtonVisibleController.stream;
 
   // Controllers
   final _selectedCountryController = BehaviorSubject<Country>();
@@ -41,16 +44,18 @@ class ExpenseFormSectionBloc {
   final _selectedApproverController = BehaviorSubject<String>();
   final _selectedVatController = BehaviorSubject<double>();
   final _selectedCostCentreController = BehaviorSubject<String>();
+  final _addAttachmentsButtonVisibleController = StreamController<bool>();
 
   // PRIVATE
   List<StreamSubscription> _streamSubscriptions = [];
   Map<String, File> _attachments = Map();
-  ExpenseType _expenseType;
 
   // PUBLIC
-  final Stream<int> expenseTypeStream;
-  bool editingTemplate = false;
-  Template _template;
+  final ExpenseType expenseType;
+  bool editingTemplate = false, editingExpense = false;
+
+  Template _templateToBeEdited;
+  Expense _expenseToBeEdited;
 
   // Text Controllers
   final TextEditingController descriptionController = TextEditingController();
@@ -59,22 +64,33 @@ class ExpenseFormSectionBloc {
       MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
   final receiptNumberController = TextEditingController();
 
-  // Flags
-  bool _multipleAttachments;
-  bool get multipleAttachments => _multipleAttachments;
+  NewExpenseBloc(
+      {@required this.expenseType,
+      Expense expenseToBeEdited,
+      Template templateToBeEdited})
+      : _expenseToBeEdited = expenseToBeEdited,
+        _templateToBeEdited = templateToBeEdited {
+    editingTemplate = templateToBeEdited != null;
+    editingExpense = expenseToBeEdited != null;
 
-  ExpenseFormSectionBloc({@required Stream<int> expenseTypeStream})
-      : this.expenseTypeStream = expenseTypeStream {
-    _listenToExpenseTypeChanges();
+    _initFields();
+
+    _listenToAttachmentChanges();
   }
 
-  void _listenToExpenseTypeChanges() {
-    _streamSubscriptions.add(expenseTypeStream.listen(
-      (expenseType) {
-        _expenseType = ExpenseType.values[expenseType ?? 0];
-        _initFields();
-      },
-    ));
+  void _listenToAttachmentChanges() {
+    _streamSubscriptions.add(
+      attachments.listen(
+        (attachments) {
+          if (attachments != null)
+            _addAttachmentsButtonVisibleController.add(
+                attachments.containsKey('Receipt') &&
+                        attachments['Receipt'] != null ||
+                    attachments.containsKey('Invoice') &&
+                        attachments['Invoice'] != null);
+        },
+      ),
+    );
   }
 
   // SELECTS
@@ -104,94 +120,63 @@ class ExpenseFormSectionBloc {
       _selectedDueDateController.add(dueDate);
   void selectVat(double vat) => _selectedVatController.add(vat);
 
-  void setTemplate(Template template, {bool edit = false}) {
-    this.editingTemplate = edit;
-    _template = template;
-
-    if (template != null) {
-      templateNameController.text = _template.name;
-      selectCategory(template.category);
-      // Country
-      if (template.country != null)
-        selectCountry(repository.getCountryWithId(template.country));
-      else if (repository?.lastSelectedCountry?.value != null)
-        selectCountry(
-            repository.getCountryWithId(repository.lastSelectedCountry.value));
-
-      // Currency
-      if (template.currency != null)
-        selectCurrency(template.currency);
-      else if (repository?.lastSelectedCurrency?.value != null)
-        selectCurrency(repository.lastSelectedCurrency.value);
-
-      // Approver
-      if (template.approvedBy != null)
-        selectApprover(template.approvedBy);
-      else if (repository?.lastSelectedApprover?.value != null)
-        selectApprover(repository.lastSelectedApprover.value);
-
-      selectCostCentre(template.costCentreGroup);
-      selectVat(template.vat);
-      descriptionController.text = template.description;
-    } else
-      _initFields();
-  }
-
-  void editTemplate() {
-    Template newTemplate = Template(
-      id: _template.id,
-      category: _selectedCategoryController.value,
-      approvedBy: _selectedApproverController.value,
-      availableTo: _template.availableTo,
-      costCentreGroup: _selectedCostCentreController.value,
-      country: _selectedCountryController.value.id,
-      currency: _selectedCurrencyController.value,
-      description: descriptionController.text,
-      expenseType: _expenseType,
-      name: templateNameController.text,
-      vat: _selectedVatController.value,
-    );
-    repository.uploadNewTemplate(newTemplate);
-  }
-
   void _initFields() {
-    selectCategory(null);
-    selectCountry(
-        repository.getCountryWithId(repository.lastSelectedCountry.value));
-    selectVat(null);
-    selectCurrency(repository.lastSelectedCurrency.value);
-    selectApprover(repository.lastSelectedApprover.value);
-    selectCostCentre(null);
-    selectDueDate(null);
-    selectExpenseDate(DateTime.now());
-    receiptNumberController.text = "";
-    grossController.updateValue(0.0);
-    descriptionController.text = "";
+    selectCategory(
+        _expenseToBeEdited?.category ?? _templateToBeEdited?.category);
+
+    selectCountry(repository.getCountryWithId(_expenseToBeEdited?.country ??
+        _templateToBeEdited?.country ??
+        repository.lastSelectedCountry.value));
+
+    selectVat(_expenseToBeEdited?.vat ?? _templateToBeEdited?.vat);
+
+    selectCurrency(_expenseToBeEdited?.currency ??
+        _templateToBeEdited?.currency ??
+        repository.lastSelectedCurrency.value);
+
+    selectApprover(_expenseToBeEdited?.approvedBy ??
+        _templateToBeEdited?.approvedBy ??
+        repository.lastSelectedApprover.value);
+    selectCostCentre(_expenseToBeEdited?.costCentreGroup ??
+        _templateToBeEdited?.costCentreGroup);
+    selectDueDate(
+        _expenseToBeEdited != null && expenseType == ExpenseType.INVOICE
+            ? (_expenseToBeEdited as Invoice).dueDate
+            : null);
+    selectExpenseDate(_expenseToBeEdited?.date ?? DateTime.now());
+    grossController.updateValue(_expenseToBeEdited?.gross ?? 0.0);
+
+    receiptNumberController.text = _expenseToBeEdited?.receiptNumber;
+    descriptionController.text =
+        _expenseToBeEdited?.description ?? _templateToBeEdited?.description;
+    templateNameController.text = _templateToBeEdited?.name;
 
     _attachments = Map();
-    switch (_expenseType) {
+    switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
         _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
         _attachmentsController.add(_attachments);
-        _multipleAttachments = true;
         break;
       case ExpenseType.INVOICE:
         _attachments[ATTACHMENTS_INVOICE_NAME] = null;
         _attachmentsController.add(_attachments);
-        _multipleAttachments = true;
         break;
     }
   }
 
   // ATTACHMENTS
   void addAttachment(String name, File attachment) {
+    String extension = p.extension(attachment.path);
+    String finalName = extension == '.jpg' ? name : '$name$extension';
+
     if (name != null && _attachments.containsKey(name)) {
-      _attachments[name] = attachment;
-    } else {
+      _attachments[finalName] = attachment;
+      _attachments.remove(name);
+    } else
       _attachments.putIfAbsent(
-          name ?? DateFormat('h:mm:ss a').format(DateTime.now()),
+          '${DateFormat('h:mm a').format(DateTime.now())}${p.extension(attachment.path)}',
           () => attachment);
-    }
+
     _attachmentsController.add(_attachments);
   }
 
@@ -199,18 +184,38 @@ class ExpenseFormSectionBloc {
     if (name == null) return;
 
     if (name == ATTACHMENTS_EXPENSE_CLAIM_NAME &&
-        _expenseType == ExpenseType.EXPENSE_CLAIM)
+        expenseType == ExpenseType.EXPENSE_CLAIM)
       _attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] = null;
     else if (name == ATTACHMENTS_INVOICE_NAME &&
-        _expenseType == ExpenseType.INVOICE)
+        expenseType == ExpenseType.INVOICE)
       _attachments[ATTACHMENTS_INVOICE_NAME] = null;
     else
       _attachments.remove(name);
     _attachmentsController.add(_attachments);
   }
 
+  void saveEditing() {
+    if (editingTemplate) {
+      Template newTemplate = Template(
+        id: _templateToBeEdited.id,
+        createdBy: repository.currentUserId,
+        category: _selectedCategoryController.value,
+        approvedBy: _selectedApproverController.value,
+        availableTo: _templateToBeEdited.availableTo,
+        costCentreGroup: _selectedCostCentreController.value,
+        country: _selectedCountryController.value.id,
+        currency: _selectedCurrencyController.value,
+        description: descriptionController.text,
+        expenseType: expenseType,
+        name: templateNameController.text,
+        vat: _selectedVatController.value,
+      );
+      repository.uploadNewTemplate(newTemplate);
+    } else if (editingExpense) uploadExpense();
+  }
+
   // UPLOAD DATA
-  void uploadNewExpense() {
+  void uploadExpense() {
     double gross = grossController.numberValue;
     double net;
     double vat = selectedVat.value;
@@ -223,8 +228,9 @@ class ExpenseFormSectionBloc {
 
     _attachments.forEach((name, file) => attachmentsList.add({"name": name}));
 
-    if (_expenseType == ExpenseType.EXPENSE_CLAIM) {
+    if (expenseType == ExpenseType.EXPENSE_CLAIM) {
       expense = ExpenseClaim(
+        id: _expenseToBeEdited?.id,
         attachments: attachmentsList,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         country: selectedCountry.value.id,
@@ -247,8 +253,9 @@ class ExpenseFormSectionBloc {
             : null,
         status: ExpenseStatus(ExpenseStatus.WAITING),
       );
-    } else if (_expenseType == ExpenseType.INVOICE) {
+    } else if (expenseType == ExpenseType.INVOICE) {
       expense = Invoice(
+        id: _expenseToBeEdited?.id,
         attachments: attachmentsList,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         country: selectedCountry.value.id,
@@ -274,22 +281,24 @@ class ExpenseFormSectionBloc {
       );
     }
 
-    repository.uploadNewExpense(expense, _attachments);
+    repository.uploadExpense(expense, _attachments);
   }
 
   void uploadTemplate() {
     Template template;
 
     template = Template(
+      id: repository.generateDocumentId(TEMPLATES_COLLECTION),
       approvedBy: selectedApprover.value,
       availableTo: {
         'uid': [repository.currentUserId]
       },
+      createdBy: repository.currentUserId,
       category: selectedCategory.value,
       country: selectedCountry.value.id,
       currency: selectedCurrency.value,
       description: descriptionController?.text ?? "",
-      expenseType: _expenseType,
+      expenseType: expenseType,
       name: templateNameController.text,
       costCentreGroup: selectedCostCentre.value,
       vat: selectedVat.value,
@@ -300,17 +309,32 @@ class ExpenseFormSectionBloc {
 
   // VALIDATORS
   String attachmentsValidator() {
-    switch (_expenseType) {
+    String returnString;
+
+    switch (expenseType) {
       case ExpenseType.EXPENSE_CLAIM:
-        if (_attachments[ATTACHMENTS_EXPENSE_CLAIM_NAME] == null)
-          return "You need to attach a receipt";
+        for (var name in _attachments.keys) {
+          if (name != null &&
+              name.contains(ATTACHMENTS_EXPENSE_CLAIM_NAME) &&
+              _attachments[name] == null) {
+            returnString = "You need to attach a receipt";
+            break;
+          }
+        }
         break;
       case ExpenseType.INVOICE:
-        if (_attachments[ATTACHMENTS_INVOICE_NAME] == null)
-          return "You need to attach the invoice";
+        for (var name in _attachments.keys) {
+          if (name != null &&
+              name.contains(ATTACHMENTS_INVOICE_NAME) &&
+              _attachments[name] == null) {
+            returnString = "You need to attach an invoice";
+            break;
+          }
+        }
         break;
     }
-    return null;
+
+    return returnString;
   }
 
   String categoryValidator(String value) =>
@@ -343,7 +367,10 @@ class ExpenseFormSectionBloc {
     _selectedDueDateController.close();
     _selectedApproverController.close();
     _selectedVatController.close();
+    _addAttachmentsButtonVisibleController.close();
     _selectedCostCentreController.close();
+
+    _streamSubscriptions.forEach((s) => s.cancel());
   }
 }
 

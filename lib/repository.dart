@@ -17,6 +17,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:path/path.dart' as p;
 
 import 'models/expense_claim_model.dart';
 
@@ -25,6 +26,7 @@ class Repository {
   String get currentUserId => _currentUserId;
   User _currentUser;
   User get currentUser => _currentUser;
+  List<StreamSubscription> _streamSubscriptions = [];
 
   // Expenses marked as approved by the user
   List<Expense> _approvedByMe = [];
@@ -92,8 +94,7 @@ class Repository {
   }
 
   // UPLOAD
-  Future uploadNewExpense(
-      Expense expense, Map<String, File> attachments) async {
+  void uploadExpense(Expense expense, Map<String, File> attachments) async {
     String collection;
     DocumentReference docRef;
 
@@ -104,8 +105,9 @@ class Repository {
       case Invoice:
         collection = INVOICES_COLLECTION;
     }
+
     // Upload the expense
-    docRef = _firestore.collection(collection).document();
+    docRef = _firestore.collection(collection).document(expense.id);
     docRef.setData(expense.toJson());
 
     Map<String, String> downloadUrls =
@@ -120,17 +122,11 @@ class Repository {
     docRef.setData(expense.toJson(), merge: true);
   }
 
-  Future uploadNewTemplate(Template template) async {
-    if (template.id == null)
-      await _firestore
-          .collection(TEMPLATES_COLLECTION)
-          .document()
-          .setData(template.toJson());
-    else
-      await _firestore
-          .collection(TEMPLATES_COLLECTION)
-          .document(template.id)
-          .setData(template.toJson());
+  void uploadNewTemplate(Template template) {
+    _firestore
+        .collection(TEMPLATES_COLLECTION)
+        .document(template.id)
+        .setData(template.toJson());
   }
 
   Future<Map<String, String>> _uploadAttachments(
@@ -158,7 +154,7 @@ class Repository {
       StorageReference ref = FirebaseStorage.instance
           .ref()
           .child('uploads/$collection/$expenseId')
-          .child('$attachmentName.jpg');
+          .child('$attachmentName${p.extension(file.path)}');
 
       StorageUploadTask storageUploadTask = ref.putFile(file);
 
@@ -264,51 +260,46 @@ class Repository {
         break;
     }
 
-    queries.forEach(
-      (query) => query.snapshots().listen(
-        (snapshot) {
-          // It's only one document
-          if (snapshot is DocumentSnapshot) {
-            final onlineElement = _initializeFromJson(collection, snapshot);
-            if (collection == USERS_COLLECTION) {
-              list.clear();
-              list.addAll(onlineElement);
-            } else {
-              list.removeWhere((ele) => ele.id == onlineElement.id);
-              list.add(onlineElement);
-            }
-            // It's multiple documents
-          } else if (snapshot is QuerySnapshot)
-            snapshot.documentChanges.forEach((DocumentChange documentChange) {
-              final onlineElement =
-                  _initializeFromJson(collection, documentChange.document);
-              switch (documentChange.type) {
-                case DocumentChangeType.added:
-                  if (collection == USERS_COLLECTION)
-                    list.addAll(onlineElement);
-                  else
-                    list.add(onlineElement);
-                  break;
-                case DocumentChangeType.modified:
-                  if (collection == USERS_COLLECTION) {
-                    list.clear();
-                    list.addAll(onlineElement);
+    queries.forEach((query) => _streamSubscriptions.add(
+          query.snapshots().listen(
+            (snapshot) {
+              // It's only one document
+              if (snapshot is DocumentSnapshot) {
+                list.clear();
+                list.addAll(_initializeFromJson(collection, snapshot));
+                // It's multiple documents
+              } else if (snapshot is QuerySnapshot)
+                snapshot.documentChanges
+                    .forEach((DocumentChange documentChange) {
+                  final onlineElement =
+                      _initializeFromJson(collection, documentChange.document);
+                  switch (documentChange.type) {
+                    case DocumentChangeType.added:
+                      if (collection == USERS_COLLECTION)
+                        list.addAll(onlineElement);
+                      else
+                        list.add(onlineElement);
+                      break;
+                    case DocumentChangeType.modified:
+                      if (collection == USERS_COLLECTION) {
+                        list.clear();
+                        list.addAll(onlineElement);
+                      }
+                      list.removeWhere((ele) => ele.id == onlineElement.id);
+                      list.add(onlineElement);
+                      break;
+                    case DocumentChangeType.removed:
+                      if (collection == USERS_COLLECTION) {
+                        list.clear();
+                      }
+                      list.removeWhere((ele) => ele.id == onlineElement.id);
+                      break;
                   }
-                  list.removeWhere((ele) => ele.id == onlineElement.id);
-                  list.add(onlineElement);
-                  break;
-                case DocumentChangeType.removed:
-                  if (collection == USERS_COLLECTION) {
-                    list.clear();
-                  }
-                  list.removeWhere((ele) => ele.id == onlineElement.id);
-                  break;
-              }
-            });
-          streamController.add(list);
-        },
-      ),
-    );
+                });
+              streamController.add(list);
+            },
+          ),
+        ));
   }
 
   dynamic _initializeFromJson(String collection, DocumentSnapshot docSnapshot) {
@@ -479,7 +470,7 @@ class Repository {
     if (authResult != null) {
       _currentUserId = authResult.user.uid;
       await initUser(_currentUserId);
-      if (_currentUser.locked) return AuthState.LOCKED;
+      if (_currentUser.blocked) return AuthState.BLOCKED;
       loadSettings();
       return AuthState.SUCCESS;
     }
@@ -524,11 +515,11 @@ class Repository {
     return true;
   }
 
-  Future logOut() async {
+  void logOut() async {
     _currentUserId = null;
     _currentUser = null;
 
-    await _auth.signOut();
+    _auth.signOut();
   }
 
   void deleteTemplates(List<Template> templates) {
@@ -548,6 +539,9 @@ class Repository {
     batch.commit();
   }
 
+  String generateDocumentId(String collection) =>
+      _firestore.collection(collection).document().documentID;
+
   void dispose() {
     _categoriesController.close();
     _currenciesController.close();
@@ -562,6 +556,8 @@ class Repository {
     _lastSelectedListController.close();
     _costCentresGroupsController.close();
     _approvedByMeController.close();
+
+    _streamSubscriptions.forEach((s) => s.cancel());
   }
 }
 
