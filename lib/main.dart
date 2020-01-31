@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/splash_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
@@ -6,17 +8,38 @@ import 'package:expense_claims_app/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_crashlytics/flutter_crashlytics.dart';
 
 void main() {
+  bool debugMode = false;
   repository.init();
 
   Crashlytics.instance.enableInDevMode = true;
   FlutterError.onError = Crashlytics.instance.recordFlutterError;
 
-  runApp(MyApp());
+  FlutterError.onError = (FlutterErrorDetails details) {
+    if (debugMode) {
+      FlutterError.dumpErrorToConsole(details);
+    } else {
+      Zone.current.handleUncaughtError(details.exception, details.stack);
+    }
+  };
+
+  runZoned<Future<Null>>(() async {
+    runApp(MyApp(debugMode: debugMode));
+  }, onError: (error, stackTrace) async {
+    print(error.toString());
+    print(stackTrace.toString());
+
+    await FlutterCrashlytics()
+        .reportCrash(error, stackTrace, forceCrash: !debugMode);
+  });
 }
 
 class MyApp extends StatefulWidget {
+  final bool debugMode;
+
+  const MyApp({Key key, this.debugMode}) : super(key: key);
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -53,6 +76,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     return MaterialApp(
       title: 'Expense Claims App',
+      debugShowCheckedModeBanner: widget.debugMode,
       home: BlocProvider<SplashBloc>(
         initBloc: (_, bloc) => bloc ?? SplashBloc(),
         onDispose: (_, bloc) => bloc.dispose(),
