@@ -14,7 +14,9 @@ class TemplatesBloc {
 
   //
   //  OUTPUT
-  Stream<List<Template>> get templates => repository.templates;
+  Stream<List<Template>> get templates => repository.templates.transform(
+      StreamTransformer<List<Template>, List<Template>>.fromHandlers(
+          handleData: _filterTemplates));
   ValueObservable<List<Template>> get selectedTemplates =>
       _selectedTemplatesController.stream;
 
@@ -39,6 +41,14 @@ class TemplatesBloc {
     repository.deleteTemplates(_selectedTemplatesController.value);
     _selectedTemplates.clear();
     _selectedTemplatesController.add(_selectedTemplates);
+  }
+
+  void _filterTemplates(
+      List<Template> templates, EventSink<List<Template>> sink) {
+    List<Template> filteredTemplates = templates
+        .where((template) => template.expenseType == expenseType)
+        .toList();
+    sink.add(filteredTemplates);
   }
 
   void dispose() {
