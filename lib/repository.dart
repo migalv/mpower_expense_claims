@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_claims_app/blocs/login_bloc.dart';
+import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/models/category_model.dart';
 import 'package:expense_claims_app/models/cost_center_groups_model.dart';
 import 'package:expense_claims_app/models/country_model.dart';
@@ -96,7 +97,8 @@ class Repository {
   }
 
   // UPLOAD
-  void uploadExpense(Expense expense, Map<String, File> attachments) async {
+  Future<UploadStatus> uploadExpense(
+      Expense expense, Map<String, File> attachments) async {
     String collection;
     DocumentReference docRef;
 
@@ -108,12 +110,14 @@ class Repository {
         collection = INVOICES_COLLECTION;
     }
 
-    // Upload the expense
     docRef = _firestore.collection(collection).document(expense.id);
-    docRef.setData(expense.toJson());
-
     Map<String, String> downloadUrls =
         await _uploadAttachments(docRef.documentID, attachments, collection);
+
+    if (downloadUrls == null) return UploadStatus.UNKNOWN_ERROR;
+
+    // Upload the expense
+    docRef.setData(expense.toJson());
 
     expense.attachments.forEach((attachment) {
       String downloadUrl = downloadUrls[attachment["name"]];
@@ -122,6 +126,8 @@ class Repository {
 
     // Upload the download urls of the attachments
     docRef.setData(expense.toJson(), merge: true);
+
+    return UploadStatus.SUCCESS;
   }
 
   void uploadNewTemplate(Template template) {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
@@ -47,6 +48,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        key: _scaffoldKey,
         appBar: CustomAppBar(
           title: _expenseClaimBloc.editingTemplate
               ? "Edit template"
@@ -684,9 +686,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
                               ? "expense"
                               : "invoice"),
                     ),
-                    onPressed: () async {
-                      if (await _validateAndUploadExpense()) _goToHomePage();
-                    },
+                    onPressed: () => _validateAndUploadExpense(),
                   ),
                   Container(height: 16),
                   Text('or'),
@@ -820,10 +820,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
         ) ??
         false;
 
-    if (confirmation) {
-      bool isConnected = await _validateAndUploadExpense();
-      if (isConnected) _uploadTemplate();
-    }
+    if (confirmation) _validateAndUploadExpense(uploadTemplate: true);
   }
 
   void _goToHomePage() {
@@ -837,37 +834,108 @@ class _NewExpensePageState extends State<NewExpensePage> {
 
   void _saveEditing() {
     if (_formKey.currentState.validate()) {
+      if (_expenseClaimBloc.editingExpense) _showUploadDialog();
       _expenseClaimBloc.saveEditing();
-      _goToHomePage();
+      if (_expenseClaimBloc.editingTemplate) _goToHomePage();
     }
   }
 
-  void _uploadTemplate() {
-    _expenseClaimBloc.uploadTemplate();
-    _goToHomePage();
+  Future<void> _showUploadDialog() async {
+    bool result = await showDialog(
+        context: context,
+        builder: (_) => StreamBuilder<UploadStatus>(
+            initialData: UploadStatus.WAITING,
+            stream: _expenseClaimBloc.uploadStatus,
+            builder: (context, snapshot) {
+              String content = "";
+              Icon icon;
+              String expense =
+                  _expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM
+                      ? "Expense claim"
+                      : "Invoice";
+              switch (snapshot.data) {
+                case UploadStatus.WAITING:
+                  content =
+                      "WAIT DO NOT CLOSE THE APP\n\nWait for the $expense to be uploaded.";
+                  break;
+                case UploadStatus.SUCCESS:
+                  icon = Icon(
+                    MdiIcons.checkCircle,
+                    color: Colors.green,
+                    size: 48.0,
+                  );
+                  content = "$expense uploaded successfully";
+                  break;
+                case UploadStatus.CONNECTION_ERROR:
+                  icon = Icon(
+                    MdiIcons.cloudOffOutline,
+                    color: Colors.grey,
+                    size: 48.0,
+                  );
+                  content =
+                      "ERROR. No internet connection.\n\nTry again with a healthier connection.";
+                  break;
+                case UploadStatus.UNKNOWN_ERROR:
+                  icon = Icon(
+                    MdiIcons.alert,
+                    color: Colors.grey,
+                    size: 48.0,
+                  );
+                  content = "An unknown ERROR occurred, try again later.";
+                  break;
+              }
+              return AlertDialog(
+                  title: Text(
+                      "Uploading ${_expenseClaimBloc.expenseType == ExpenseType.EXPENSE_CLAIM ? "expense claim" : "invoice"}"),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      icon ?? CircularProgressIndicator(),
+                      SizedBox(height: 16.0),
+                      Text(
+                        content,
+                        style: Theme.of(context).textTheme.subhead,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                  actions: <Widget>[
+                    snapshot.data != UploadStatus.WAITING
+                        ? FlatButton(
+                            child: Text(
+                              "CLOSE",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .button
+                                  .copyWith(color: secondaryColor),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(
+                                _expenseClaimBloc.uploadStatus.value ==
+                                    UploadStatus.SUCCESS),
+                          )
+                        : Container(),
+                  ]);
+            }));
+    if (result == null)
+      result = _expenseClaimBloc.uploadStatus.value == UploadStatus.SUCCESS;
+    if (result) _goToHomePage();
   }
 
-  Future<bool> _validateAndUploadExpense() async {
-    if (!await utils.isConnectedToInternet()) {
-      utils.showSnackbar(
-        scaffoldKey: _scaffoldKey,
-        message: "Error. No internet connection.",
-        backgroundColor: errorColor,
-        textColor: Colors.white,
-      );
-      return false;
-    }
-
+  bool _validateAndUploadExpense({bool uploadTemplate = false}) {
     if (_formKey.currentState.validate()) {
+      _showUploadDialog();
       _expenseClaimBloc.uploadExpense();
+      if (uploadTemplate) _expenseClaimBloc.uploadTemplate();
       return true;
-    } else
-      utils.showSnackbar(
-        scaffoldKey: _scaffoldKey,
-        message: "Error. Some information might be incomplete.",
-        backgroundColor: errorColor,
-        textColor: Colors.white,
-      );
+    }
+
+    utils.showSnackbar(
+      scaffoldKey: _scaffoldKey,
+      message: "Error. Some information might be incomplete.",
+      backgroundColor: errorColor,
+      textColor: Colors.white,
+    );
+
     return false;
   }
 }

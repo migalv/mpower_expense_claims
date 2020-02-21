@@ -7,6 +7,7 @@ import 'package:expense_claims_app/models/expense_model.dart';
 import 'package:expense_claims_app/models/template_model.dart';
 import 'package:expense_claims_app/models/invoice_model.dart';
 import 'package:expense_claims_app/repository.dart';
+import 'package:expense_claims_app/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:rxdart/rxdart.dart';
@@ -33,6 +34,8 @@ class NewExpenseBloc {
       _selectedCostCentreController.stream;
   Stream<bool> get addAttachmentsButtonVisible =>
       _addAttachmentsButtonVisibleController.stream;
+  ValueObservable<UploadStatus> get uploadStatus =>
+      _uploadStatusController.stream;
 
   // Controllers
   final _selectedCountryController = BehaviorSubject<Country>();
@@ -45,6 +48,7 @@ class NewExpenseBloc {
   final _selectedVatController = BehaviorSubject<double>();
   final _selectedCostCentreController = BehaviorSubject<String>();
   final _addAttachmentsButtonVisibleController = StreamController<bool>();
+  final _uploadStatusController = BehaviorSubject<UploadStatus>();
 
   // PRIVATE
   List<StreamSubscription> _streamSubscriptions = [];
@@ -201,7 +205,7 @@ class NewExpenseBloc {
         _expenseToBeEdited != null && expenseType == ExpenseType.INVOICE
             ? (_expenseToBeEdited as Invoice).dueDate
             : null);
-    selectExpenseDate(_expenseToBeEdited?.date ?? DateTime.now());
+    selectExpenseDate(_expenseToBeEdited?.date);
     grossController.updateValue(_expenseToBeEdited?.gross ?? 0.0);
 
     _attachments = Map();
@@ -269,7 +273,11 @@ class NewExpenseBloc {
   }
 
   // UPLOAD DATA
-  void uploadExpense() {
+  Future<void> uploadExpense() async {
+    if (await utils.isConnectedToInternet() == false) {
+      _uploadStatusController.add(UploadStatus.CONNECTION_ERROR);
+      return;
+    }
     double gross = grossController.numberValue;
     double net;
     double vat = selectedVat.value;
@@ -335,10 +343,11 @@ class NewExpenseBloc {
       );
     }
 
-    repository.uploadExpense(expense, _attachments);
+    UploadStatus status = await repository.uploadExpense(expense, _attachments);
+    _uploadStatusController.add(status);
   }
 
-  void uploadTemplate() {
+  Future<void> uploadTemplate() async {
     Template template;
 
     template = Template(
@@ -423,6 +432,7 @@ class NewExpenseBloc {
     _selectedVatController.close();
     _addAttachmentsButtonVisibleController.close();
     _selectedCostCentreController.close();
+    _uploadStatusController.close();
 
     _streamSubscriptions.forEach((s) => s.cancel());
   }
@@ -430,3 +440,10 @@ class NewExpenseBloc {
 
 const String ATTACHMENTS_EXPENSE_CLAIM_NAME = "Receipt";
 const String ATTACHMENTS_INVOICE_NAME = "Invoice";
+
+enum UploadStatus {
+  WAITING,
+  SUCCESS,
+  CONNECTION_ERROR,
+  UNKNOWN_ERROR,
+}
