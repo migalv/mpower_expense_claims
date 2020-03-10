@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expense_claims_app/bloc_provider.dart';
 import 'package:expense_claims_app/blocs/new_expense_bloc.dart';
 import 'package:expense_claims_app/colors.dart';
@@ -352,54 +351,55 @@ class _NewExpensePageState extends State<NewExpensePage> {
                   Expanded(
                     child: FormField(
                       validator: _expenseClaimBloc.vatValidator,
-                      builder: (FormFieldState state) =>
-                          DropdownButtonHideUnderline(
-                        child: StreamBuilder<Country>(
-                          stream: _expenseClaimBloc.selectedCountry,
-                          builder: (context, selectedCountrySnapshot) =>
-                              StreamBuilder(
-                                  stream: _expenseClaimBloc.selectedVat,
-                                  builder: (context, selectedVatSnapshot) {
-                                    List<DropdownMenuItem<double>> items = [
-                                      DropdownMenuItem(
-                                        child: AutoSizeText(
-                                          "No Receipt",
-                                          maxLines: 2,
-                                        ),
-                                        value: -1.0,
-                                      ),
-                                    ];
-                                    if (selectedCountrySnapshot.hasData)
-                                      items.addAll(selectedCountrySnapshot
-                                          .data.vatOptions
-                                          .map(
-                                        (vat) => DropdownMenuItem(
-                                          child: AutoSizeText(
-                                            vat == 0.0
-                                                ? "0% or No VAT"
-                                                : (vat.toString() + "%"),
-                                            maxLines: vat == 0.0 ? 2 : 1,
+                      builder: (FormFieldState state) => CustomFormField(
+                        state: state,
+                        child: DropdownButtonHideUnderline(
+                          child: StreamBuilder<Country>(
+                            stream: _expenseClaimBloc.selectedCountry,
+                            builder: (context, selectedCountrySnapshot) =>
+                                StreamBuilder(
+                                    stream: _expenseClaimBloc.selectedVat,
+                                    builder: (context, selectedVatSnapshot) {
+                                      List<DropdownMenuItem<double>> items = [
+                                        DropdownMenuItem(
+                                          child: Text(
+                                            "No Receipt",
                                           ),
-                                          value: vat,
+                                          value: -1.0,
                                         ),
-                                      ));
-                                    return Column(
-                                      children: <Widget>[
-                                        CustomFormField(
-                                          child: DropdownButton<double>(
-                                            isDense: true,
-                                            hint: Text("VAT"),
-                                            value: selectedVatSnapshot?.data,
-                                            items: items,
-                                            onChanged:
-                                                _expenseClaimBloc.selectVat,
-                                            isExpanded: true,
+                                      ];
+                                      if (selectedCountrySnapshot.hasData)
+                                        items.addAll(selectedCountrySnapshot
+                                            .data.vatOptions
+                                            .map(
+                                          (vat) => DropdownMenuItem(
+                                            child: Text(
+                                              vat == 0.0
+                                                  ? "0% or No VAT"
+                                                  : (vat.toString() + "%"),
+                                            ),
+                                            value: vat,
                                           ),
-                                          state: state,
+                                        ));
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          color: formFieldBackgroundColor,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8.0)),
                                         ),
-                                      ],
-                                    );
-                                  }),
+                                        width: double.infinity,
+                                        child: DropdownButton<double>(
+                                          isDense: true,
+                                          hint: Text("VAT"),
+                                          value: selectedVatSnapshot?.data,
+                                          items: items,
+                                          onChanged:
+                                              _expenseClaimBloc.selectVat,
+                                          isExpanded: true,
+                                        ),
+                                      );
+                                    }),
+                          ),
                         ),
                       ),
                     ),
