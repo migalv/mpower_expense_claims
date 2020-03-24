@@ -13,7 +13,7 @@ import 'package:flutter_crashlytics/flutter_crashlytics.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  bool debugMode = false;
+  bool debugMode = true;
   repository.init();
 
   Crashlytics.instance.enableInDevMode = true;
