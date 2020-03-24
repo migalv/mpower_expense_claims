@@ -215,7 +215,7 @@ class _ExpenseTileState extends State<ExpenseTile>
               widget.expense.attachments.isNotEmpty
                   ? Container(height: 12.0)
                   : Container(),
-              _buildAttachmentsRow(),
+              _isExpanded ? _buildAttachmentsRow() : Container(),
             ],
           ),
         ),
@@ -266,7 +266,7 @@ class _ExpenseTileState extends State<ExpenseTile>
   //
   // METHODS
   _toggleExpand() {
-    _isExpanded = !_isExpanded;
+    setState(() => _isExpanded = !_isExpanded);
 
     switch (_sizeAnimation.status) {
       case AnimationStatus.completed:
@@ -337,26 +337,29 @@ class _ExpenseTileState extends State<ExpenseTile>
 
   Widget _buildImageAttachment(Map attachment) => CachedNetworkImage(
         imageUrl: attachment['url'],
-        imageBuilder: (context, imageProvider) => GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AttachmentsPage(
-                attachments: widget.expense.attachments,
-                openAt: attachment,
+        imageBuilder: (context, imageProvider) {
+          return GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => AttachmentsPage(
+                  attachments: widget.expense.attachments,
+                  openAt: attachment,
+                ),
               ),
             ),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: Image(
-              image: imageProvider,
-              height: 48.0,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image(
+                image: imageProvider,
+                height: 48.0,
+              ),
             ),
-          ),
-        ),
-        placeholder: (context, url) =>
-            Center(child: CircularProgressIndicator()),
+          );
+        },
+        placeholder: (context, url) {
+          return Center(child: CircularProgressIndicator());
+        },
         errorWidget: (context, url, error) => Tooltip(
           message: "Could not find attachments",
           child: Row(
