@@ -28,7 +28,7 @@ class EmptyListPlaceHolder extends StatelessWidget {
           SizedBox(height: 16.0),
           Text(
             title,
-            style: Theme.of(context).textTheme.title,
+            style: Theme.of(context).textTheme.headline6,
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 12.0),
@@ -36,7 +36,7 @@ class EmptyListPlaceHolder extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Text(
                   subtitle ?? '',
-                  style: Theme.of(context).textTheme.body1,
+                  style: Theme.of(context).textTheme.bodyText2,
                 ) ??
                 Container(),
           ),

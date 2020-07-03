@@ -48,7 +48,7 @@ class _AttachmentsPageState extends State<AttachmentsPage> {
                               attachment["name"],
                               style: Theme.of(context)
                                   .textTheme
-                                  .title
+                                  .headline6
                                   .copyWith(fontSize: 24.0),
                             ),
                           ),
@@ -94,8 +94,9 @@ class _AttachmentsPageState extends State<AttachmentsPage> {
                                         SizedBox(height: 24.0),
                                         Text(
                                           'Click here to download the file',
-                                          style:
-                                              Theme.of(context).textTheme.body1,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyText2,
                                           textAlign: TextAlign.center,
                                         ),
                                       ],

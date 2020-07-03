@@ -197,7 +197,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
         child: ActionChip(
           label: Text(
             category.name,
-            style: Theme.of(context).textTheme.body2.copyWith(
+            style: Theme.of(context).textTheme.bodyText1.copyWith(
                 color: selected ? Colors.black54 : Colors.white,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal),
           ),
@@ -261,9 +261,9 @@ class _NewExpensePageState extends State<NewExpensePage> {
                             style: dateSnapshot?.data == null
                                 ? Theme.of(context)
                                     .textTheme
-                                    .subhead
+                                    .subtitle1
                                     .copyWith(color: Colors.white54)
-                                : Theme.of(context).textTheme.subhead,
+                                : Theme.of(context).textTheme.subtitle1,
                           ),
                         ),
                         Icon(
@@ -561,7 +561,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
         padding: const EdgeInsets.fromLTRB(24.0, 32.0, 0.0, 8.0),
         child: Text(
           label,
-          style: Theme.of(context).textTheme.subhead.copyWith(
+          style: Theme.of(context).textTheme.subtitle1.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
@@ -771,14 +771,14 @@ class _NewExpensePageState extends State<NewExpensePage> {
           builder: (_) => AlertDialog(
             title: Text(
               "Create template",
-              style: Theme.of(context).textTheme.title,
+              style: Theme.of(context).textTheme.headline6,
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
                   "How do you want to name your new template?",
-                  style: Theme.of(context).textTheme.subtitle,
+                  style: Theme.of(context).textTheme.subtitle2,
                 ),
                 SizedBox(height: 8.0),
                 TextFormField(
@@ -894,7 +894,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
                       SizedBox(height: 16.0),
                       Text(
                         content,
-                        style: Theme.of(context).textTheme.subhead,
+                        style: Theme.of(context).textTheme.subtitle1,
                         textAlign: TextAlign.center,
                       ),
                     ],

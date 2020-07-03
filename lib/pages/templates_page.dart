@@ -111,11 +111,11 @@ class TemplatesPage extends StatelessWidget {
           builder: (_) => AlertDialog(
             title: Text(
               "Delete templates",
-              style: Theme.of(context).textTheme.title,
+              style: Theme.of(context).textTheme.headline6,
             ),
             content: Text(
               "Are you sure to delete these templates?",
-              style: Theme.of(context).textTheme.subtitle,
+              style: Theme.of(context).textTheme.subtitle2,
             ),
             actions: <Widget>[
               FlatButton(

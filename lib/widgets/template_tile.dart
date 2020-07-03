@@ -68,7 +68,7 @@ class TemplateTile extends StatelessWidget {
                               padding: const EdgeInsets.only(top: 16.0),
                               child: Text(
                                 template.name,
-                                style: Theme.of(context).textTheme.title,
+                                style: Theme.of(context).textTheme.headline6,
                               ),
                             ),
                             Container(
@@ -79,7 +79,7 @@ class TemplateTile extends StatelessWidget {
                                 overflow: TextOverflow.fade,
                                 style: Theme.of(context)
                                     .textTheme
-                                    .body1
+                                    .bodyText2
                                     .copyWith(fontSize: 12.0),
                               ),
                             ),

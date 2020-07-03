@@ -120,7 +120,7 @@ class _ExpenseTileState extends State<ExpenseTile>
         child: Text(
           widget.expense.description,
           overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.title,
+          style: Theme.of(context).textTheme.headline6,
           maxLines: 1,
         ),
       );
@@ -129,7 +129,7 @@ class _ExpenseTileState extends State<ExpenseTile>
         padding: EdgeInsets.only(top: 14.0),
         child: Text(
           timeago.format(widget.expense.date),
-          style: Theme.of(context).textTheme.body1.copyWith(fontSize: 12.0),
+          style: Theme.of(context).textTheme.bodyText2.copyWith(fontSize: 12.0),
         ),
       );
 
@@ -144,7 +144,7 @@ class _ExpenseTileState extends State<ExpenseTile>
               backgroundColor: Colors.white24,
               label: Text(
                 '${widget.expense.gross ?? ''} ${repository.getCurrencyWithId(widget.expense.currency)?.symbol ?? ''}',
-                style: Theme.of(context).textTheme.subhead.copyWith(
+                style: Theme.of(context).textTheme.subtitle1.copyWith(
                       color: secondaryColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 14.0,
@@ -228,7 +228,7 @@ class _ExpenseTileState extends State<ExpenseTile>
             title,
             style: Theme.of(context)
                 .textTheme
-                .body2
+                .bodyText1
                 .copyWith(fontWeight: FontWeight.bold),
           ),
           Container(
@@ -238,7 +238,7 @@ class _ExpenseTileState extends State<ExpenseTile>
             desc ?? '',
             style: Theme.of(context)
                 .textTheme
-                .body2
+                .bodyText1
                 .copyWith(fontWeight: FontWeight.normal),
           ),
         ],
@@ -408,11 +408,11 @@ class _ExpenseTileState extends State<ExpenseTile>
           builder: (_) => AlertDialog(
             title: Text(
               "Delete " + string,
-              style: Theme.of(context).textTheme.title,
+              style: Theme.of(context).textTheme.headline6,
             ),
             content: Text(
               "Are you sure to delete this " + string + "?",
-              style: Theme.of(context).textTheme.subtitle,
+              style: Theme.of(context).textTheme.subtitle2,
             ),
             actions: <Widget>[
               FlatButton(

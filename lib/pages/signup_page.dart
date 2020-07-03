@@ -155,7 +155,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     children: <Widget>[
                       Text(
                         "Please wait . . .",
-                        style: Theme.of(context).textTheme.subtitle,
+                        style: Theme.of(context).textTheme.subtitle2,
                       ),
                       SizedBox(height: 16.0),
                       Center(
@@ -175,7 +175,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     children: <Widget>[
                       Text(
                         "User registered successfully",
-                        style: Theme.of(context).textTheme.subtitle,
+                        style: Theme.of(context).textTheme.subtitle2,
                       ),
                       SizedBox(height: 16.0),
                       Center(
@@ -195,7 +195,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     children: <Widget>[
                       Text(
                         "An unexpected error occurred, please try again later.",
-                        style: Theme.of(context).textTheme.subtitle,
+                        style: Theme.of(context).textTheme.subtitle2,
                       ),
                       SizedBox(height: 16.0),
                       Center(
