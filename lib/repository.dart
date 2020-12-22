@@ -281,6 +281,7 @@ class Repository {
                     .forEach((DocumentChange documentChange) {
                   final onlineElement =
                       _initializeFromJson(collection, documentChange.document);
+
                   switch (documentChange.type) {
                     case DocumentChangeType.added:
                       if (collection == USERS_COLLECTION)
